@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/splash_screen.dart';
 import '../screens/home/home_screen.dart';
-import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/recipients/recipients_list_screen.dart';
 import '../screens/recipients/add_recipient_screen.dart';
 import '../screens/gift_generation/gift_wizard_screen.dart';
@@ -11,8 +12,12 @@ import '../screens/gift_generation/gift_results_screen.dart';
 import '../screens/saved_gifts/saved_gifts_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/login',
+  initialLocation: '/',
   routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const SplashScreen(),
+    ),
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),

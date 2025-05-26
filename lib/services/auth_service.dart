@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart';
 import '../models/user.dart';
+import '../models/auth_exception.dart';
 import 'api_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
@@ -26,6 +28,32 @@ class AuthService {
       final profileData = await _apiService.getProfile();
       return User.fromJson(profileData);
     } catch (e) {
+      // Log dell'errore per debug
+      print('AuthService login error: $e');
+      
+      // Rimuovi eventuali token corrotti
+      await _storage.delete(key: 'jwt_token');
+      
+      // Gestione specifica per DioException
+      if (e is DioException) {
+        switch (e.response?.statusCode) {
+          case 400:
+          case 401:
+            throw const UnauthorizedException('Email o password non corretti');
+          case 404:
+            throw const NetworkException('Servizio non disponibile');
+          case 500:
+            throw const ServerException('Errore del server. Riprova più tardi');
+          default:
+            if (e.type == DioExceptionType.connectionTimeout || 
+                e.type == DioExceptionType.receiveTimeout ||
+                e.type == DioExceptionType.connectionError) {
+              throw const NetworkException('Problema di connessione. Controlla la tua rete');
+            }
+            throw NetworkException('Errore di connessione: ${e.message}');
+        }
+      }
+      
       rethrow;
     }
   }

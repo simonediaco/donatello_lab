@@ -22,7 +22,7 @@ class OnboardingScreen extends StatelessWidget {
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: AssetImage('assets/images/renaissance_woman.jpg'),
+                    image: AssetImage('assets/images/auth/onboarding.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
