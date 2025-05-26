@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../services/api_service.dart';
 import '../../models/recipient.dart';
 import '../../widgets/recipient_avatar.dart';
+import '../../widgets/custom_bottom_navigation.dart';
 import '../../theme/app_theme.dart';
 
 class RecipientsListScreen extends ConsumerStatefulWidget {
@@ -89,6 +90,9 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen> {
         onPressed: () => context.push('/recipients/add'),
         backgroundColor: AppTheme.primaryColor,
         child: const Icon(Icons.add, color: Colors.black),
+      ),
+      bottomNavigationBar: const CustomBottomNavigation(
+        currentIndex: 1,
       ),
     );
   }

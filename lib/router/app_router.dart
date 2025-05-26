@@ -16,50 +16,70 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const SplashScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const SplashScreen(),
+      ),
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const LoginScreen(),
+      ),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const RegisterScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const RegisterScreen(),
+      ),
     ),
     GoRoute(
       path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const OnboardingScreen(),
+      ),
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) => const HomeScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const HomeScreen(),
+      ),
     ),
     GoRoute(
       path: '/recipients',
-      builder: (context, state) => const RecipientsListScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const RecipientsListScreen(),
+      ),
     ),
     // GoRoute(
     //   path: '/recipients/add',
-    //   builder: (context, state) => const AddRecipientScreen(),
+    //   pageBuilder: (context, state) => NoTransitionPage(
+    //     child: const AddRecipientScreen(),
+    //   ),
     // ),
     GoRoute(
       path: '/generate',
-      builder: (context, state) => const GiftWizardScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const GiftWizardScreen(),
+      ),
     ),
     GoRoute(
       path: '/results',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final extras = state.extra as Map<String, dynamic>?;
-        return GiftResultsScreen(
-          recipientName: extras?['recipientName'] ?? '',
-          recipientAge: extras?['recipientAge'],
-          gifts: extras?['gifts'] ?? [],
+        return NoTransitionPage(
+          child: GiftResultsScreen(
+            recipientName: extras?['recipientName'] ?? '',
+            recipientAge: extras?['recipientAge'],
+            gifts: extras?['gifts'] ?? [],
+          ),
         );
       },
     ),
     GoRoute(
       path: '/saved-gifts',
-      builder: (context, state) => const SavedGiftsScreen(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const SavedGiftsScreen(),
+      ),
     ),
   ],
 );

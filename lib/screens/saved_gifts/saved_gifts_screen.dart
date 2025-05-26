@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../services/api_service.dart';
 import '../../models/gift.dart';
 import '../../models/recipient.dart';
+import '../../widgets/custom_bottom_navigation.dart';
 import '../../theme/app_theme.dart';
 
 class SavedGiftsScreen extends ConsumerStatefulWidget {
@@ -183,46 +184,8 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen> {
                     );
                   },
                 ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: const CustomBottomNavigation(
         currentIndex: 2,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go('/home');
-              break;
-            case 1:
-              context.go('/recipients');
-              break;
-            case 2:
-              // Already on saved gifts
-              break;
-            case 3:
-              context.go('/generate');
-              break;
-          }
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppTheme.backgroundColor,
-        selectedItemColor: AppTheme.primaryColor,
-        unselectedItemColor: AppTheme.subtitleColor,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Homepage',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Recipients',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark),
-            label: 'Saved Gifts',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Generate',
-          ),
-        ],
       ),
     );
   }

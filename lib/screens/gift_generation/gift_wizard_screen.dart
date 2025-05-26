@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/api_service.dart';
+import '../../models/recipient.dart';
+import '../../models/gift_request.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../widgets/recipient_avatar.dart';
+import '../../widgets/custom_bottom_navigation.dart';
 import '../../theme/app_theme.dart';
 
 class GiftWizardScreen extends ConsumerStatefulWidget {
@@ -16,7 +20,7 @@ class GiftWizardScreen extends ConsumerStatefulWidget {
 class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  
+
   // Form data
   String _recipientName = '';
   String _recipientAge = '';
@@ -27,7 +31,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
   String _budget = '';
   double _minBudget = 0;
   double _maxBudget = 100;
-  
+
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _interests = [
@@ -151,7 +155,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
               ),
             ),
           ),
-          
+
           // Step content
           Expanded(
             child: PageView(
@@ -166,7 +170,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
               ],
             ),
           ),
-          
+
           // Navigation buttons
           Padding(
             padding: const EdgeInsets.all(24),
@@ -178,6 +182,9 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: _currentStep == 0 
+          ? const CustomBottomNavigation(currentIndex: 3)
+          : null,
     );
   }
 
