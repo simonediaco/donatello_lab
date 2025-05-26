@@ -16,6 +16,8 @@ Gift _$GiftFromJson(Map<String, dynamic> json) => Gift(
       description: json['description'] as String?,
       notes: json['notes'] as String?,
       recipient: (json['recipient'] as num?)?.toInt(),
+      origin: json['origin'] as String?,
+      amazonLink: json['amazon_link'] as String?,
     );
 
 Map<String, dynamic> _$GiftToJson(Gift instance) => <String, dynamic>{
@@ -28,4 +30,6 @@ Map<String, dynamic> _$GiftToJson(Gift instance) => <String, dynamic>{
       'description': instance.description,
       'notes': instance.notes,
       'recipient': instance.recipient,
+      'origin': instance.origin,
+      'amazon_link': instance.amazonLink,
     };

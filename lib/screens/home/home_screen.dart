@@ -151,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => context.push('/generate'),
+                  onPressed: () => context.push('/generate-gifts'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.black,

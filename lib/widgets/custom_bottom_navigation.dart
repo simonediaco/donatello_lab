@@ -23,7 +23,7 @@ class CustomBottomNavigation extends StatelessWidget {
         context.go('/saved-gifts');
         break;
       case 3:
-        context.go('/generate');
+        context.go('/generate-gifts');
         break;
     }
   }

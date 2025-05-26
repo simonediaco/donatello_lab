@@ -12,6 +12,7 @@ import '../screens/gift_generation/gift_results_screen.dart';
 import '../screens/saved_gifts/saved_gifts_screen.dart';
 import '../screens/recipients/recipient_detail_screen.dart'; // Import the detail screen
 import '../screens/recipients/edit_recipient_screen.dart'; // Import the edit screen
+import '../screens/gift_generation/gift_intro_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -77,7 +78,13 @@ final appRouter = GoRouter(
       ],
     ),
     GoRoute(
-      path: '/generate',
+      path: '/generate-gifts',
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const GiftIntroScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/gift-wizard',
       pageBuilder: (context, state) => NoTransitionPage(
         child: const GiftWizardScreen(),
       ),

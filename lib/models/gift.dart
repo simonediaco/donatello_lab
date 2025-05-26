@@ -14,6 +14,9 @@ class Gift extends Equatable {
   final String? description;
   final String? notes;
   final int? recipient;
+  final String? origin;
+  @JsonKey(name: 'amazon_link')
+  final String? amazonLink;
 
   const Gift({
     this.id,
@@ -25,11 +28,13 @@ class Gift extends Equatable {
     this.description,
     this.notes,
     this.recipient,
+    this.origin,
+    this.amazonLink,
   });
 
   factory Gift.fromJson(Map<String, dynamic> json) => _$GiftFromJson(json);
   Map<String, dynamic> toJson() => _$GiftToJson(this);
 
   @override
-  List<Object?> get props => [id, name, price, match, image, category, description, notes, recipient];
+  List<Object?> get props => [id, name, price, match, image, category, description, notes, recipient, origin, amazonLink];
 }
