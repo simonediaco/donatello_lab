@@ -10,6 +10,8 @@ import '../screens/recipients/add_recipient_screen.dart';
 import '../screens/gift_generation/gift_wizard_screen.dart';
 import '../screens/gift_generation/gift_results_screen.dart';
 import '../screens/saved_gifts/saved_gifts_screen.dart';
+import '../screens/recipients/recipient_detail_screen.dart'; // Import the detail screen
+import '../screens/recipients/edit_recipient_screen.dart'; // Import the edit screen
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -49,13 +51,31 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => NoTransitionPage(
         child: const RecipientsListScreen(),
       ),
+      routes: [
+        GoRoute(
+          path: 'add',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: const AddRecipientScreen(),
+          ),
+        ),
+        GoRoute(
+          path: ':id',
+          pageBuilder: (context, state) {
+            final id = int.parse(state.pathParameters['id']!);
+            return NoTransitionPage(child: RecipientDetailScreen(recipientId: id));
+          },
+          routes: [
+            GoRoute(
+              path: 'edit',
+              pageBuilder: (context, state) {
+                final id = int.parse(state.pathParameters['id']!);
+                return NoTransitionPage(child: EditRecipientScreen(recipientId: id));
+              },
+            ),
+          ],
+        ),
+      ],
     ),
-    // GoRoute(
-    //   path: '/recipients/add',
-    //   pageBuilder: (context, state) => NoTransitionPage(
-    //     child: const AddRecipientScreen(),
-    //   ),
-    // ),
     GoRoute(
       path: '/generate',
       pageBuilder: (context, state) => NoTransitionPage(

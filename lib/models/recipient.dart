@@ -43,6 +43,23 @@ class Recipient extends Equatable {
     return age;
   }
 
+  String get genderDisplay {
+    switch (gender) {
+      case 'M':
+        return 'Uomo';
+      case 'F':
+        return 'Donna';
+      case 'X':
+        return 'Non binario';
+      case 'T':
+        return 'Transgender';
+      case 'O':
+        return 'Altro';
+      default:
+        return gender;
+    }
+  }
+
   @override
   List<Object?> get props => [id, name, gender, birthDate, relation, interests, favoriteColors, dislikes, notes];
 }
