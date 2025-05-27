@@ -129,7 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               width: double.infinity,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/auth/login-cover.png'), 
+                  image: AssetImage('assets/images/auth/login_cover.png'), 
                   fit: BoxFit.cover,
                 ),
               ),

@@ -96,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: double.infinity,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/auth/login-cover.png'),
+                  image: AssetImage('assets/images/homepage_02.png'),
                   fit: BoxFit.cover,
                 ),
               ),

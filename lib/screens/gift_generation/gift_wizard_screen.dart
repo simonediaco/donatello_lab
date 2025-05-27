@@ -477,12 +477,12 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
               crossAxisSpacing: 16,
               childAspectRatio: 1.0, // Square cards
               children: [
-                _buildRelationImageCard('Friend', 'amico', 'assets/images/rel_friend.jpg'),
-                _buildRelationImageCard('Family\nMember', 'famiglia', 'assets/images/rel_family.jpg'),
-                _buildRelationImageCard('Colleague', 'collega', 'assets/images/rel_colleague.jpg'),
-                _buildRelationImageCard('Partner', 'partner', 'assets/images/rel_partner.jpg'),
-                _buildRelationImageCard('Mentor', 'mentore', 'assets/images/rel_mentor.jpg'),
-                _buildRelationImageCard('Other', 'altro', 'assets/images/rel_other.jpg'),
+                _buildRelationImageCard('Friend', 'amico', 'assets/images/relations/rel_friend.png'),
+                _buildRelationImageCard('Family\nMember', 'famiglia', 'assets/images/relations/rel_family_member.png'),
+                _buildRelationImageCard('Colleague', 'collega', 'assets/images/relations/rel_colleague.png'),
+                _buildRelationImageCard('Partner', 'partner', 'assets/images/relations/rel_partner_02.png'),
+                _buildRelationImageCard('Mentor', 'mentore', 'assets/images/relations/rel_mentor.png'),
+                _buildRelationImageCard('Other', 'altro', 'assets/images/relations/rel_other.png'),
               ],
             ),
           ),

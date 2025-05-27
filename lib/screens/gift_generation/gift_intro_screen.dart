@@ -19,7 +19,7 @@ class GiftIntroScreen extends StatelessWidget {
             height: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/renaissance_portrait.jpg'),
+                image: AssetImage('assets/images/intro_gift_generation_02.png'),
                 fit: BoxFit.cover,
                 onError: (exception, stackTrace) {
                   // Gestione errore caricamento immagine
