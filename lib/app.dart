@@ -4,7 +4,6 @@ import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-
 class DonatelloLabApp extends StatelessWidget {
   const DonatelloLabApp({super.key});
 
@@ -12,7 +11,7 @@ class DonatelloLabApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Donatello Lab',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       routerConfig: appRouter,
       localizationsDelegates: const [
         AppLocalizations.delegate,

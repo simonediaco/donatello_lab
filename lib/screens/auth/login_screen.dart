@@ -14,34 +14,66 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
 
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
+    ));
+
+    _animationController.forward();
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
-    // Validazione input
     if (_emailController.text.trim().isEmpty) {
-      _showError('Inserisci un indirizzo email');
+      _showError('Please enter your email address');
       return;
     }
 
     if (_passwordController.text.isEmpty) {
-      _showError('Inserisci la password');
+      _showError('Please enter your password');
       return;
     }
 
     if (!_isValidEmail(_emailController.text.trim())) {
-      _showError('Inserisci un indirizzo email valido');
+      _showError('Please enter a valid email address');
       return;
     }
 
@@ -58,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ref.read(currentUserProvider.notifier).state = user;
         context.go('/home');
       } else {
-        _showError('Login fallito. Riprova.');
+        _showError('Login failed. Please try again.');
       }
     } catch (e) {
       if (mounted) {
@@ -79,9 +111,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
         ),
       );
     }
@@ -90,26 +140,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleLoginError(dynamic error) {
     String message;
 
-    // Gestione delle nostre eccezioni personalizzate
     if (error is AuthException) {
       message = error.message;
     } else {
-      // Fallback per errori non gestiti
-      message = 'Errore di connessione. Riprova.';
+      message = 'Connection error. Please try again.';
 
-      // Gestione DioException con status code
       if (error.toString().contains('DioException')) {
         if (error.toString().contains('status code of 400') || 
             error.toString().contains('status code of 401') ||
             error.toString().contains('401') || 
             error.toString().contains('Unauthorized')) {
-          message = 'Email o password non corretti';
+          message = 'Incorrect email or password';
         } else if (error.toString().contains('status code of 404') || error.toString().contains('404')) {
-          message = 'Servizio non disponibile';
+          message = 'Service unavailable';
         } else if (error.toString().contains('status code of 500') || error.toString().contains('500')) {
-          message = 'Errore del server. Riprova più tardi';
+          message = 'Server error. Please try again later';
         } else if (error.toString().contains('timeout') || error.toString().contains('connection')) {
-          message = 'Problema di connessione. Controlla la tua rete';
+          message = 'Connection problem. Check your network';
         }
       }
     }
@@ -120,82 +167,187 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // Immagine cover a schermo intero
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/auth/login_cover.png'), 
-                  fit: BoxFit.cover,
-                ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.backgroundGradient,
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - 
+                          MediaQuery.of(context).padding.top - 
+                          MediaQuery.of(context).padding.bottom,
               ),
-            ),
-          ),
-
-          // Contenuto inferiore con form
-          Expanded(
-            flex: 4,
-            child: Container(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Welcome to Donatello Lab',
-                      style: Theme.of(context).textTheme.displayMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 40),
-
-                    CustomTextField(
-                      hint: 'Enter your email',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 16),
-
-                    CustomTextField(
-                      hint: 'Enter your password',
-                      controller: _passwordController,
-                      isPassword: !_isPasswordVisible,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                          color: const Color(0xFFB8860B),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
+                    // Hero section with app branding
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // App logo
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              gradient: AppTheme.primaryGradient,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: AppTheme.mediumShadow,
+                            ),
+                            child: const Icon(
+                              Icons.auto_awesome,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 24),
+                          
+                          // Welcome text
+                          Text(
+                            'Welcome back',
+                            style: Theme.of(context).textTheme.displayMedium,
+                          ),
+                          
+                          const SizedBox(height: 8),
+                          
+                          Text(
+                            'Sign in to continue to Donatello Lab',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 32),
 
-                    CustomButton(
-                      text: 'Login',
-                      onPressed: _login,
-                      isLoading: _isLoading,
-                    ),
-                    const SizedBox(height: 16),
+                    // Login form
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: Container(
+                          decoration: AppTheme.elevatedCardDecoration,
+                          padding: const EdgeInsets.all(32),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Email field
+                                CustomTextField(
+                                  hint: 'Email address',
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                ),
+                                
+                                const SizedBox(height: 20),
 
-                    CustomButton(
-                      text: 'Register',
-                      onPressed: () => context.push('/register'),
-                      isOutlined: true,
+                                // Password field
+                                CustomTextField(
+                                  hint: 'Password',
+                                  controller: _passwordController,
+                                  isPassword: !_isPasswordVisible,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _isPasswordVisible 
+                                        ? Icons.visibility_off_outlined 
+                                        : Icons.visibility_outlined,
+                                      color: AppTheme.textTertiaryColor,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isPasswordVisible = !_isPasswordVisible;
+                                      });
+                                    },
+                                  ),
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                // Forgot password link
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      // TODO: Implement forgot password
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Forgot password feature coming soon'),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Forgot password?',
+                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                        color: AppTheme.primaryColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 32),
+
+                                // Login button
+                                CustomButton(
+                                  text: 'Sign In',
+                                  onPressed: _login,
+                                  isLoading: _isLoading,
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                // Divider
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        height: 1,
+                                        color: AppTheme.textTertiaryColor.withOpacity(0.3),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        'or',
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        height: 1,
+                                        color: AppTheme.textTertiaryColor.withOpacity(0.3),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                // Create account button
+                                OutlinedButton(
+                                  onPressed: () => context.push('/register'),
+                                  child: const Text('Create Account'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
+
+                    // Bottom spacer
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

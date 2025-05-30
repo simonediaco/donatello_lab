@@ -125,7 +125,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                     'Save Recipient',
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppTheme.subtitleColor,
+                      color: AppTheme.primaryColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -143,7 +143,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                       '${widget.recipientAge} years old',
                       style: const TextStyle(
                         fontSize: 16,
-                        color: AppTheme.subtitleColor,
+                        color: AppTheme.primaryColor,
                       ),
                     ),
                 ],
@@ -237,7 +237,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                     gift.category ?? '',
                     style: const TextStyle(
                       fontSize: 14,
-                      color: AppTheme.subtitleColor,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 12),
