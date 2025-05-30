@@ -1,3 +1,4 @@
+import 'package:donatello_lab/screens/gift_generation/generate_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/auth/login_screen.dart';
@@ -80,7 +81,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/generate-gifts',
       pageBuilder: (context, state) => NoTransitionPage(
-        child: const GiftIntroScreen(),
+        child: const GenerateScreen(),
       ),
     ),
     GoRoute(

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
@@ -30,38 +29,91 @@ class CustomBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: (index) => _onNavTap(context, index),
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color(0xFF0F0F0F),
-      elevation: 0,
-      selectedItemColor: AppTheme.primaryColor,
-      unselectedItemColor: AppTheme.subtitleColor,
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.palette_outlined),
-          activeIcon: Icon(Icons.palette),
-          label: '',
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(
+                icon: Icons.home,
+                label: 'Home',
+                isActive: currentIndex == 0,
+                onTap: () => _onNavTap(context, 0),
+              ),
+              _buildNavItem(
+                icon: Icons.people_outline,
+                label: 'Recipients',
+                isActive: currentIndex == 1,
+                onTap: () => _onNavTap(context, 1),
+              ),
+              _buildNavItem(
+                icon: Icons.bookmark_outline,
+                label: 'Saved',
+                isActive: currentIndex == 2,
+                onTap: () => _onNavTap(context, 2),
+              ),
+              _buildNavItem(
+                icon: Icons.auto_awesome,
+                label: 'Generate',
+                isActive: currentIndex == 3,
+                onTap: () => _onNavTap(context, 3),
+              ),
+            ],
+          ),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.groups_outlined),
-          activeIcon: Icon(Icons.groups),
-          label: '',
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    bool isActive = false,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive 
+            ? AppTheme.primaryColor.withOpacity(0.1) 
+            : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_border),
-          activeIcon: Icon(Icons.favorite),
-          label: '',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isActive ? AppTheme.primaryColor : AppTheme.textTertiaryColor,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? AppTheme.primaryColor : AppTheme.textTertiaryColor,
+                fontSize: 12,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.auto_awesome_outlined),
-          activeIcon: Icon(Icons.auto_awesome),
-          label: '',
-        ),
-      ],
+      ),
     );
   }
 }

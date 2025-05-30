@@ -41,7 +41,7 @@ class GiftCard extends StatelessWidget {
                     Text(
                       gift.description ?? '',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.subtitleColor,
+                            color: AppTheme.primaryColor,
                           ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
