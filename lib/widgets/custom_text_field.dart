@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
@@ -39,15 +40,39 @@ class CustomTextField extends StatefulWidget {
   State<CustomTextField> createState() => _CustomTextFieldState();
 }
 
-class _CustomTextFieldState extends State<CustomTextField> {
+class _CustomTextFieldState extends State<CustomTextField> with TickerProviderStateMixin {
   late FocusNode _focusNode;
   bool _isFocused = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _borderColorAnimation;
 
   @override
   void initState() {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_onFocusChange);
+    
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.02,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+    
+    _borderColorAnimation = ColorTween(
+      begin: Colors.grey.shade300,
+      end: AppTheme.primaryColor,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
   }
 
   @override
@@ -55,6 +80,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     if (widget.focusNode == null) {
       _focusNode.dispose();
     }
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -62,6 +88,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
     setState(() {
       _isFocused = _focusNode.hasFocus;
     });
+    
+    if (_isFocused) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
   }
 
   @override
@@ -79,75 +111,112 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
           const SizedBox(height: 8),
         ],
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            color: widget.enabled ? AppTheme.surfaceColor : AppTheme.cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _isFocused 
-                ? AppTheme.primaryColor 
-                : (widget.enabled ? Colors.grey.shade300 : Colors.grey.shade200),
-              width: _isFocused ? 2 : 1,
-            ),
-            boxShadow: _isFocused 
-              ? [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+        AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Container(
+                decoration: BoxDecoration(
+                  boxShadow: _isFocused 
+                    ? [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withOpacity(0.12),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                ),
+                child: TextFormField(
+                  controller: widget.controller,
+                  focusNode: _focusNode,
+                  obscureText: widget.isPassword,
+                  keyboardType: widget.keyboardType,
+                  validator: widget.validator,
+                  onChanged: widget.onChanged,
+                  maxLines: widget.maxLines,
+                  enabled: widget.enabled,
+                  textInputAction: widget.textInputAction,
+                  onFieldSubmitted: widget.onSubmitted,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: widget.enabled ? AppTheme.textPrimaryColor : AppTheme.textTertiaryColor,
+                    height: 1.4,
                   ),
-                ]
-              : null,
-          ),
-          child: TextFormField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            obscureText: widget.isPassword,
-            keyboardType: widget.keyboardType,
-            validator: widget.validator,
-            onChanged: widget.onChanged,
-            maxLines: widget.maxLines,
-            enabled: widget.enabled,
-            textInputAction: widget.textInputAction,
-            onFieldSubmitted: widget.onSubmitted,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: widget.enabled ? AppTheme.textPrimaryColor : AppTheme.textTertiaryColor,
-              height: 1.4,
-            ),
-            decoration: InputDecoration(
-              hintText: widget.hint,
-              hintStyle: TextStyle(
-                color: AppTheme.textTertiaryColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+                  decoration: InputDecoration(
+                    hintText: widget.hint,
+                    hintStyle: TextStyle(
+                      color: AppTheme.textTertiaryColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    prefixIcon: widget.prefixIcon != null 
+                      ? Container(
+                          padding: const EdgeInsets.only(left: 16, right: 12),
+                          child: widget.prefixIcon,
+                        )
+                      : null,
+                    suffixIcon: widget.suffixIcon != null 
+                      ? Container(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: widget.suffixIcon,
+                        )
+                      : null,
+                    filled: true,
+                    fillColor: widget.enabled ? AppTheme.surfaceColor : AppTheme.cardColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1.0,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1.0,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: _borderColorAnimation.value ?? AppTheme.primaryColor,
+                        width: 2.0,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.red.shade400,
+                        width: 1.0,
+                      ),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.red.shade400,
+                        width: 2.0,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: widget.prefixIcon != null ? 0 : 20,
+                      vertical: widget.maxLines == 1 ? 18 : 20,
+                    ),
+                    isDense: false,
+                  ),
+                ),
               ),
-              prefixIcon: widget.prefixIcon != null 
-                ? Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 12),
-                    child: widget.prefixIcon,
-                  )
-                : null,
-              suffixIcon: widget.suffixIcon != null 
-                ? Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: widget.suffixIcon,
-                  )
-                : null,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: widget.prefixIcon != null ? 0 : 20,
-                vertical: widget.maxLines == 1 ? 16 : 20,
-              ),
-              isDense: true,
-            ),
-          ),
+            );
+          },
         ),
       ],
     );

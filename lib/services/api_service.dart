@@ -63,7 +63,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
-    final response = await _dio.patch('/api/users/update_profile/', data: data);
+    final response = await _dio.patch('/api/auth/update/', data: data);
     return response.data;
   }
 
@@ -180,5 +180,21 @@ class ApiService {
   Future<Map<String, dynamic>> getHistoryDetail(int id) async {
     final response = await _dio.get('/api/history/$id/');
     return response.data;
+  }
+
+  Future<void> requestPasswordReset(String email) async {
+    await _dio.post('/api/auth/password-reset/', data: {'email': email});
+  }
+
+  Future<void> validateResetToken(String token) async {
+    await _dio.get('/api/auth/password-reset/validate/$token/');
+  }
+
+  Future<void> confirmPasswordReset(String token, String newPassword, String confirmPassword) async {
+    await _dio.post('/api/auth/password-reset/confirm/', data: {
+      'token': token,
+      'new_password': newPassword,
+      'confirm_password': confirmPassword,
+    });
   }
 }

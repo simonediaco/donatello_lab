@@ -19,7 +19,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
   List<Recipient> _recipients = [];
   bool _isLoadingRecipients = true;
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -56,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     try {
       final apiService = ref.read(apiServiceProvider);
       final recipientsData = await apiService.getRecipients();
-      
+
       setState(() {
         _recipients = recipientsData
             .map((data) => Recipient.fromJson(data))
@@ -116,20 +116,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   SliverToBoxAdapter(
                     child: _buildHeader(user),
                   ),
-                  
+
                   // Quick actions
                   SliverToBoxAdapter(
                     child: _buildQuickActions(),
                   ),
-                  
+
                   // Recent recipients
                   SliverToBoxAdapter(
                     child: _buildRecentRecipients(),
                   ),
-                  
-                  // Features section
+
+                  // Popular gifts section
+                  // SliverToBoxAdapter(
+                  //   child: _buildPopularGiftsSection(),
+                  // ),
+
+                  // Carousel section
                   SliverToBoxAdapter(
-                    child: _buildFeaturesSection(),
+                    child: _buildGiftCarousel(),
                   ),
                 ],
               ),
@@ -162,14 +167,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     const SizedBox(height: 4),
                     Text(
                       user?.firstName != null 
-                        ? '${user.firstName} ${user.lastName ?? ''}'.trim()
+                        ? '${user.firstName}'
                         : 'Welcome!',
                       style: Theme.of(context).textTheme.displaySmall,
                     ),
                   ],
                 ),
               ),
-              
+
               // Profile and settings
               Row(
                 children: [
@@ -187,11 +192,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 32),
-          
-          // Search bar
-          _buildSearchBar(),
+
+          // Search bar (commented out)
+          // _buildSearchBar(),
         ],
       ),
     );
@@ -281,7 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
             const SizedBox(height: 24),
-            
+
             _buildMenuOption(
               icon: Icons.person_outline,
               title: 'Profile',
@@ -290,18 +295,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 context.push('/profile');
               },
             ),
-            
-            _buildMenuOption(
-              icon: Icons.settings_outlined,
-              title: 'Settings',
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Settings coming soon')),
-                );
-              },
-            ),
-            
+
+            // _buildMenuOption(
+            //   icon: Icons.settings_outlined,
+            //   title: 'Settings',
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       const SnackBar(content: Text('Settings coming soon')),
+            //     );
+            //   },
+            // ),
+
             _buildMenuOption(
               icon: Icons.help_outline,
               title: 'Help & Support',
@@ -312,9 +317,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 );
               },
             ),
-            
+
             const Divider(height: 32),
-            
+
             _buildMenuOption(
               icon: Icons.logout,
               title: 'Sign Out',
@@ -324,7 +329,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               },
               isDestructive: true,
             ),
-            
+
             const SizedBox(height: 24),
           ],
         ),
@@ -357,38 +362,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Search recipients, gifts, or ideas...',
-          hintStyle: TextStyle(
-            color: AppTheme.textTertiaryColor,
-            fontSize: 16,
-          ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: AppTheme.textTertiaryColor,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
-        ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Search functionality coming soon')),
-          );
-        },
-      ),
-    );
-  }
+  // Widget _buildSearchBar() {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: AppTheme.surfaceColor,
+  //       borderRadius: BorderRadius.circular(20),
+  //       boxShadow: AppTheme.softShadow,
+  //     ),
+  //     child: TextField(
+  //       decoration: InputDecoration(
+  //         hintText: 'Search recipients, gifts, or ideas...',
+  //         hintStyle: TextStyle(
+  //           color: AppTheme.textTertiaryColor,
+  //           fontSize: 16,
+  //         ),
+  //         prefixIcon: Icon(
+  //           Icons.search,
+  //           color: AppTheme.textTertiaryColor,
+  //         ),
+  //         border: InputBorder.none,
+  //         contentPadding: const EdgeInsets.symmetric(
+  //           horizontal: 20,
+  //           vertical: 16,
+  //         ),
+  //       ),
+  //       onTap: () {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(content: Text('Search functionality coming soon')),
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 
   Widget _buildQuickActions() {
     return Padding(
@@ -401,7 +406,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -419,44 +424,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   icon: Icons.people_outline,
                   title: 'Add Recipient',
                   subtitle: 'Create a new gift recipient',
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.successColor, Color(0xFF34D399)],
-                  ),
+                  gradient: AppTheme.primaryGradient,
                   onTap: () => context.push('/recipients/add'),
                 ),
               ),
             ],
           ),
-          
-          const SizedBox(height: 16),
-          
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.bookmark_outline,
-                  title: 'Saved Gifts',
-                  subtitle: 'View your saved gift ideas',
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.warningColor, Color(0xFFFBBF24)],
-                  ),
-                  onTap: () => context.push('/saved-gifts'),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.history,
-                  title: 'History',
-                  subtitle: 'Browse past searches',
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
-                  ),
-                  onTap: () => context.push('/history'),
-                ),
-              ),
-            ],
-          ),
+
+          // const SizedBox(height: 16),
+
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: _buildActionCard(
+          //         icon: Icons.bookmark_outline,
+          //         title: 'Saved Gifts',
+          //         subtitle: 'View your saved gift ideas',
+          //         gradient: const LinearGradient(
+          //           colors: [AppTheme.warningColor, Color(0xFFFBBF24)],
+          //         ),
+          //         onTap: () => context.push('/saved-gifts'),
+          //       ),
+          //     ),
+          //     const SizedBox(width: 16),
+          //     Expanded(
+          //       child: _buildActionCard(
+          //         icon: Icons.history,
+          //         title: 'History',
+          //         subtitle: 'Browse past searches',
+          //         gradient: const LinearGradient(
+          //           colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+          //         ),
+          //         onTap: () => context.push('/history'),
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );
@@ -529,14 +532,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 'Recent Recipients',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              TextButton(
-                onPressed: () => context.push('/recipients'),
-                child: const Text('View All'),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: AppTheme.primaryGradient,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextButton(
+                  onPressed: () => context.push('/recipients'),
+                  child: const Text(
+                    'View All',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          
+
           _isLoadingRecipients 
             ? _buildRecipientsLoading()
             : _buildRecipientsList(_recipients),
@@ -547,7 +562,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildRecipientsLoading() {
     return SizedBox(
-      height: 120,
+      height: 140,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: 3,
@@ -567,7 +582,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildRecipientsError() {
     return Container(
-      height: 120,
+      height: 140,
       decoration: AppTheme.cardDecoration,
       child: Center(
         child: Column(
@@ -595,7 +610,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     return SizedBox(
-      height: 120,
+      height: 140,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: recipients.take(5).length,
@@ -609,7 +624,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildEmptyRecipients() {
     return Container(
-      height: 120,
+      height: 140,
       decoration: AppTheme.cardDecoration,
       child: Center(
         child: Column(
@@ -690,70 +705,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildFeaturesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Discover More',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 16),
-          
-          _buildFeatureCard(
-            icon: Icons.trending_up,
-            title: 'Trending Gifts',
-            subtitle: 'See what\'s popular right now',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Trending gifts coming soon')),
-              );
-            },
-          ),
-          
-          const SizedBox(height: 16),
-          
-          _buildFeatureCard(
-            icon: Icons.event,
-            title: 'Upcoming Events',
-            subtitle: 'Never miss an important date',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Events calendar coming soon')),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildPopularGiftsSection() {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text(
+  //           'Popular Gifts',
+  //           style: Theme.of(context).textTheme.headlineMedium,
+  //         ),
+  //         const SizedBox(height: 16),
+  //         _buildPopularGiftCard(
+  //           imageUrl: 'https://images.unsplash.com/photo-1517336714731-4896894dbb91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z2lmdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
+  //           title: 'Luxury Watch',
+  //           price: '\$250',
+  //           onTap: () {
+  //             ScaffoldMessenger.of(context).showSnackBar(
+  //               const SnackBar(content: Text('Luxury Watch details coming soon')),
+  //             );
+  //           },
+  //         ),
+  //         const SizedBox(height: 16),
+  //         _buildPopularGiftCard(
+  //           imageUrl: 'https://images.unsplash.com/photo-1523381294911-8cd694c2b8ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Z2lmdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
+  //           title: 'Leather Wallet',
+  //           price: '\$80',
+  //           onTap: () {
+  //             ScaffoldMessenger.of(context).showSnackBar(
+  //               const SnackBar(content: Text('Leather Wallet details coming soon')),
+  //             );
+  //           },
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildFeatureCard({
-    required IconData icon,
+  Widget _buildPopularGiftCard({
+    required String imageUrl,
     required String title,
-    required String subtitle,
+    required String price,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: AppTheme.cardDecoration,
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(
-                icon,
-                color: AppTheme.primaryColor,
-                size: 24,
+                image: DecorationImage(
+                  image: NetworkImage(imageUrl),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -767,7 +777,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    subtitle,
+                    price,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -779,6 +789,130 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               size: 16,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGiftCarousel() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Gift Ideas Carousel',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 200,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 5, // Increased item count to 5
+              itemBuilder: (context, index) {
+                String imageUrl;
+                String title;
+                String price;
+
+                // Assign different placeholder images and data based on index
+                switch (index) {
+                  case 0:
+                    imageUrl = 'https://images.unsplash.com/photo-1555685783-3ca7fd09f1fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGdpZnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60';
+                    title = 'Personalized Mug';
+                    price = '\$20';
+                    break;
+                  case 1:
+                    imageUrl = 'https://images.unsplash.com/photo-1517336714731-4896894dbb91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z2lmdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60';
+                    title = 'Luxury Watch';
+                    price = '\$250';
+                    break;
+                  case 2:
+                    imageUrl = 'https://images.unsplash.com/photo-1523381294911-8cd694c2b8ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Z2lmdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60';
+                    title = 'Leather Wallet';
+                    price = '\$80';
+                    break;
+                  case 3:
+                    imageUrl = 'https://images.unsplash.com/photo-1548681528-6a58956635df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGdpZnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60';
+                    title = 'Scented Candles';
+                    price = '\$35';
+                    break;
+                  default:
+                    imageUrl = 'https://images.unsplash.com/photo-1473968514419-8ba72acdb97a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGdpZnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60';
+                    title = 'Gourmet Chocolates';
+                    price = '\$50';
+                    break;
+                }
+                return _buildCarouselItem(
+                  imageUrl: imageUrl,
+                  title: title,
+                  price: price,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('$title details coming soon')),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCarouselItem({
+    required String imageUrl,
+    required String title,
+    required String price,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 150,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          image: DecorationImage(
+            image: NetworkImage(imageUrl),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [
+                Colors.black.withOpacity(0.7),
+                Colors.transparent,
+              ],
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                price,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

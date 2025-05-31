@@ -2,8 +2,9 @@ import 'package:donatello_lab/screens/gift_generation/generate_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/auth/login_screen.dart';
-import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
+import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/recipients/recipients_list_screen.dart';
@@ -14,6 +15,7 @@ import '../screens/saved_gifts/saved_gifts_screen.dart';
 import '../screens/recipients/recipient_detail_screen.dart'; // Import the detail screen
 import '../screens/recipients/edit_recipient_screen.dart'; // Import the edit screen
 import '../screens/gift_generation/gift_intro_screen.dart';
+import '../screens/profile/profile_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -34,6 +36,12 @@ final appRouter = GoRouter(
       path: '/register',
       pageBuilder: (context, state) => NoTransitionPage(
         child: const RegisterScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/forgot-password',
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const ForgotPasswordScreen(),
       ),
     ),
     GoRoute(
@@ -107,6 +115,12 @@ final appRouter = GoRouter(
       path: '/saved-gifts',
       pageBuilder: (context, state) => NoTransitionPage(
         child: const SavedGiftsScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/profile',
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const ProfileScreen(),
       ),
     ),
   ],

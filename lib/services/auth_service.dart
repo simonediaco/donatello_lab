@@ -30,10 +30,10 @@ class AuthService {
     } catch (e) {
       // Log dell'errore per debug
       print('AuthService login error: $e');
-      
+
       // Rimuovi eventuali token corrotti
       await _storage.delete(key: 'jwt_token');
-      
+
       // Gestione specifica per DioException
       if (e is DioException) {
         switch (e.response?.statusCode) {
@@ -53,7 +53,7 @@ class AuthService {
             throw NetworkException('Errore di connessione: ${e.message}');
         }
       }
-      
+
       rethrow;
     }
   }
@@ -77,6 +77,68 @@ class AuthService {
       return User.fromJson(profileData);
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<void> requestPasswordReset(String email) async {
+    try {
+      await _apiService.requestPasswordReset(email);
+    } catch (e) {
+      if (e is DioException) {
+        switch (e.response?.statusCode) {
+          case 400:
+            throw const ValidationException('Email format not valid');
+          case 404:
+            throw const ValidationException('No account found with this email');
+          case 500:
+            throw const ServerException('Server error. Please try again later');
+          default:
+            throw const NetworkException('Connection error');
+        }
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> validateResetToken(String token) async {
+    try {
+      await _apiService.validateResetToken(token);
+    } catch (e) {
+      if (e is DioException) {
+        switch (e.response?.statusCode) {
+          case 400:
+          case 404:
+            throw const ValidationException('Invalid or expired reset token');
+          case 500:
+            throw const ServerException('Server error. Please try again later');
+          default:
+            throw const NetworkException('Connection error');
+        }
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> confirmPasswordReset(String token, String newPassword, String confirmPassword) async {
+    try {
+      await _apiService.confirmPasswordReset(token, newPassword, confirmPassword);
+    } catch (e) {
+      if (e is DioException) {
+        switch (e.response?.statusCode) {
+          case 400:
+            if (e.response?.data?.toString().contains('password') == true) {
+              throw const ValidationException('Passwords do not match or are too weak');
+            }
+            throw const ValidationException('Invalid or expired reset token');
+          case 404:
+            throw const ValidationException('Invalid or expired reset token');
+          case 500:
+            throw const ServerException('Server error. Please try again later');
+          default:
+            throw const NetworkException('Connection error');
+        }
+      }
+      rethrow;
     }
   }
 }

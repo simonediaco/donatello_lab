@@ -20,6 +20,7 @@ class AppTheme {
   
   // Accent colors
   static const Color successColor = Color(0xFF10B981);
+  static const Color secondaryAccentColor = Color(0xFFF97316); // Arancione coordinato
   static const Color warningColor = Color(0xFFF59E0B);
   static const Color errorColor = Color(0xFFEF4444);
   
@@ -40,6 +41,10 @@ class AppTheme {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [backgroundColor, cardColor],
+  );
+  
+  static const LinearGradient secondaryGradient = LinearGradient(
+    colors: [secondaryAccentColor, Color(0xFFFB923C)],
   );
 
   static ThemeData get lightTheme {
