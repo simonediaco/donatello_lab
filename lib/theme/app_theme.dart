@@ -18,6 +18,9 @@ class AppTheme {
   static const Color textSecondaryColor = Color(0xFF64748B);
   static const Color textTertiaryColor = Color(0xFF94A3B8);
   
+  // Border colors
+  static const Color borderColor = Color(0xFFE2E8F0);
+  
   // Accent colors
   static const Color successColor = Color(0xFF10B981);
   static const Color secondaryAccentColor = Color(0xFFF97316); // Arancione coordinato

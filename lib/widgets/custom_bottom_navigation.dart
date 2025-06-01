@@ -47,7 +47,7 @@ class CustomBottomNavigation extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(
-                icon: Icons.home,
+                icon: Icons.dashboard_rounded,
                 label: 'Home',
                 isActive: currentIndex == 0,
                 onTap: () => _onNavTap(context, 0),
@@ -59,7 +59,7 @@ class CustomBottomNavigation extends StatelessWidget {
                 onTap: () => _onNavTap(context, 1),
               ),
               _buildNavItem(
-                icon: Icons.bookmark_outline,
+                icon: currentIndex == 2 ? Icons.favorite : Icons.favorite_outline,
                 label: 'Saved',
                 isActive: currentIndex == 2,
                 onTap: () => _onNavTap(context, 2),
@@ -85,15 +85,8 @@ class CustomBottomNavigation extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive 
-            ? AppTheme.primaryColor.withOpacity(0.1) 
-            : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

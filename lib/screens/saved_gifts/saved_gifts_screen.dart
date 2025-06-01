@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,17 +20,13 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
     with TickerProviderStateMixin {
   Map<int, List<Gift>> _giftsByRecipient = {};
   Map<int, Recipient> _recipients = {};
-  List<Gift> _filteredGifts = [];
   bool _isLoading = true;
   String _searchQuery = '';
-  String _selectedFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-
-  final List<String> _filterOptions = ['All', 'Recent', 'Low Price', 'High Price'];
 
   @override
   void initState() {
@@ -90,7 +87,6 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
       setState(() {
         _recipients = {for (var r in recipients) r.id!: r};
         _giftsByRecipient = giftsByRecipient;
-        _filteredGifts = gifts;
         _isLoading = false;
       });
       
@@ -98,45 +94,42 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
     } catch (e) {
       print("Error loading saved gifts: $e");
       setState(() => _isLoading = false);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Errore nel caricamento dei regali salvati: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
     }
   }
 
-  void _filterGifts(String query) {
-    setState(() {
-      _searchQuery = query;
-      _applyFilters();
-    });
-  }
-
-  void _applyFilters() {
-    List<Gift> allGifts = [];
-    _giftsByRecipient.values.forEach((gifts) => allGifts.addAll(gifts));
+  List<int> _getFilteredRecipientIds() {
+    if (_searchQuery.isEmpty) {
+      return _giftsByRecipient.keys.toList();
+    }
     
-    // Apply search filter
-    if (_searchQuery.isNotEmpty) {
-      allGifts = allGifts.where((gift) =>
+    return _giftsByRecipient.keys.where((recipientId) {
+      final recipient = _recipients[recipientId];
+      final gifts = _giftsByRecipient[recipientId] ?? [];
+      
+      // Search in recipient name
+      if (recipient?.name.toLowerCase().contains(_searchQuery.toLowerCase()) == true) {
+        return true;
+      }
+      
+      // Search in gift names and descriptions
+      return gifts.any((gift) =>
           gift.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           (gift.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-          (gift.category?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false)).toList();
-    }
-    
-    // Apply sort filter
-    switch (_selectedFilter) {
-      case 'Recent':
-        // Assuming gifts have IDs in chronological order
-        allGifts.sort((a, b) => (b.id ?? 0).compareTo(a.id ?? 0));
-        break;
-      case 'Low Price':
-        allGifts.sort((a, b) => a.price.compareTo(b.price));
-        break;
-      case 'High Price':
-        allGifts.sort((a, b) => b.price.compareTo(a.price));
-        break;
-    }
-    
-    setState(() {
-      _filteredGifts = allGifts;
-    });
+          (gift.category?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false));
+    }).toList();
+  }
+
+  int get _totalGiftsCount {
+    return _giftsByRecipient.values.fold(0, (sum, gifts) => sum + gifts.length);
   }
 
   Future<void> _refreshGifts() async {
@@ -144,7 +137,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
   }
 
   Future<void> _launchUrl(String? url) async {
-    if (url == null || url == 'None') return;
+    if (url == null || url == 'None' || url.isEmpty) return;
     
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -159,22 +152,22 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
         backgroundColor: AppTheme.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Remove Gift',
+          'Rimuovi Regalo',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         content: Text(
-          'Are you sure you want to remove "${gift.name}" from your saved gifts?',
+          'Sei sicuro di voler rimuovere "${gift.name}" dai tuoi regali salvati?',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: const Text('Annulla'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
-            child: const Text('Remove'),
+            child: const Text('Rimuovi'),
           ),
         ],
       ),
@@ -186,8 +179,8 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
         await apiService.deleteSavedGift(gift.id!);
         
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Gift removed successfully'),
+          const SnackBar(
+            content: Text('Regalo rimosso con successo'),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -196,7 +189,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error removing gift: ${e.toString()}'),
+            content: Text('Errore nella rimozione: ${e.toString()}'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -217,16 +210,16 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
               // Header
               _buildHeader(),
               
-              // Filters
-              if (!_isLoading && _filteredGifts.isNotEmpty) _buildFilters(),
+              // Search bar
+              if (!_isLoading && _totalGiftsCount > 0) _buildSearchBar(),
               
               // Content
               Expanded(
                 child: _isLoading
                     ? _buildLoadingState()
-                    : _filteredGifts.isEmpty
+                    : _totalGiftsCount == 0
                         ? _buildEmptyState()
-                        : _buildGiftsList(),
+                        : _buildGiftsListByRecipient(),
               ),
             ],
           ),
@@ -242,7 +235,6 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title and stats
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -250,17 +242,17 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Saved Gifts',
+                    'Regali Salvati',
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_filteredGifts.length} gifts saved',
+                    '$_totalGiftsCount regali per ${_giftsByRecipient.length} ${_giftsByRecipient.length == 1 ? 'destinatario' : 'destinatari'}',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
-              if (_filteredGifts.isNotEmpty)
+              if (_totalGiftsCount > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
@@ -271,13 +263,13 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.bookmark,
+                        Icons.favorite,
                         color: AppTheme.primaryColor,
                         size: 16,
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${_filteredGifts.length}',
+                        '$_totalGiftsCount',
                         style: TextStyle(
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.w600,
@@ -289,11 +281,6 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
                 ),
             ],
           ),
-          
-          const SizedBox(height: 24),
-          
-          // Search bar
-          if (!_isLoading && _filteredGifts.isNotEmpty) _buildSearchBar(),
         ],
       ),
     );
@@ -301,98 +288,42 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
 
   Widget _buildSearchBar() {
     return Container(
-      decoration: AppTheme.cardDecoration,
-      child: TextField(
-        controller: _searchController,
-        onChanged: _filterGifts,
-        decoration: InputDecoration(
-          hintText: 'Search saved gifts...',
-          hintStyle: TextStyle(
-            color: AppTheme.textTertiaryColor,
-            fontSize: 16,
-          ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: AppTheme.textTertiaryColor,
-          ),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(
-                    Icons.clear,
-                    color: AppTheme.textTertiaryColor,
-                  ),
-                  onPressed: () {
-                    _searchController.clear();
-                    _filterGifts('');
-                  },
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilters() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Sort by',
-            style: Theme.of(context).textTheme.labelLarge,
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 40,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _filterOptions.length,
-              itemBuilder: (context, index) {
-                final filter = _filterOptions[index];
-                final isSelected = _selectedFilter == filter;
-                
-                return Container(
-                  margin: EdgeInsets.only(right: index < _filterOptions.length - 1 ? 12 : 0),
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedFilter = filter;
-                        _applyFilters();
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.primaryColor : AppTheme.surfaceColor,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
-                        ),
-                        boxShadow: isSelected ? AppTheme.softShadow : null,
-                      ),
-                      child: Text(
-                        filter,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : AppTheme.textPrimaryColor,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          fontSize: 14,
-                        ),
-                      ),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        decoration: AppTheme.cardDecoration,
+        child: TextField(
+          controller: _searchController,
+          onChanged: (value) => setState(() => _searchQuery = value),
+          decoration: InputDecoration(
+            hintText: 'Cerca nei regali salvati...',
+            hintStyle: TextStyle(
+              color: AppTheme.textTertiaryColor,
+              fontSize: 16,
+            ),
+            prefixIcon: Icon(
+              Icons.search,
+              color: AppTheme.textTertiaryColor,
+            ),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      color: AppTheme.textTertiaryColor,
                     ),
-                  ),
-                );
-              },
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
             ),
           ),
-          const SizedBox(height: 16),
-        ],
+        ),
       ),
     );
   }
@@ -406,7 +337,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          'Loading saved gifts...',
+          'Caricamento regali salvati...',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],
@@ -432,7 +363,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
                   borderRadius: BorderRadius.circular(60),
                 ),
                 child: Icon(
-                  Icons.bookmarks_outlined,
+                  Icons.favorite_outline,
                   size: 60,
                   color: AppTheme.primaryColor,
                 ),
@@ -441,7 +372,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
               const SizedBox(height: 32),
               
               Text(
-                _searchQuery.isNotEmpty ? 'No matching gifts' : 'No saved gifts yet',
+                'Nessun regalo salvato',
                 style: Theme.of(context).textTheme.displayMedium,
                 textAlign: TextAlign.center,
               ),
@@ -449,9 +380,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
               const SizedBox(height: 12),
               
               Text(
-                _searchQuery.isNotEmpty 
-                  ? 'Try adjusting your search terms or filters'
-                  : 'Start generating gift ideas and save your favorites to see them here.',
+                'Inizia a generare idee regalo e salva i tuoi preferiti per vederli qui organizzati per destinatario.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   height: 1.5,
                 ),
@@ -460,52 +389,50 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
               
               const SizedBox(height: 40),
               
-              if (_searchQuery.isEmpty) ...[
-                // Call to action card
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: AppTheme.elevatedCardDecoration,
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.auto_awesome,
+              // Call to action card
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: AppTheme.elevatedCardDecoration,
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome,
+                      color: AppTheme.primaryColor,
+                      size: 32,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Genera le Tue Prime Idee Regalo',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: AppTheme.primaryColor,
-                        size: 32,
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Generate Your First Gifts',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: AppTheme.primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Use our AI to create personalized gift suggestions, then save your favorites.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () => context.push('/generate-gifts'),
-                          icon: const Icon(Icons.auto_awesome, size: 20),
-                          label: const Text('Generate Gift Ideas'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Usa la nostra IA per creare suggerimenti personalizzati, poi salva i tuoi preferiti.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => context.push('/generate-gifts'),
+                        icon: const Icon(Icons.auto_awesome, size: 20),
+                        label: const Text('Genera Idee Regalo'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ],
           ),
         ),
@@ -513,7 +440,39 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
     );
   }
 
-  Widget _buildGiftsList() {
+  Widget _buildGiftsListByRecipient() {
+    final filteredRecipientIds = _getFilteredRecipientIds();
+    
+    if (filteredRecipientIds.isEmpty) {
+      return FadeTransition(
+        opacity: _fadeAnimation,
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 80,
+                color: AppTheme.textTertiaryColor,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Nessun risultato',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Prova a modificare i termini di ricerca',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -523,9 +482,13 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
           color: AppTheme.primaryColor,
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            itemCount: _filteredGifts.length,
+            itemCount: filteredRecipientIds.length,
             itemBuilder: (context, index) {
-              return _buildGiftCard(_filteredGifts[index], index);
+              final recipientId = filteredRecipientIds[index];
+              final recipient = _recipients[recipientId];
+              final gifts = _giftsByRecipient[recipientId] ?? [];
+              
+              return _buildRecipientSection(recipient!, gifts);
             },
           ),
         ),
@@ -533,266 +496,312 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
     );
   }
 
-  Widget _buildGiftCard(Gift gift, int index) {
-    final recipient = gift.recipient != null ? _recipients[gift.recipient] : null;
-    
+  Widget _buildRecipientSection(Recipient recipient, List<Gift> gifts) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: AppTheme.cardDecoration,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () => _showGiftDetails(gift),
-          child: Padding(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Recipient header
+          Container(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.primaryColor.withOpacity(0.1),
+                  AppTheme.primaryLight.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
               children: [
-                // Header with recipient info
-                if (recipient != null) ...[
-                  Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            recipient.name.isNotEmpty 
-                              ? recipient.name[0].toUpperCase()
-                              : '?',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'For ${recipient.name}',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppTheme.primaryColor,
-                        ),
-                      ),
-                      const Spacer(),
-                      PopupMenuButton<String>(
-                        icon: Icon(
-                          Icons.more_vert,
-                          color: AppTheme.textTertiaryColor,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'share',
-                            child: Row(
-                              children: [
-                                Icon(Icons.share, size: 20, color: AppTheme.textPrimaryColor),
-                                const SizedBox(width: 12),
-                                const Text('Share'),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete, size: 20, color: AppTheme.errorColor),
-                                const SizedBox(width: 12),
-                                Text('Remove', style: TextStyle(color: AppTheme.errorColor)),
-                              ],
-                            ),
-                          ),
-                        ],
-                        onSelected: (value) {
-                          if (value == 'delete') {
-                            _deleteGift(gift);
-                          } else if (value == 'share') {
-                            _shareGift(gift);
-                          }
-                        },
-                      ),
-                    ],
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 16),
-                ],
-                
-                // Gift details
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Gift image placeholder
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppTheme.primaryColor.withOpacity(0.3),
-                            AppTheme.primaryLight.withOpacity(0.3),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        Icons.card_giftcard,
-                        color: AppTheme.primaryColor,
-                        size: 32,
+                  child: Center(
+                    child: Text(
+                      recipient.name.isNotEmpty 
+                        ? recipient.name[0].toUpperCase()
+                        : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    
-                    const SizedBox(width: 16),
-                    
-                    // Gift info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            gift.name,
-                            style: Theme.of(context).textTheme.headlineSmall,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          
-                          const SizedBox(height: 4),
-                          
-                          if (gift.category?.isNotEmpty == true) ...[
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardColor,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: Text(
-                                gift.category!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppTheme.textSecondaryColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                          
-                          // Price and match
-                          Row(
-                            children: [
-                              if (gift.price > 0) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.successColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    '€${gift.price.toStringAsFixed(2)}',
-                                    style: TextStyle(
-                                      color: AppTheme.successColor,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              
-                              if (gift.match != null && gift.match! > 0) ...[
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.stars,
-                                      color: AppTheme.warningColor,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${gift.match}%',
-                                      style: TextStyle(
-                                        color: AppTheme.warningColor,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                
-                // Description
-                if (gift.description?.isNotEmpty == true) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    gift.description!,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                
-                // Action buttons
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    if (gift.amazonLink != null && gift.amazonLink != 'None') ...[
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _launchUrl(gift.amazonLink),
-                          icon: Icon(Icons.shopping_cart, size: 16),
-                          label: const Text('Buy Now'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        recipient.name,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${gifts.length} ${gifts.length == 1 ? 'regalo salvato' : 'regali salvati'}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textSecondaryColor,
+                        ),
+                      ),
                     ],
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showGiftDetails(gift),
-                        icon: Icon(Icons.visibility, size: 16),
-                        label: const Text('View Details'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${gifts.length}',
+                    style: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
+          
+          // Gifts list for this recipient
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: gifts.asMap().entries.map((entry) {
+                final index = entry.key;
+                final gift = entry.value;
+                return Column(
+                  children: [
+                    _buildGiftCard(gift),
+                    if (index < gifts.length - 1) const SizedBox(height: 16),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGiftCard(Gift gift) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.borderColor,
+          width: 1,
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Gift image placeholder
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primaryColor.withOpacity(0.3),
+                      AppTheme.primaryLight.withOpacity(0.3),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.card_giftcard,
+                  color: AppTheme.primaryColor,
+                  size: 24,
+                ),
+              ),
+              
+              const SizedBox(width: 12),
+              
+              // Gift info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      gift.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    const SizedBox(height: 4),
+                    
+                    // Price and match
+                    Row(
+                      children: [
+                        if (gift.price > 0) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.successColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '€${gift.price.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: AppTheme.successColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        
+                        if (gift.match != null && gift.match! > 0) ...[
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.stars,
+                                color: AppTheme.warningColor,
+                                size: 12,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${gift.match}%',
+                                style: TextStyle(
+                                  color: AppTheme.warningColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Actions menu
+              PopupMenuButton<String>(
+                icon: Icon(
+                  Icons.more_vert,
+                  color: AppTheme.textTertiaryColor,
+                  size: 20,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'view',
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility, size: 18, color: AppTheme.textPrimaryColor),
+                        const SizedBox(width: 8),
+                        const Text('Dettagli'),
+                      ],
+                    ),
+                  ),
+                  if (gift.amazonLink != null && gift.amazonLink != 'None' && gift.amazonLink!.isNotEmpty)
+                    PopupMenuItem(
+                      value: 'buy',
+                      child: Row(
+                        children: [
+                          Icon(Icons.shopping_cart, size: 18, color: AppTheme.primaryColor),
+                          const SizedBox(width: 8),
+                          const Text('Acquista'),
+                        ],
+                      ),
+                    ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, size: 18, color: AppTheme.errorColor),
+                        const SizedBox(width: 8),
+                        Text('Rimuovi', style: TextStyle(color: AppTheme.errorColor)),
+                      ],
+                    ),
+                  ),
+                ],
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    _deleteGift(gift);
+                  } else if (value == 'buy') {
+                    _launchUrl(gift.amazonLink);
+                  } else if (value == 'view') {
+                    _showGiftDetails(gift);
+                  }
+                },
+              ),
+            ],
+          ),
+          
+          // Description
+          if (gift.description?.isNotEmpty == true) ...[
+            const SizedBox(height: 12),
+            Text(
+              gift.description!,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textSecondaryColor,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          
+          // Category
+          if (gift.category?.isNotEmpty == true) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.cardColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Text(
+                gift.category!,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textSecondaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 
   void _showGiftDetails(Gift gift) {
-    final recipient = gift.recipient != null ? _recipients[gift.recipient] : null;
-    
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -820,49 +829,6 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
                 ),
               ),
               const SizedBox(height: 24),
-              
-              // Recipient info
-              if (recipient != null) ...[
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.primaryGradient,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          recipient.name[0].toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gift for',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        Text(
-                          recipient.name,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppTheme.primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-              ],
               
               // Gift details
               Text(
@@ -929,7 +895,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
               
               if (gift.description?.isNotEmpty == true) ...[
                 Text(
-                  'Description',
+                  'Descrizione',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 8),
@@ -942,7 +908,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
               
               if (gift.category?.isNotEmpty == true) ...[
                 Text(
-                  'Category',
+                  'Categoria',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 8),
@@ -967,7 +933,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
               const Spacer(),
               Column(
                 children: [
-                  if (gift.amazonLink != null && gift.amazonLink != 'None') ...[
+                  if (gift.amazonLink != null && gift.amazonLink != 'None' && gift.amazonLink!.isNotEmpty) ...[
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -975,8 +941,8 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
                           Navigator.pop(context);
                           _launchUrl(gift.amazonLink);
                         },
-                        icon: Icon(Icons.shopping_cart, size: 20),
-                        label: const Text('Buy on Amazon'),
+                        icon: const Icon(Icons.shopping_cart, size: 20),
+                        label: const Text('Acquista su Amazon'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryColor,
                           foregroundColor: Colors.white,
@@ -990,59 +956,30 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
                     const SizedBox(height: 12),
                   ],
                   
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _shareGift(gift);
-                          },
-                          icon: Icon(Icons.share, size: 20),
-                          label: const Text('Share'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _deleteGift(gift);
+                      },
+                      icon: const Icon(Icons.delete, size: 20),
+                      label: const Text('Rimuovi dai Salvati'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.errorColor,
+                        side: BorderSide(color: AppTheme.errorColor),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _deleteGift(gift);
-                          },
-                          icon: Icon(Icons.delete, size: 20),
-                          label: const Text('Remove'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppTheme.errorColor,
-                            side: BorderSide(color: AppTheme.errorColor),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _shareGift(Gift gift) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share functionality coming soon'),
-        backgroundColor: AppTheme.primaryColor,
       ),
     );
   }

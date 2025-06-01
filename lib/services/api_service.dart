@@ -148,8 +148,36 @@ class ApiService {
 
   // Saved gifts endpoints
   Future<List<dynamic>> getSavedGifts() async {
-    final response = await _dio.get('/api/saved-gifts/');
-    return response.data;
+    try {
+      final response = await _dio.get('/api/saved-gifts/');
+
+      // Handle paginated response structure
+      if (response.data is Map && response.data.containsKey('results')) {
+        return response.data['results'] as List<dynamic>;
+      }
+
+      return [];
+    } catch (e) {
+      print('Error getting saved gifts: $e');
+
+      // Handle token expiration
+      if (e is DioException && e.response?.statusCode == 401) {
+        try {
+          await refreshToken();
+          final retryResponse = await _dio.get('/api/saved-gifts/');
+          if (retryResponse.data is Map && retryResponse.data.containsKey('results')) {
+            return retryResponse.data['results'] as List<dynamic>;
+          }
+        } catch (refreshError) {
+          print('Token refresh failed: $refreshError');
+          await _storage.delete(key: 'jwt_token');
+          await _storage.delete(key: 'jwt_refresh_token');
+          throw Exception('Sessione scaduta. Effettua nuovamente il login.');
+        }
+      }
+
+      return [];
+    }
   }
 
   Future<Map<String, dynamic>> saveGift(Map<String, dynamic> data) async {
