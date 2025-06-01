@@ -27,10 +27,12 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
   late Animation<double> _textFadeAnimation;
 
   List<String> _loadingMessages = [
-    'Analizzo i tuoi gusti...',
-    'Cerco tra migliaia di prodotti...',
-    'Seleziono le opzioni migliori...',
-    'Quasi pronto con le tue idee regalo...',
+    'Analizzo i gusti e le preferenze...',
+    'Esploro migliaia di prodotti unici...',
+    'Confronto prezzi e caratteristiche...',
+    'Seleziono le migliori opzioni...',
+    'Creo suggerimenti personalizzati...',
+    'Quasi pronto con le idee perfette!',
   ];
 
   int _currentMessageIndex = 0;
@@ -133,7 +135,7 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
                 children: [
                   const Spacer(),
 
-                  // Main loading animation with modern design
+                  // Main loading animation with enhanced design
                   AnimatedBuilder(
                     animation: _mainController,
                     builder: (context, child) {
@@ -142,8 +144,8 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
                         child: Transform.rotate(
                           angle: _rotationAnimation.value * 2 * 3.14159,
                           child: Container(
-                            width: 140,
-                            height: 140,
+                            width: 160,
+                            height: 160,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: RadialGradient(
@@ -153,29 +155,48 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
                                   AppTheme.primaryColor.withOpacity(0.4),
                                   Colors.transparent,
                                 ],
-                                stops: const [0.0, 0.5, 0.8, 1.0],
+                                stops: const [0.0, 0.4, 0.7, 1.0],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primaryColor.withOpacity(0.4),
-                                  blurRadius: 30,
-                                  spreadRadius: 10,
+                                  color: AppTheme.primaryColor.withOpacity(0.5),
+                                  blurRadius: 40,
+                                  spreadRadius: 15,
+                                ),
+                                BoxShadow(
+                                  color: AppTheme.primaryColor.withOpacity(0.3),
+                                  blurRadius: 80,
+                                  spreadRadius: 30,
                                 ),
                               ],
                             ),
                             child: Container(
-                              margin: const EdgeInsets.all(20),
+                              margin: const EdgeInsets.all(25),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppTheme.backgroundColor,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppTheme.backgroundColor,
+                                    AppTheme.backgroundColor.withOpacity(0.95),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
                                 border: Border.all(
                                   color: AppTheme.primaryColor,
-                                  width: 3,
+                                  width: 4,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
                               ),
                               child: const Icon(
                                 Icons.auto_awesome,
-                                size: 60,
+                                size: 65,
                                 color: AppTheme.primaryColor,
                               ),
                             ),
@@ -220,33 +241,72 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
 
                   const SizedBox(height: 60),
 
-                  // Dynamic loading messages with modern design
+                  // Dynamic loading messages with enhanced design
                   Container(
-                    height: 80,
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    height: 100,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
                     child: AnimatedBuilder(
                       animation: _textFadeAnimation,
                       builder: (context, child) {
                         return Opacity(
                           opacity: _textFadeAnimation.value,
                           child: Container(
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppTheme.surfaceColor.withOpacity(0.8),
+                                  AppTheme.surfaceColor.withOpacity(0.6),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: AppTheme.primaryColor.withOpacity(0.3),
-                                width: 1,
+                                color: AppTheme.primaryColor.withOpacity(0.4),
+                                width: 2,
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primaryColor.withOpacity(0.2),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            child: Text(
-                              _loadingMessages[_currentMessageIndex],
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryColor.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.psychology,
+                                    color: AppTheme.primaryColor,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    _loadingMessages[_currentMessageIndex],
+                                    style: GoogleFonts.inter(
+                                      fontSize: 17,
+                                      color: AppTheme.textPrimaryColor,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.3,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -256,28 +316,30 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
 
                   const SizedBox(height: 40),
 
-                  // Modern progress indicators
+                  // Enhanced progress indicators
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(4, (index) {
+                    children: List.generate(6, (index) {
                       return AnimatedContainer(
-                        duration: Duration(milliseconds: 300 + (index * 100)),
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        width: _currentMessageIndex >= index ? 30 : 8,
-                        height: 8,
+                        duration: Duration(milliseconds: 400 + (index * 50)),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: _currentMessageIndex >= index ? 32 : 12,
+                        height: 10,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(6),
                           gradient: _currentMessageIndex >= index 
-                              ? LinearGradient(
-                                  colors: [
-                                    AppTheme.primaryColor,
-                                    AppTheme.primaryColor.withOpacity(0.7),
-                                  ],
-                                )
+                              ? AppTheme.primaryGradient
                               : null,
                           color: _currentMessageIndex >= index 
                               ? null 
-                              : Colors.white.withOpacity(0.3),
+                              : AppTheme.textTertiaryColor.withOpacity(0.4),
+                          boxShadow: _currentMessageIndex >= index ? [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ] : null,
                         ),
                       );
                     }),

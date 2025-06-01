@@ -1,16 +1,18 @@
-import 'package:donatello_lab/screens/gift_generation/generate_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../models/recipient.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
-import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/splash_screen.dart';
+import '../screens/auth/onboarding_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/recipients/recipients_list_screen.dart';
 import '../screens/recipients/add_recipient_screen.dart';
 import '../screens/gift_generation/gift_wizard_screen.dart';
+import '../screens/gift_generation/gift_loading_screen.dart';
 import '../screens/gift_generation/gift_results_screen.dart';
+import '../screens/gift_generation/gift_wizard_recipient_screen.dart';
 import '../screens/saved_gifts/saved_gifts_screen.dart';
 import '../screens/recipients/recipient_detail_screen.dart'; // Import the detail screen
 import '../screens/recipients/edit_recipient_screen.dart'; // Import the edit screen
@@ -89,7 +91,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/generate-gifts',
       pageBuilder: (context, state) => NoTransitionPage(
-        child: const GenerateScreen(),
+        child: const GiftIntroScreen(),
       ),
     ),
     GoRoute(
@@ -97,6 +99,13 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => NoTransitionPage(
         child: const GiftWizardScreen(),
       ),
+    ),
+    GoRoute(
+      path: '/gift-wizard-recipient',
+      pageBuilder: (context, state) {
+        final recipient = state.extra as Recipient;
+        return NoTransitionPage(child: GiftWizardRecipientScreen(recipient: recipient));
+      },
     ),
     GoRoute(
       path: '/results',

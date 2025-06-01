@@ -18,7 +18,8 @@ class GiftWizardScreen extends ConsumerStatefulWidget {
   ConsumerState<GiftWizardScreen> createState() => _GiftWizardScreenState();
 }
 
-class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
+class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentStep = 0;
 
@@ -31,12 +32,46 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
   List<String> _selectedInterests = [];
   List<String> _customInterests = [];
   final TextEditingController _customInterestController = TextEditingController();
-  String _selectedCategory = '';
-  String _budget = '';
+  String _selectedOccasion = '';
+  String _customOccasion = '';
+  final TextEditingController _customOccasionController = TextEditingController();
   double _minBudget = 0;
   double _maxBudget = 100;
 
   bool _isLoading = false;
+
+  // Animation controllers
+  late AnimationController _slideAnimationController;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _slideAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(1.0, 0.0), // Start from right
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideAnimationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // Start animation
+    _slideAnimationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _slideAnimationController.dispose();
+    _pageController.dispose();
+    _customInterestController.dispose();
+    _customOccasionController.dispose();
+    super.dispose();
+  }
 
   final List<Map<String, dynamic>> _interests = [
     {'name': 'Musica', 'icon': Icons.music_note},
@@ -51,13 +86,15 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
     {'name': 'Benessere', 'icon': Icons.spa},
   ];
 
-  final List<Map<String, String>> _categories = [
-    {'name': 'Tecnologia', 'icon': 'computer'},
-    {'name': 'Sport e Fitness', 'icon': 'sports_tennis'},
-    {'name': 'Casa e Giardino', 'icon': 'home'},
-    {'name': 'Libri e Cultura', 'icon': 'book'},
-    {'name': 'Esperienze', 'icon': 'explore'},
-    {'name': 'Moda e Bellezza', 'icon': 'checkroom'},
+  final List<Map<String, dynamic>> _occasions = [
+    {'name': 'Compleanno', 'icon': Icons.cake},
+    {'name': 'Natale', 'icon': Icons.card_giftcard},
+    {'name': 'San Valentino', 'icon': Icons.favorite},
+    {'name': 'Anniversario', 'icon': Icons.celebration},
+    {'name': 'Laurea', 'icon': Icons.school},
+    {'name': 'Matrimonio', 'icon': Icons.favorite_border},
+    {'name': 'Festa della Mamma', 'icon': Icons.volunteer_activism},
+    {'name': 'Festa del Papà', 'icon': Icons.face},
   ];
 
   void _nextStep() {
@@ -113,7 +150,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             ? _customRelation 
             : _recipientRelation,
         'interests': _selectedInterests,
-        'category': _selectedCategory,
+        'occasion': _customOccasion.isNotEmpty ? _customOccasion : _selectedOccasion,
         'min_price': _minBudget.toString(),
         'max_price': _maxBudget.toString(),
       });
@@ -162,9 +199,10 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
     }
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimaryColor),
           onPressed: _previousStep,
         ),
         title: _isLoading
@@ -173,7 +211,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppTheme.textPrimaryColor,
                 ),
               )
             : Text(
@@ -181,14 +219,14 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppTheme.textPrimaryColor,
                 ),
               ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline, color: Colors.white),
+            icon: Icon(Icons.help_outline, color: AppTheme.textSecondaryColor),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -203,102 +241,112 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Progress indicator
-          if (!_isLoading)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Step ${_currentStep + 1} of 5',
-                    style: GoogleFonts.inter(
-                      color: Colors.white70,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: Container(
-                      height: 6,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(3),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.backgroundGradient,
+        ),
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: Column(
+            children: [
+            // Progress indicator
+            if (!_isLoading)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Step ${_currentStep + 1} di 5',
+                      style: GoogleFonts.inter(
+                        color: AppTheme.textSecondaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
-                      child: Stack(
-                        children: [
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                            width: MediaQuery.of(context).size.width * 
-                                   ((_currentStep + 1) / 5) * 
-                                   (1 - 48/MediaQuery.of(context).size.width), // Account for padding
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor,
-                              borderRadius: BorderRadius.circular(3),
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        height: 8,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: AppTheme.borderColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Stack(
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
+                              width: MediaQuery.of(context).size.width * 
+                                     ((_currentStep + 1) / 5) * 
+                                     (1 - 48/MediaQuery.of(context).size.width), // Account for padding
+                              height: 8,
+                              decoration: BoxDecoration(
+                                gradient: AppTheme.primaryGradient,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+
+            // Step content
+            Expanded(
+              child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildStep1(),
+                        _buildStep2(),
+                        _buildStep3(),
+                        _buildStep4(),
+                        _buildStep5(),
+                      ],
+                    ),
             ),
 
-          // Step content
-          Expanded(
-            child: PageView(
-                    controller: _pageController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      _buildStep1(),
-                      _buildStep2(),
-                      _buildStep3(),
-                      _buildStep4(),
-                      _buildStep5(),
-                    ],
-                  ),
-          ),
-
           // Navigation buttons
-          if (!_isLoading)
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _nextStep,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+            if (!_isLoading)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _nextStep,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
                     ),
-                  ),
-                  child: Text(
-                    _currentStep < 4 ? 'Continua' : 'Genera idee regalo',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    child: Text(
+                      _currentStep < 4 ? 'Continua' : 'Genera idee regalo',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  
+
 
   Widget _buildStep1() {
     return SingleChildScrollView(
@@ -311,7 +359,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             style: GoogleFonts.inter(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppTheme.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 6),
@@ -319,7 +367,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             'Aiutaci a conoscere meglio il destinatario',
             style: GoogleFonts.inter(
               fontSize: 16,
-              color: Colors.white70,
+              color: AppTheme.textSecondaryColor,
             ),
           ),
           const SizedBox(height: 24),
@@ -336,20 +384,13 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: AppTheme.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 10),
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
+            padding: const EdgeInsets.all(20),
+            decoration: AppTheme.cardDecoration,
             child: Column(
               children: [
                 Row(
@@ -366,23 +407,31 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                     Text(
                       'Scorri per cambiare',
                       style: GoogleFonts.inter(
-                        color: Colors.white60,
+                        color: AppTheme.textTertiaryColor,
                         fontSize: 12,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Slider(
-                  value: _recipientAge.isEmpty ? 18 : double.parse(_recipientAge),
-                  min: 1,
-                  max: 100,
-                  divisions: 99,
-                  activeColor: AppTheme.primaryColor,
-                  inactiveColor: Colors.white.withOpacity(0.3),
-                  onChanged: (value) {
-                    setState(() => _recipientAge = value.round().toString());
-                  },
+                const SizedBox(height: 16),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: AppTheme.primaryColor,
+                    inactiveTrackColor: AppTheme.borderColor,
+                    thumbColor: AppTheme.primaryColor,
+                    overlayColor: AppTheme.primaryColor.withOpacity(0.2),
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                    trackHeight: 4,
+                  ),
+                  child: Slider(
+                    value: _recipientAge.isEmpty ? 18 : double.parse(_recipientAge),
+                    min: 1,
+                    max: 100,
+                    divisions: 99,
+                    onChanged: (value) {
+                      setState(() => _recipientAge = value.round().toString());
+                    },
+                  ),
                 ),
               ],
             ),
@@ -394,7 +443,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: AppTheme.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 10),
@@ -431,24 +480,32 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
 
   Widget _buildGenderButton(String label, String value) {
     final isSelected = _recipientGender == value;
-    return OutlinedButton(
-      onPressed: () => setState(() => _recipientGender = value),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: isSelected ? AppTheme.primaryColor : Colors.transparent,
-        side: BorderSide(
-          color: isSelected ? AppTheme.primaryColor : Colors.white.withOpacity(0.3),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: isSelected ? AppTheme.softShadow : [],
       ),
-      child: Text(
-        label,
-        style: GoogleFonts.inter(
-          color: isSelected ? Colors.black : Colors.white,
-          fontWeight: FontWeight.w500,
-          fontSize: 14,
+      child: OutlinedButton(
+        onPressed: () => setState(() => _recipientGender = value),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: isSelected ? AppTheme.primaryColor : AppTheme.surfaceColor,
+          side: BorderSide(
+            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            width: isSelected ? 2 : 1,
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: isSelected ? Colors.white : AppTheme.textPrimaryColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
         ),
       ),
     );
@@ -465,7 +522,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             style: GoogleFonts.inter(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppTheme.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 32),
@@ -477,12 +534,12 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
               crossAxisSpacing: 16,
               childAspectRatio: 1.0, // Square cards
               children: [
-                _buildRelationImageCard('Friend', 'amico', 'assets/images/relations/rel_friend.png'),
-                _buildRelationImageCard('Family\nMember', 'famiglia', 'assets/images/relations/rel_family_member.png'),
-                _buildRelationImageCard('Colleague', 'collega', 'assets/images/relations/rel_colleague.png'),
-                _buildRelationImageCard('Partner', 'partner', 'assets/images/relations/rel_partner_02.png'),
-                _buildRelationImageCard('Mentor', 'mentore', 'assets/images/relations/rel_mentor.png'),
-                _buildRelationImageCard('Other', 'altro', 'assets/images/relations/rel_other.png'),
+                _buildRelationCard('Amico/a', 'amico', Icons.people),
+                _buildRelationCard('Familiare', 'famiglia', Icons.family_restroom),
+                _buildRelationCard('Collega', 'collega', Icons.work),
+                _buildRelationCard('Partner', 'partner', Icons.favorite),
+                _buildRelationCard('Mentore', 'mentore', Icons.school),
+                _buildRelationCard('Altro', 'altro', Icons.person),
               ],
             ),
           ),
@@ -620,298 +677,88 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
     }
   }
 
-  Widget _buildInterestImageCard(String label, String value, String imagePath) {
-    final isSelected = _selectedInterests.contains(value);
+
+
+  Widget _buildOccasionCard(String label, String value, IconData icon) {
+    final isSelected = _selectedOccasion == value;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            _selectedInterests.remove(value);
-          } else {
-            _selectedInterests.add(value);
-          }
-        });
-      },
+      onTap: () => setState(() {
+        _selectedOccasion = value;
+        _customOccasion = '';
+        _customOccasionController.clear();
+      }),
       child: Container(
         decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : AppTheme.surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : Colors.white.withOpacity(0.2),
-            width: 3,
+            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            width: isSelected ? 3 : 1,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppTheme.primaryColor.withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ] : AppTheme.softShadow,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(17),
-          child: Stack(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Background image
-              Positioned.fill(
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppTheme.cardColor,
-                      child: Icon(
-                        _getInterestIconFromString(value),
-                        color: Colors.white54,
-                        size: 40,
-                      ),
-                    );
-                  },
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: isSelected ? AppTheme.primaryGradient : null,
+                  color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ] : null,
+                ),
+                child: Icon(
+                  icon,
+                  size: 28,
+                  color: isSelected ? Colors.white : AppTheme.primaryColor,
                 ),
               ),
-              // Gradient overlay
-              Positioned.fill(
-                child: Container(
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimaryColor,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (isSelected) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '✓',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-              ),
-              // Text
-              Positioned(
-                bottom: 16,
-                left: 16,
-                right: 16,
-                child: Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              // Selection indicator
-              if (isSelected)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.black,
-                      size: 16,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  IconData _getInterestIconFromString(String interest) {
-    switch (interest.toLowerCase()) {
-      case 'musica':
-        return Icons.music_note;
-      case 'sport':
-        return Icons.sports_tennis;
-      case 'tecnologia':
-        return Icons.computer;
-      case 'arte':
-        return Icons.palette;
-      case 'viaggi':
-        return Icons.flight;
-      case 'cucina':
-        return Icons.restaurant;
-      case 'moda':
-        return Icons.checkroom;
-      case 'lettura':
-        return Icons.book;
-      case 'gaming':
-        return Icons.games;
-      case 'benessere':
-        return Icons.spa;
-      default:
-        return Icons.star;
-    }
-  }
-
-  Widget _buildRelationImageCard(String label, String value, String imagePath) {
-    final isSelected = _recipientRelation == value;
-    return GestureDetector(
-      onTap: () => setState(() => _recipientRelation = value),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : Colors.white.withOpacity(0.2),
-            width: 3,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(17),
-          child: Stack(
-            children: [
-              // Background image
-              Positioned.fill(
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppTheme.cardColor,
-                      child: const Icon(
-                        Icons.image_not_supported,
-                        color: Colors.white54,
-                        size: 40,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              // Gradient overlay
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Text
-              Positioned(
-                bottom: 16,
-                left: 16,
-                right: 16,
-                child: Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              // Selection indicator
-              if (isSelected)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.black,
-                      size: 16,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryImageCard(String label, String value, String imagePath) {
-    final isSelected = _selectedCategory == value;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedCategory = value),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : Colors.white.withOpacity(0.2),
-            width: 3,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(17),
-          child: Stack(
-            children: [
-              // Background image
-              Positioned.fill(
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppTheme.cardColor,
-                      child: Icon(
-                        _getCategoryIconFromString(value),
-                        color: Colors.white54,
-                        size: 40,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              // Gradient overlay
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Text
-              Positioned(
-                bottom: 16,
-                left: 16,
-                right: 16,
-                child: Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              // Selection indicator
-              if (isSelected)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.black,
-                      size: 16,
-                    ),
-                  ),
-                ),
+              ],
             ],
           ),
         ),
@@ -938,38 +785,175 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
     }
   }
 
+  Widget _buildInterestCard(String label, String value, IconData icon) {
+    final isSelected = _selectedInterests.contains(value);
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            _selectedInterests.remove(value);
+          } else {
+            _selectedInterests.add(value);
+          }
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            width: isSelected ? 3 : 1,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppTheme.primaryColor.withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ] : AppTheme.softShadow,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: isSelected ? AppTheme.primaryGradient : null,
+                  color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ] : null,
+                ),
+                child: Icon(
+                  icon,
+                  size: 28,
+                  color: isSelected ? Colors.white : AppTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimaryColor,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (isSelected) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '✓',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRelationCard(String label, String value, IconData icon) {
     final isSelected = _recipientRelation == value;
     return GestureDetector(
       onTap: () => setState(() => _recipientRelation = value),
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withOpacity(0.2) : AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : Colors.white.withOpacity(0.1),
-            width: 2,
+            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            width: isSelected ? 3 : 1,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppTheme.primaryColor.withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ] : AppTheme.softShadow,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 48,
-              color: isSelected ? AppTheme.primaryColor : Colors.white70,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: isSelected ? AppTheme.primaryGradient : null,
+                  color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ] : null,
+                ),
+                child: Icon(
+                  icon,
+                  size: 28,
+                  color: isSelected ? Colors.white : AppTheme.primaryColor,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimaryColor,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (isSelected) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '✓',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -986,7 +970,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             style: GoogleFonts.inter(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppTheme.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -994,7 +978,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             'Seleziona tutti gli interessi che si applicano',
             style: GoogleFonts.inter(
               fontSize: 16,
-              color: Colors.white70,
+              color: AppTheme.textSecondaryColor,
             ),
           ),
           const SizedBox(height: 32),
@@ -1012,16 +996,16 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                     crossAxisSpacing: 16,
                     childAspectRatio: 1.0, // Square cards
                     children: [
-                      _buildInterestImageCard('Musica', 'musica', 'assets/images/int_music.jpg'),
-                      _buildInterestImageCard('Sport', 'sport', 'assets/images/int_sport.jpg'),
-                      _buildInterestImageCard('Tecnologia', 'tecnologia', 'assets/images/int_tech.jpg'),
-                      _buildInterestImageCard('Arte', 'arte', 'assets/images/int_art.jpg'),
-                      _buildInterestImageCard('Viaggi', 'viaggi', 'assets/images/int_travel.jpg'),
-                      _buildInterestImageCard('Cucina', 'cucina', 'assets/images/int_cooking.jpg'),
-                      _buildInterestImageCard('Moda', 'moda', 'assets/images/int_fashion.jpg'),
-                      _buildInterestImageCard('Lettura', 'lettura', 'assets/images/int_reading.jpg'),
-                      _buildInterestImageCard('Gaming', 'gaming', 'assets/images/int_gaming.jpg'),
-                      _buildInterestImageCard('Benessere', 'benessere', 'assets/images/int_wellness.jpg'),
+                      _buildInterestCard('Musica', 'musica', Icons.music_note),
+                      _buildInterestCard('Sport', 'sport', Icons.sports_tennis),
+                      _buildInterestCard('Tecnologia', 'tecnologia', Icons.computer),
+                      _buildInterestCard('Arte', 'arte', Icons.palette),
+                      _buildInterestCard('Viaggi', 'viaggi', Icons.flight),
+                      _buildInterestCard('Cucina', 'cucina', Icons.restaurant),
+                      _buildInterestCard('Moda', 'moda', Icons.checkroom),
+                      _buildInterestCard('Lettura', 'lettura', Icons.book),
+                      _buildInterestCard('Gaming', 'gaming', Icons.games),
+                      _buildInterestCard('Benessere', 'benessere', Icons.spa),
                     ],
                   ),
 
@@ -1057,7 +1041,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
-                                Icons.add_circle,
+Icons.add_circle,
                                 color: AppTheme.primaryColor,
                                 size: 20,
                               ),
@@ -1066,7 +1050,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                             Text(
                               'Aggiungi altri interessi',
                               style: GoogleFonts.inter(
-                                color: Colors.white,
+                                color: AppTheme.textPrimaryColor,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1096,7 +1080,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                                     Text(
                                       interest,
                                       style: GoogleFonts.inter(
-                                        color: Colors.white,
+                                        color: AppTheme.textPrimaryColor,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
                                                                             ),
@@ -1130,13 +1114,13 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                               child: TextFormField(
                                 controller: _customInterestController,
                                 style: GoogleFonts.inter(
-                                  color: Colors.white,
+                                  color: AppTheme.textPrimaryColor,
                                   fontSize: 14,
                                 ),
                                 decoration: InputDecoration(
                                   hintText: 'Es: fotografia, giardinaggio, yoga...',
                                   hintStyle: GoogleFonts.inter(
-                                    color: Colors.white60,
+                                    color: AppTheme.textSecondaryColor,
                                     fontSize: 12,
                                   ),
                                   border: OutlineInputBorder(
@@ -1188,45 +1172,162 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
   }
 
   Widget _buildStep4() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Che tipo di regalo stai cercando?',
+            'Per quale occasione?',
             style: GoogleFonts.inter(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppTheme.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Scegli una categoria per orientare i suggerimenti',
+            'Seleziona l\'occasione per rendere il regalo più appropriato',
             style: GoogleFonts.inter(
               fontSize: 16,
-              color: Colors.white70,
+              color: AppTheme.textSecondaryColor,
             ),
           ),
           const SizedBox(height: 32),
 
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.0, // Square cards
+          // Grid delle occasioni predefinite
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1,
+            children: _occasions.map((occasion) {
+              return _buildOccasionCard(
+                occasion['name'],
+                occasion['name'].toLowerCase(),
+                occasion['icon'],
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Sezione occasione personalizzata
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primaryColor.withOpacity(0.1),
+                  AppTheme.primaryColor.withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              border: Border.all(
+                color: AppTheme.primaryColor.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildCategoryImageCard('Tech', 'Tecnologia', 'assets/images/cat_tech.jpg'),
-                _buildCategoryImageCard('Sports', 'Sport e Fitness', 'assets/images/cat_sports.jpg'),
-                _buildCategoryImageCard('Home', 'Casa e Giardino', 'assets/images/cat_home.jpg'),
-                _buildCategoryImageCard('Books', 'Libri e Cultura', 'assets/images/cat_books.jpg'),
-                _buildCategoryImageCard('Experiences', 'Esperienze', 'assets/images/cat_experiences.jpg'),
-                _buildCategoryImageCard('Fashion', 'Moda e Bellezza', 'assets/images/cat_fashion.jpg'),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.edit_calendar,
+                        color: AppTheme.primaryColor,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Occasione personalizzata',
+                      style: GoogleFonts.inter(
+                        color: AppTheme.textPrimaryColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _customOccasionController,
+                  style: GoogleFonts.inter(
+                    color: AppTheme.textPrimaryColor,
+                    fontSize: 16,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Es: festa di pensionamento, battesimo, prima comunione...',
+                    hintStyle: GoogleFonts.inter(
+                      color: AppTheme.textSecondaryColor,
+                      fontSize: 14,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppTheme.borderColor,
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppTheme.primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: AppTheme.surfaceColor,
+                    contentPadding: const EdgeInsets.all(16),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Icon(
+                        Icons.event_note,
+                        color: AppTheme.primaryColor,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _customOccasion = value;
+                      if (value.isNotEmpty) {
+                        _selectedOccasion = '';
+                      }
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 12),
+                Text(
+                  'Descrivi l\'occasione speciale per suggerimenti più mirati!',
+                  style: GoogleFonts.inter(
+                    color: AppTheme.primaryColor.withOpacity(0.8),
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               ],
             ),
           ),
+
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -1262,58 +1363,84 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
             style: GoogleFonts.inter(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppTheme.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Aiutaci a trovare regali nella tua fascia di prezzo',
+            'Scegli la fascia di prezzo più adatta alle tue esigenze',
             style: GoogleFonts.inter(
               fontSize: 16,
-              color: Colors.white70,
+              color: AppTheme.textSecondaryColor,
             ),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 32),
 
-          _buildBudgetOption('Bozzetto', '0-20€', 0, 20),
+          _buildBudgetCard('Bozzetto', 'Perfetto per pensieri carini', '0€ - 20€', Icons.edit, 0, 20),
           const SizedBox(height: 16),
-          _buildBudgetOption('Affresco', '20€ - 50€', 20, 50),
+          _buildBudgetCard('Regalo Delizioso', 'Idee bilanciate e apprezzate', '20€ - 50€', Icons.card_giftcard, 20, 50),
           const SizedBox(height: 16),
-          _buildBudgetOption('Dipinto', '50€ - 100€', 50, 100),
+          _buildBudgetCard('Regalo Prezioso', 'Sorprendi con qualità', '50€ - 100€', Icons.diamond, 50, 100),
           const SizedBox(height: 16),
-          _buildBudgetOption('Capolavoro', '100€+', 100, 450),
+          _buildBudgetCard('Capolavoro', 'Il regalo dei sogni', '100€+', Icons.auto_awesome, 100, 450),
 
           const SizedBox(height: 32),
 
-          Text(
-            'Budget personalizzato (€)',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
-
+          // Budget personalizzato
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primaryColor.withOpacity(0.1),
+                  AppTheme.primaryColor.withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: AppTheme.primaryColor.withOpacity(0.3),
                 width: 1,
               ),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.tune,
+                        color: AppTheme.primaryColor,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Budget personalizzato',
+                      style: GoogleFonts.inter(
+                        color: AppTheme.textPrimaryColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
                 RangeSlider(
                   values: RangeValues(_minBudget, _maxBudget),
                   min: 0,
                   max: 450,
-                  divisions: 25,
+                  divisions: 45,
                   activeColor: AppTheme.primaryColor,
-                  inactiveColor: Colors.white.withOpacity(0.3),
+                  inactiveColor: AppTheme.borderColor,
                   labels: RangeLabels(
                     '€${_minBudget.round()}',
                     '€${_maxBudget.round()}',
@@ -1325,23 +1452,50 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 8),
+
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '€${_minBudget.round()}',
-                      style: GoogleFonts.inter(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Min',
+                          style: GoogleFonts.inter(
+                            color: AppTheme.textSecondaryColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          '€${_minBudget.round()}',
+                          style: GoogleFonts.inter(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      '€${_maxBudget.round()}',
-                      style: GoogleFonts.inter(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Max',
+                          style: GoogleFonts.inter(
+                            color: AppTheme.textSecondaryColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          '€${_maxBudget.round()}',
+                          style: GoogleFonts.inter(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1354,7 +1508,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
     );
   }
 
-  Widget _buildBudgetOption(String label, String range, double min, double max) {
+  Widget _buildBudgetCard(String title, String description, String range, IconData icon, double min, double max) {
     final isSelected = _minBudget == min && _maxBudget == max;
     return GestureDetector(
       onTap: () {
@@ -1364,32 +1518,99 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withOpacity(0.2) : AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : Colors.white.withOpacity(0.1),
-            width: 2,
+            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            width: isSelected ? 3 : 1,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppTheme.primaryColor.withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ] : AppTheme.softShadow,
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: isSelected ? AppTheme.primaryGradient : null,
+                color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+                boxShadow: isSelected ? [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ] : null,
+              ),
+              child: Icon(
+                icon,
+                size: 28,
+                color: isSelected ? Colors.white : AppTheme.primaryColor,
               ),
             ),
-            Text(
-              range,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.white70,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AppTheme.textSecondaryColor,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  range,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                if (isSelected) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '✓',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -1397,10 +1618,4 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    _customInterestController.dispose();
-    super.dispose();
   }
-}
