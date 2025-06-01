@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hint;
+  final String? hintText;
   final String? label;
   final TextEditingController? controller;
   final bool isPassword;
@@ -14,6 +15,8 @@ class CustomTextField extends StatefulWidget {
   final Widget? prefixIcon;
   final int maxLines;
   final bool enabled;
+  final bool readOnly;
+  final VoidCallback? onTap;
   final FocusNode? focusNode;
   final TextInputAction? textInputAction;
   final void Function(String)? onSubmitted;
@@ -21,6 +24,7 @@ class CustomTextField extends StatefulWidget {
   const CustomTextField({
     Key? key,
     required this.hint,
+    this.hintText,
     this.label,
     this.controller,
     this.isPassword = false,
@@ -31,6 +35,8 @@ class CustomTextField extends StatefulWidget {
     this.prefixIcon,
     this.maxLines = 1,
     this.enabled = true,
+    this.readOnly = false,
+    this.onTap,
     this.focusNode,
     this.textInputAction,
     this.onSubmitted,
@@ -143,6 +149,8 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
                   onChanged: widget.onChanged,
                   maxLines: widget.maxLines,
                   enabled: widget.enabled,
+                  readOnly: widget.readOnly,
+                  onTap: widget.onTap,
                   textInputAction: widget.textInputAction,
                   onFieldSubmitted: widget.onSubmitted,
                   style: TextStyle(
@@ -152,7 +160,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
                     height: 1.4,
                   ),
                   decoration: InputDecoration(
-                    hintText: widget.hint,
+                    hintText: widget.hintText ?? widget.hint,
                     hintStyle: TextStyle(
                       color: AppTheme.textTertiaryColor,
                       fontSize: 16,
