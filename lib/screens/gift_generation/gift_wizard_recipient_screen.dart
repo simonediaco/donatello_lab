@@ -289,20 +289,32 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                     ),
                   if (_currentStep > 0) const SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: _canProceedFromStep(_currentStep) 
-                        ? (_currentStep == _totalSteps - 1 ? _generateGifts : _nextStep)
-                        : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: _currentStep == _totalSteps - 1 ? AppTheme.accentGradient : AppTheme.primaryGradient,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_currentStep == _totalSteps - 1 ? AppTheme.accentColor : AppTheme.primaryColor).withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
+                      child: ElevatedButton(
+                        onPressed: _canProceedFromStep(_currentStep) 
+                          ? (_currentStep == _totalSteps - 1 ? _generateGifts : _nextStep)
+                          : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                        ),
                       child: Text(
                         _currentStep == _totalSteps - 1 ? 'Genera idee regalo' : 'Continua',
                         style: GoogleFonts.inter(
@@ -311,6 +323,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                         ),
                       ),
                     ),
+                  )
                   ),
                 ],
               ),
@@ -712,7 +725,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: isSelected ? AppTheme.primaryGradient : null,
+                  gradient: isSelected ? AppTheme.accentGradient : null,
                   color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                   boxShadow: isSelected ? [

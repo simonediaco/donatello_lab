@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
@@ -160,20 +161,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     try {
       final parts = date.split('/');
       if (parts.length != 3) return false;
-      
+
       final day = int.parse(parts[0]);
       final month = int.parse(parts[1]);
       final year = int.parse(parts[2]);
-      
+
       if (day < 1 || day > 31) return false;
       if (month < 1 || month > 12) return false;
       if (year < 1900 || year > DateTime.now().year) return false;
-      
+
       final birthDate = DateTime(year, month, day);
       final today = DateTime.now();
       final age = today.year - birthDate.year;
       if (age < 13) return false;
-      
+
       return true;
     } catch (e) {
       return false;
@@ -344,7 +345,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 ),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 20),
 
                             // Email field
@@ -353,45 +354,58 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                             ),
-                            
+
                             const SizedBox(height: 20),
 
                             // Birth date field
                             GestureDetector(
                               onTap: _selectDate,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                                 decoration: BoxDecoration(
                                   color: AppTheme.surfaceColor,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.calendar_today_outlined,
-                                      color: AppTheme.textTertiaryColor,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _birthdateController.text.isEmpty 
-                                          ? 'Birth date (dd/mm/yyyy)'
-                                          : _birthdateController.text,
-                                        style: TextStyle(
-                                          color: _birthdateController.text.isEmpty 
-                                            ? AppTheme.textTertiaryColor 
-                                            : AppTheme.textPrimaryColor,
-                                          fontSize: 16,
-                                        ),
-                                      ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.03),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today_outlined,
+                                        color: AppTheme.textTertiaryColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Text(
+                                          _birthdateController.text.isEmpty 
+                                            ? 'Birth date (dd/mm/yyyy)'
+                                            : _birthdateController.text,
+                                          style: TextStyle(
+                                            color: _birthdateController.text.isEmpty 
+                                              ? AppTheme.textTertiaryColor 
+                                              : AppTheme.textPrimaryColor,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
 
                             // Password field
@@ -413,7 +427,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 },
                               ),
                             ),
-                            
+
                             const SizedBox(height: 20),
 
                             // Confirm password field
@@ -435,7 +449,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 },
                               ),
                             ),
-                            
+
                             const SizedBox(height: 24),
 
                             // Terms and conditions
@@ -504,7 +518,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 32),
 
                             // Register button
@@ -513,7 +527,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                               onPressed: _register,
                               isLoading: _isLoading,
                             ),
-                            
+
                             const SizedBox(height: 24),
 
                             // Sign in link
@@ -540,7 +554,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
                     ],
                   ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -175,10 +177,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(
-                                    Icons.auto_awesome,
-                                    size: 60,
-                                    color: Colors.white,
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                    ),
+                                    child: ClipOval(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(0),
+                                        child: SvgPicture.asset(
+                                          'assets/images/logos/donatello_logo.svg',
+                                          width: 64,
+                                          height: 64,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),

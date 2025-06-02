@@ -1,0 +1,82 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradiente principale -->
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradiente accent per dettagli -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EC4899;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F472B6;stop-opacity:0.6" />
+    </linearGradient>
+    
+    <!-- Gradiente dorato per sparkles -->
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FEF3C7;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FDE68A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <!-- Ombra -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#6366F1" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- Glow effect -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Container principale quadrato con solo il gradient primary -->
+  <rect x="0" y="0" width="120" height="120" 
+        fill="url(#primaryGradient)" 
+        filter="url(#shadow)"/>
+  
+  <!-- Sparkle principale ✨ centrale (esatto stile WhatsApp) -->
+  <g transform="translate(60, 60)" filter="url(#glow)">
+    <!-- Sparkle WhatsApp: forma a diamante con 4 punte -->
+    <path d="M0 -18 L5 -5 L18 0 L5 5 L0 18 L-5 5 L-18 0 L-5 -5 Z" 
+          fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Sparkle secondaria top-left -->
+  <g transform="translate(30, 30)" opacity="0.8">
+    <path d="M0 -10 L3 -3 L10 0 L3 3 L0 10 L-3 3 L-10 0 L-3 -3 Z" 
+          fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Sparkle secondaria bottom-right -->
+  <g transform="translate(90, 90)" opacity="0.7">
+    <path d="M0 -8 L2.5 -2.5 L8 0 L2.5 2.5 L0 8 L-2.5 2.5 L-8 0 L-2.5 -2.5 Z" 
+          fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Piccole sparkles decorative -->
+  <g transform="translate(85, 25)" opacity="0.6">
+    <path d="M0 -6 L2 -2 L6 0 L2 2 L0 6 L-2 2 L-6 0 L-2 -2 Z" 
+          fill="url(#goldGradient)"/>
+  </g>
+  
+  <g transform="translate(25, 85)" opacity="0.5">
+    <path d="M0 -6 L2 -2 L6 0 L2 2 L0 6 L-2 2 L-6 0 L-2 -2 Z" 
+          fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Micro sparkles -->
+  <g transform="translate(75, 40)" opacity="0.4">
+    <path d="M0 -3 L1 -1 L3 0 L1 1 L0 3 L-1 1 L-3 0 L-1 -1 Z" 
+          fill="url(#goldGradient)"/>
+  </g>
+  
+  <g transform="translate(45, 80)" opacity="0.4">
+    <path d="M0 -3 L1 -1 L3 0 L1 1 L0 3 L-1 1 L-3 0 L-1 -1 Z" 
+          fill="url(#goldGradient)"/>
+  </g>
+</svg>

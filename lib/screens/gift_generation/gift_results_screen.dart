@@ -137,7 +137,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.primaryColor.withOpacity(0.1),
+                    AppTheme.accentColor.withOpacity(0.1),
                     AppTheme.primaryColor.withOpacity(0.05),
                   ],
                   begin: Alignment.topLeft,
@@ -268,18 +268,30 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                 padding: const EdgeInsets.all(24),
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _showingMore ? _showLess : _loadMore,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.accentGradient,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.accentColor.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
+                    child: ElevatedButton(
+                      onPressed: _showingMore ? _showLess : _loadMore,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                        shadowColor: Colors.transparent,
+                      ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -301,6 +313,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                     ),
                   ),
                 ),
+              ),
               ),
           ],
           ),
@@ -445,11 +458,11 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
+                    gradient: AppTheme.accentGradient,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.3),
+                        color: AppTheme.accentColor.withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

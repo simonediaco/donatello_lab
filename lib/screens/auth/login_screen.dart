@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
@@ -191,30 +192,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         children: [
                           // App logo
                           Container(
-                            width: 80,
-                            height: 80,
+                            width: 90,
+                            height: 90,
                             decoration: BoxDecoration(
-                              gradient: AppTheme.primaryGradient,
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: AppTheme.mediumShadow,
                             ),
-                            child: const Icon(
-                              Icons.auto_awesome,
-                              size: 40,
-                              color: Colors.white,
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                              child: ClipOval(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(0),
+                                  child: SvgPicture.asset(
+                                    'assets/images/logos/donatello_logo.svg',
+                                    width: 64,
+                                    height: 64,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                          
+
                           const SizedBox(height: 24),
-                          
+
                           // Welcome text
                           Text(
                             'Welcome back',
                             style: Theme.of(context).textTheme.displayMedium,
                           ),
-                          
+
                           const SizedBox(height: 8),
-                          
+
                           Text(
                             'Sign in to continue to Donatello Lab',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -243,7 +257,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
                                 ),
-                                
+
                                 const SizedBox(height: 20),
 
                                 // Password field
@@ -268,16 +282,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                                 const SizedBox(height: 12),
 
-                                // Forgot password link
+                                // Forgot password link with accent gradient
                                 Align(
                                   alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    onPressed: () => context.push('/forgot-password'),
-                                    child: Text(
-                                      'Forgot password?',
-                                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                        color: AppTheme.primaryColor,
-                                        fontWeight: FontWeight.w600,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: AppTheme.accentGradient,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(8),
+                                        onTap: () => context.push('/forgot-password'),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          child: Text(
+                                            'Forgot password?',
+                                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -294,26 +321,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                                 const SizedBox(height: 24),
 
-                                // Divider
+                                // Divider with accent gradient
                                 Row(
                                   children: [
                                     Expanded(
                                       child: Container(
-                                        height: 1,
-                                        color: AppTheme.textTertiaryColor.withOpacity(0.3),
+                                        height: 2,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.transparent,
+                                              AppTheme.accentGradient.colors.first.withOpacity(0.5),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Text(
-                                        'or',
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          gradient: AppTheme.accentGradient.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          'or',
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     Expanded(
                                       child: Container(
-                                        height: 1,
-                                        color: AppTheme.textTertiaryColor.withOpacity(0.3),
+                                        height: 2,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              AppTheme.accentGradient.colors.last.withOpacity(0.5),
+                                              Colors.transparent,
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],

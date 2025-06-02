@@ -534,7 +534,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
               Container(
                 decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
+                  gradient: AppTheme.accentGradient,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: TextButton(

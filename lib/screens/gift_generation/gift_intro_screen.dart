@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../theme/app_theme.dart';
 import '../../widgets/custom_bottom_navigation.dart';
 import '../../services/api_service.dart';
@@ -159,10 +161,27 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.auto_awesome,
-                  color: Colors.white,
-                  size: 40,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: ClipOval(
+                      child: Padding(
+                        padding: const EdgeInsets.all(0),
+                        child: SvgPicture.asset(
+                          'assets/images/logos/donatello_logo.svg',
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -273,15 +292,22 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.surfaceColor,
+                    AppTheme.surfaceColor.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppTheme.primaryColor,
+                  color: AppTheme.accentColor,
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: AppTheme.accentColor.withOpacity(0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -339,8 +365,15 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
+                            gradient: AppTheme.accentGradient,
                             borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.accentColor.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Text(
                             'Inizia',

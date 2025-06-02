@@ -712,7 +712,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: isSelected ? AppTheme.primaryGradient : null,
+                  gradient: isSelected ? AppTheme.accentGradient : null,
                   color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                   boxShadow: isSelected ? [
@@ -822,7 +822,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: isSelected ? AppTheme.primaryGradient : null,
+                  gradient: isSelected ? AppTheme.accentGradient : null,
                   color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                   boxShadow: isSelected ? [
@@ -905,7 +905,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: isSelected ? AppTheme.primaryGradient : null,
+                  gradient: isSelected ? AppTheme.accentGradient : null,
                   color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                   boxShadow: isSelected ? [
@@ -1540,7 +1540,7 @@ Icons.add_circle,
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                gradient: isSelected ? AppTheme.primaryGradient : null,
+                gradient: isSelected ? AppTheme.accentGradient : null,
                 color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
                 boxShadow: isSelected ? [

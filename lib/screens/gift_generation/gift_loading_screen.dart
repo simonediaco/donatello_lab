@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
@@ -403,23 +402,23 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
           left: x,
           top: y,
           child: Opacity(
-            opacity: (1 - progress) * 0.6,
-            child: Container(
-              width: 4 + (index % 3) * 2,
-              height: 4 + (index % 3) * 2,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.primaryColor.withOpacity(0.6),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  ),
-                ],
+              opacity: (1 - progress) * 0.8,
+              child: Container(
+                width: 6 + (index % 4) * 3,
+                height: 6 + (index % 4) * 3,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppTheme.accentGradient,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentColor.withOpacity(0.4),
+                      blurRadius: 15,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         );
       },
     );

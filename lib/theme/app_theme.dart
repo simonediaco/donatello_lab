@@ -6,10 +6,26 @@ class AppTheme {
   static const Color primaryColor = Color(0xFF6366F1); // Modern indigo
   static const Color primaryLight = Color(0xFF818CF8);
   static const Color primaryDark = Color(0xFF4F46E5);
+  static const Color primaryAccent = Color(0xFF8B5CF6); // Purple accent
+  
+  // Secondary color palette (cooler tones)
+  static const Color secondaryColor = Color(0xFF06B6D4); // Cyan
+  static const Color secondaryLight = Color(0xFF67E8F9);
+  static const Color secondaryDark = Color(0xFF0891B2);
+  
+  // Accent color that pops (warm golden from logo)
+  static const Color accentColor = Color(0xFFF59E0B); // Golden from logo
+  static const Color accentLight = Color(0xFFFDE68A);
+  static const Color accentDark = Color(0xFFD97706);
+  
+  // CTA colors (warm orange for call-to-action elements)
+  static const Color ctaColor = Color(0xFFFF6B35); // Warm orange
+  static const Color ctaLight = Color(0xFFFF8A65);
+  static const Color ctaDark = Color(0xFFE65100);
   
   // Light background colors
   static const Color backgroundColor = Color(0xFFFAFAFC);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color surfaceColor = Color(0xFFFAFAFA);
   static const Color cardColor = Color(0xFFF8FAFC);
   static const Color secondaryCardColor = Color(0xFFF1F5F9);
   
@@ -21,19 +37,36 @@ class AppTheme {
   // Border colors
   static const Color borderColor = Color(0xFFE2E8F0);
   
-  // Accent colors
+  // Status colors
   static const Color successColor = Color(0xFF10B981);
-  static const Color secondaryAccentColor = Color(0xFFF97316); // Arancione coordinato
   static const Color warningColor = Color(0xFFF59E0B);
   static const Color errorColor = Color(0xFFEF4444);
   
-  // Gradients
+  // Main button gradients
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [primaryColor, primaryLight],
+    colors: [primaryColor, primaryAccent],
+    stops: [0.0, 1.0],
   );
   
+  // Secondary button gradients (cooler tones)
+  static const LinearGradient secondaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [secondaryColor, secondaryLight],
+    stops: [0.0, 1.0],
+  );
+  
+  // Accent gradient (warm golden from logo)
+  static const LinearGradient accentGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFBBF24), Color(0xFFF59E0B), Color(0xFFD97706)],
+    stops: [0.0, 0.5, 1.0],
+  );
+  
+  // Subtle gradients for backgrounds and cards
   static const LinearGradient cardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -46,8 +79,25 @@ class AppTheme {
     colors: [backgroundColor, cardColor],
   );
   
-  static const LinearGradient secondaryGradient = LinearGradient(
-    colors: [secondaryAccentColor, Color(0xFFFB923C)],
+  // CTA gradient (warm, attention-grabbing for call-to-action)
+  static const LinearGradient ctaGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [ctaColor, ctaLight],
+    stops: [0.0, 1.0],
+  );
+  
+  // Success/Error gradients for special states
+  static const LinearGradient successGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [successColor, Color(0xFF34D399)],
+  );
+  
+  static const LinearGradient errorGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [errorColor, Color(0xFFF87171)],
   );
 
   static ThemeData get lightTheme {
