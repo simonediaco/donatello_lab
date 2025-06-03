@@ -414,20 +414,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   icon: Icons.auto_awesome,
                   title: 'Generate Ideas',
                   subtitle: 'Get AI-powered gift suggestions',
-                  gradient: AppTheme.primaryGradient,
+                  gradient: AppTheme.accentGradient,
                   onTap: () => context.push('/generate-gifts'),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.people_outline,
-                  title: 'Add Recipient',
-                  subtitle: 'Create a new gift recipient',
-                  gradient: AppTheme.primaryGradient,
-                  onTap: () => context.push('/recipients/add'),
-                ),
-              ),
+              const SizedBox(width: 1),
+              // Expanded(
+              //   child: _buildActionCard(
+              //     icon: Icons.people_outline,
+              //     title: 'Add Recipient',
+              //     subtitle: 'Create a new gift recipient',
+              //     gradient: AppTheme.primaryGradient,
+              //     onTap: () => context.push('/recipients/add'),
+              //   ),
+              // ),
             ],
           ),
 
@@ -534,7 +534,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
               Container(
                 decoration: BoxDecoration(
-                  gradient: AppTheme.accentGradient,
+                  gradient: AppTheme.primaryGradient,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: TextButton(

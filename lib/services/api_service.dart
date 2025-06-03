@@ -58,12 +58,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getProfile() async {
-    final response = await _dio.get('/api/auth/me/');
+    final response = await _dio.get('/api/auth/user/me/');
     return response.data;
   }
 
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
-    final response = await _dio.patch('/api/auth/update/', data: data);
+    final response = await _dio.patch('/api/auth/user/update/', data: data);
     return response.data;
   }
 
