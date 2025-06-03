@@ -199,6 +199,50 @@ class ApiService {
     await _dio.delete('/api/saved-gifts/$id/');
   }
 
+  // Popular gifts endpoints
+  Future<List<dynamic>> getPopularGifts() async {
+    try {
+      final response = await _dio.get('/api/popular-gifts/');
+
+      // Handle paginated response
+      if (response.data is Map && response.data.containsKey('results')) {
+        return response.data['results'] as List<dynamic>;
+      }
+
+      // Handle direct list response (fallback)
+      if (response.data is List) {
+        return response.data as List<dynamic>;
+      }
+
+      return [];
+    } catch (e) {
+      print('Error getting popular gifts: $e');
+
+      // Handle token expiration
+      if (e is DioException && e.response?.statusCode == 401) {
+        try {
+          await refreshToken();
+          // Retry the request after refreshing token
+          final retryResponse = await _dio.get('/api/popular-gifts/');
+          if (retryResponse.data is Map && retryResponse.data.containsKey('results')) {
+            return retryResponse.data['results'] as List<dynamic>;
+          }
+          if (retryResponse.data is List) {
+            return retryResponse.data as List<dynamic>;
+          }
+        } catch (refreshError) {
+          print('Token refresh failed: $refreshError');
+          // Clear tokens if refresh fails
+          await _storage.delete(key: 'jwt_token');
+          await _storage.delete(key: 'jwt_refresh_token');
+          throw Exception('Sessione scaduta. Effettua nuovamente il login.');
+        }
+      }
+
+      return [];
+    }
+  }
+
   // History endpoints
   Future<List<dynamic>> getHistory() async {
     final response = await _dio.get('/api/history/');

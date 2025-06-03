@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
 import '../../models/recipient.dart';
+import '../../models/popular_gift.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_bottom_navigation.dart';
@@ -19,6 +21,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
   List<Recipient> _recipients = [];
   bool _isLoadingRecipients = true;
+  List<PopularGift> _popularGifts = [];
+  bool _isLoadingPopularGifts = true;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -50,6 +54,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     _animationController.forward();
     _loadRecipients();
+    _loadPopularGifts();
   }
 
   Future<void> _loadRecipients() async {
@@ -68,6 +73,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     } catch (e) {
       print("Error loading recipients: $e");
       setState(() => _isLoadingRecipients = false);
+    }
+  }
+
+  Future<void> _loadPopularGifts() async {
+    try {
+      final apiService = ref.read(apiServiceProvider);
+      final popularGiftsData = await apiService.getPopularGifts();
+
+      setState(() {
+        _popularGifts = popularGiftsData
+            .map((data) => PopularGift.fromJson(data))
+            .toList();
+        _isLoadingPopularGifts = false;
+      });
+    } catch (e) {
+      print("Error loading popular gifts: $e");
+      setState(() => _isLoadingPopularGifts = false);
     }
   }
 
@@ -801,62 +823,174 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Gift Ideas Carousel',
+            'Regali Popolari',
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 16),
           SizedBox(
             height: 200,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: 5, // Increased item count to 5
-              itemBuilder: (context, index) {
-                String imageUrl;
-                String title;
-                String price;
-
-                // Assign different placeholder images and data based on index
-                switch (index) {
-                  case 0:
-                    imageUrl = 'https://images.unsplash.com/photo-1555685783-3ca7fd09f1fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGdpZnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60';
-                    title = 'Personalized Mug';
-                    price = '\$20';
-                    break;
-                  case 1:
-                    imageUrl = 'https://images.unsplash.com/photo-1517336714731-4896894dbb91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z2lmdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60';
-                    title = 'Luxury Watch';
-                    price = '\$250';
-                    break;
-                  case 2:
-                    imageUrl = 'https://images.unsplash.com/photo-1523381294911-8cd694c2b8ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Z2lmdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60';
-                    title = 'Leather Wallet';
-                    price = '\$80';
-                    break;
-                  case 3:
-                    imageUrl = 'https://images.unsplash.com/photo-1548681528-6a58956635df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGdpZnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60';
-                    title = 'Scented Candles';
-                    price = '\$35';
-                    break;
-                  default:
-                    imageUrl = 'https://images.unsplash.com/photo-1473968514419-8ba72acdb97a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGdpZnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60';
-                    title = 'Gourmet Chocolates';
-                    price = '\$50';
-                    break;
-                }
-                return _buildCarouselItem(
-                  imageUrl: imageUrl,
-                  title: title,
-                  price: price,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('$title details coming soon')),
-                    );
-                  },
-                );
-              },
-            ),
+            child: _isLoadingPopularGifts 
+              ? _buildCarouselLoading()
+              : _buildPopularGiftsList(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCarouselLoading() {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Container(
+          width: 150,
+          margin: const EdgeInsets.only(right: 16),
+          decoration: AppTheme.cardDecoration,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPopularGiftsList() {
+    if (_popularGifts.isEmpty) {
+      return Container(
+        height: 200,
+        decoration: AppTheme.cardDecoration,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.card_giftcard,
+                color: AppTheme.textTertiaryColor,
+                size: 32,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Nessun regalo popolare disponibile',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: _popularGifts.length,
+      itemBuilder: (context, index) {
+        final gift = _popularGifts[index];
+        return _buildPopularGiftItem(gift, index == _popularGifts.length - 1);
+      },
+    );
+  }
+
+  Widget _buildPopularGiftItem(PopularGift gift, bool isLast) {
+    return GestureDetector(
+      onTap: () async {
+        if (gift.amazonLink != null && gift.amazonLink!.isNotEmpty) {
+          try {
+            final uri = Uri.parse(gift.amazonLink!);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } else {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Impossibile aprire il link')),
+                );
+              }
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Errore nell\'apertura del link')),
+              );
+            }
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${gift.name} - €${gift.price.toStringAsFixed(2)}')),
+            );
+          }
+        }
+      },
+      child: Container(
+        width: 150,
+        margin: EdgeInsets.only(right: isLast ? 0 : 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          image: gift.image != null && gift.image!.isNotEmpty
+            ? DecorationImage(
+                image: NetworkImage(gift.image!),
+                fit: BoxFit.cover,
+              )
+            : null,
+          color: gift.image == null || gift.image!.isEmpty 
+            ? AppTheme.surfaceColor 
+            : null,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [
+                Colors.black.withOpacity(0.7),
+                Colors.transparent,
+              ],
+            ),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                gift.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '€${gift.price.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+              if (gift.category.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    gift.category,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
