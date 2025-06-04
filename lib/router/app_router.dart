@@ -17,6 +17,7 @@ import '../screens/saved_gifts/saved_gifts_screen.dart';
 import '../screens/recipients/recipient_detail_screen.dart'; // Import the detail screen
 import '../screens/recipients/edit_recipient_screen.dart'; // Import the edit screen
 import '../screens/gift_generation/gift_intro_screen.dart';
+import '../screens/gift_generation/gift_recipient_selection_screen.dart';
 import '../screens/profile/profile_screen.dart';
 
 final appRouter = GoRouter(
@@ -94,6 +95,13 @@ final appRouter = GoRouter(
         child: const GiftIntroScreen(),
       ),
     ),
+    
+    GoRoute(
+      path: '/select-recipient',
+      pageBuilder: (context, state) => NoTransitionPage(
+        child: const GiftRecipientSelectionScreen(),
+      ),
+    ),
     GoRoute(
       path: '/gift-wizard',
       pageBuilder: (context, state) => NoTransitionPage(
@@ -116,6 +124,8 @@ final appRouter = GoRouter(
             recipientName: extras?['recipientName'] ?? '',
             recipientAge: extras?['recipientAge'],
             gifts: extras?['gifts'] ?? [],
+            existingRecipient: extras?['existingRecipient'],
+            wizardData: extras?['wizardData'],
           ),
         );
       },

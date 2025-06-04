@@ -143,6 +143,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
             'recipientName': widget.recipient.name,
             'recipientAge': widget.recipient.age,
             'gifts': response['results'] ?? [],
+            'existingRecipient': widget.recipient,
           });
         } else {
           print('No gifts found in response');

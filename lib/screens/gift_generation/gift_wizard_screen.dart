@@ -167,6 +167,16 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
             'recipientName': _recipientName.isNotEmpty ? _recipientName : 'Destinatario',
             'recipientAge': _recipientAge.isNotEmpty ? int.tryParse(_recipientAge) : null,
             'gifts': response['results'] ?? [],
+            'wizardData': {
+              'name': _recipientName.isNotEmpty ? _recipientName : 'Destinatario',
+              'gender': _recipientGender,
+              'age': _recipientAge.isNotEmpty ? int.tryParse(_recipientAge) : null,
+              'relation': _recipientRelation,
+              'interests': _selectedInterests,
+              'occasion': _customOccasion.isNotEmpty ? _customOccasion : _selectedOccasion,
+              'minBudget': _minBudget.round(),
+              'maxBudget': _maxBudget.round(),
+            },
           });
         } else {
           print('No gifts found in response');

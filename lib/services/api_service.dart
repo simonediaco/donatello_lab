@@ -21,6 +21,39 @@ class ApiService {
         }
         handler.next(options);
       },
+      onError: (error, handler) async {
+        // Handle token refresh for 401 errors, but avoid refresh token endpoint
+        if (error.response?.statusCode == 401 && 
+            !error.requestOptions.path.contains('/api/auth/token/refresh/')) {
+          try {
+            print('Token expired, attempting refresh...');
+            final refreshResult = await refreshToken();
+            
+            // Retry the original request with new token
+            final newToken = await _storage.read(key: 'jwt_token');
+            if (newToken != null) {
+              error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+              final retryResponse = await _dio.request(
+                error.requestOptions.path,
+                options: Options(
+                  method: error.requestOptions.method,
+                  headers: error.requestOptions.headers,
+                ),
+                data: error.requestOptions.data,
+                queryParameters: error.requestOptions.queryParameters,
+              );
+              return handler.resolve(retryResponse);
+            }
+          } catch (refreshError) {
+            print('Token refresh failed: $refreshError');
+            // Clear tokens if refresh fails
+            await _storage.delete(key: 'jwt_token');
+            await _storage.delete(key: 'jwt_refresh_token');
+            // Don't retry, let the error propagate
+          }
+        }
+        handler.next(error);
+      },
     ));
   }
 
@@ -46,15 +79,31 @@ class ApiService {
 
   Future<Map<String, dynamic>> refreshToken() async {
     final refreshToken = await _storage.read(key: 'jwt_refresh_token');
-    final response = await _dio.post('/api/auth/token/refresh/', data: {
-      'refresh': refreshToken,
-    });
-
-    if (response.data['access'] != null) {
-      await _storage.write(key: 'jwt_token', value: response.data['access']);
+    
+    if (refreshToken == null) {
+      throw Exception('No refresh token available');
     }
 
-    return response.data;
+    try {
+      final response = await _dio.post('/api/auth/token/refresh/', data: {
+        'refresh': refreshToken,
+      });
+
+      if (response.data['access'] != null) {
+        await _storage.write(key: 'jwt_token', value: response.data['access']);
+        // Update refresh token if provided
+        if (response.data['refresh'] != null) {
+          await _storage.write(key: 'jwt_refresh_token', value: response.data['refresh']);
+        }
+      }
+
+      return response.data;
+    } catch (e) {
+      // If refresh fails, clear all tokens
+      await _storage.delete(key: 'jwt_token');
+      await _storage.delete(key: 'jwt_refresh_token');
+      throw e;
+    }
   }
 
   Future<Map<String, dynamic>> getProfile() async {
@@ -85,28 +134,6 @@ class ApiService {
       return [];
     } catch (e) {
       print('Error getting recipients: $e');
-
-      // Handle token expiration
-      if (e is DioException && e.response?.statusCode == 401) {
-        try {
-          await refreshToken();
-          // Retry the request after refreshing token
-          final retryResponse = await _dio.get('/api/recipients/');
-          if (retryResponse.data is Map && retryResponse.data.containsKey('results')) {
-            return retryResponse.data['results'] as List<dynamic>;
-          }
-          if (retryResponse.data is List) {
-            return retryResponse.data as List<dynamic>;
-          }
-        } catch (refreshError) {
-          print('Token refresh failed: $refreshError');
-          // Clear tokens if refresh fails
-          await _storage.delete(key: 'jwt_token');
-          await _storage.delete(key: 'jwt_refresh_token');
-          throw Exception('Sessione scaduta. Effettua nuovamente il login.');
-        }
-      }
-
       return [];
     }
   }
@@ -137,12 +164,12 @@ class ApiService {
 
   // Gift generation endpoints
   Future<Map<String, dynamic>> generateGiftIdeas(Map<String, dynamic> data) async {
-    final response = await _dio.post('/api/generate-gift-ideas/', data: data);
+    final response = await _dio.post('/api/generate-gift-ideas/fake/', data: data); //TODO: remove fake
     return response.data;
   }
 
   Future<Map<String, dynamic>> generateGiftIdeasForRecipient(int recipientId, Map<String, dynamic> data) async {
-    final response = await _dio.post('/api/generate-gift-ideas/recipient/$recipientId/', data: data);
+    final response = await _dio.post('/api/generate-gift-ideas/fake/recipient/$recipientId/', data: data); //TODO: remove fake
     return response.data;
   }
 
@@ -159,23 +186,6 @@ class ApiService {
       return [];
     } catch (e) {
       print('Error getting saved gifts: $e');
-
-      // Handle token expiration
-      if (e is DioException && e.response?.statusCode == 401) {
-        try {
-          await refreshToken();
-          final retryResponse = await _dio.get('/api/saved-gifts/');
-          if (retryResponse.data is Map && retryResponse.data.containsKey('results')) {
-            return retryResponse.data['results'] as List<dynamic>;
-          }
-        } catch (refreshError) {
-          print('Token refresh failed: $refreshError');
-          await _storage.delete(key: 'jwt_token');
-          await _storage.delete(key: 'jwt_refresh_token');
-          throw Exception('Sessione scaduta. Effettua nuovamente il login.');
-        }
-      }
-
       return [];
     }
   }
@@ -217,28 +227,6 @@ class ApiService {
       return [];
     } catch (e) {
       print('Error getting popular gifts: $e');
-
-      // Handle token expiration
-      if (e is DioException && e.response?.statusCode == 401) {
-        try {
-          await refreshToken();
-          // Retry the request after refreshing token
-          final retryResponse = await _dio.get('/api/popular-gifts/');
-          if (retryResponse.data is Map && retryResponse.data.containsKey('results')) {
-            return retryResponse.data['results'] as List<dynamic>;
-          }
-          if (retryResponse.data is List) {
-            return retryResponse.data as List<dynamic>;
-          }
-        } catch (refreshError) {
-          print('Token refresh failed: $refreshError');
-          // Clear tokens if refresh fails
-          await _storage.delete(key: 'jwt_token');
-          await _storage.delete(key: 'jwt_refresh_token');
-          throw Exception('Sessione scaduta. Effettua nuovamente il login.');
-        }
-      }
-
       return [];
     }
   }
