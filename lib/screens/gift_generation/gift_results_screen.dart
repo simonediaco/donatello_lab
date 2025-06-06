@@ -582,152 +582,191 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
       ),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // Gift image
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: gift.category != null && gift.category!.isNotEmpty
-                        ? Image.asset(
-                            'assets/images/categories/${gift.category!.toLowerCase().replaceAll(' ', '_')}.png',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  gradient: AppTheme.primaryGradient,
-                                  borderRadius: BorderRadius.circular(16),
+          // Header con immagine full-width
+          Container(
+            height: 160,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: Stack(
+                children: [
+                  // Immagine di sfondo
+                  gift.category != null && gift.category!.isNotEmpty
+                      ? Image.asset(
+                          'assets/images/categories/${gift.category!.toLowerCase().replaceAll(' ', '_')}.png',
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 160,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              'assets/images/categories/placeholder.png',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: 160,
+                              errorBuilder: (context, error2, stackTrace2) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    gradient: AppTheme.primaryGradient,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.card_giftcard,
+                                      color: Colors.white,
+                                      size: 48,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          'assets/images/categories/placeholder.png',
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 160,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                gradient: AppTheme.primaryGradient,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(20),
+                                  topRight: Radius.circular(20),
                                 ),
-                                child: const Icon(
+                              ),
+                              child: const Center(
+                                child: Icon(
                                   Icons.card_giftcard,
                                   color: Colors.white,
-                                  size: 32,
+                                  size: 48,
                                 ),
-                              );
-                            },
-                          )
-                        : Container(
-                            decoration: BoxDecoration(
-                              gradient: AppTheme.primaryGradient,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Icon(
-                              Icons.card_giftcard,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                  ),
-                ),
-
-                const SizedBox(width: 16),
-
-                // Gift info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        gift.name,
-                        style: GoogleFonts.inter(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
-                          height: 1.3,
+                              ),
+                            );
+                          },
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                  
+                  // Overlay gradient per leggibilità
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
                       ),
-                      const SizedBox(height: 8),
-                      if (gift.category != null && gift.category!.isNotEmpty) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppTheme.primaryColor.withOpacity(0.3),
-                              width: 1,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.3),
+                          Colors.black.withOpacity(0.6),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Testo sovrapposto
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (gift.category != null && gift.category!.isNotEmpty) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                          ),
-                          child: Text(
-                            gift.category!,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: AppTheme.primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                      if (gift.match != null) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.analytics,
-                              color: AppTheme.primaryColor,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Match: ${gift.match}%',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: AppTheme.textSecondaryColor,
-                                fontWeight: FontWeight.w500,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 1,
                               ),
                             ),
-                          ],
+                            child: Text(
+                              gift.category!,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        Text(
+                          gift.name,
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
-          // Price and actions
+          // Content area
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppTheme.backgroundColor.withOpacity(0.3),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
             child: Column(
               children: [
+                // Match info
+                if (gift.match != null) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.analytics,
+                        color: AppTheme.primaryColor,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Compatibilità: ${gift.match}%',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: AppTheme.textSecondaryColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Price and actions row
                 Row(
                   children: [
                     // Prezzo con gradient primary
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 8,
+                        vertical: 10,
                       ),
                       decoration: BoxDecoration(
                         gradient: AppTheme.primaryGradient,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
                             color: AppTheme.primaryColor.withOpacity(0.3),
@@ -746,7 +785,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                       ),
                     ),
 
-                    const Spacer(),
+                    const SizedBox(width: 12),
 
                     // Bottone salva
                     Container(
@@ -772,52 +811,47 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                         tooltip: 'Salva regalo',
                       ),
                     ),
-                  ],
-                ),
 
-                // Bottone acquisto - più lungo e con gradient accent
-                if (gift.amazonLink != null && gift.amazonLink != 'None') ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.accentGradient,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.accentColor.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showPurchaseDisclaimer(gift),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
+                    const SizedBox(width: 12),
+
+                    // Bottone acquisto - stesso livello
+                    if (gift.amazonLink != null && gift.amazonLink != 'None')
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppTheme.accentColor.withOpacity(0.3),
+                              width: 1,
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        icon: const Icon(
-                          Icons.shopping_cart,
-                          size: 20,
-                        ),
-                        label: Text(
-                          'Acquista su Amazon',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                          child: TextButton.icon(
+                            onPressed: () => _showPurchaseDisclaimer(gift),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppTheme.accentColor,
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: Icon(
+                              Icons.open_in_new,
+                              size: 16,
+                              color: AppTheme.accentColor,
+                            ),
+                            label: Text(
+                              'Vedi prodotto',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.accentColor,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ],
             ),
           ),
@@ -1034,7 +1068,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
             const SizedBox(height: 12),
 
             Text(
-              'Sarai reindirizzato su Amazon per acquistare "${gift.name}". Cosa vuoi fare?',
+              'Sarai reindirizzato al negozio online per acquistare "${gift.name}". Cosa vuoi fare?',
               style: GoogleFonts.inter(
                 fontSize: 16,
                 color: AppTheme.textSecondaryColor,
@@ -1061,7 +1095,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
                     ),
                     icon: const Icon(Icons.bookmark_add),
                     label: Text(
-                      'Salva regalo e vai ad Amazon',
+                      'Salva regalo e vai al negozio',
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -1086,7 +1120,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
                     ),
                     icon: const Icon(Icons.open_in_new),
                     label: Text(
-                      'Vai solo ad Amazon',
+                      'Vai solo al negozio',
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

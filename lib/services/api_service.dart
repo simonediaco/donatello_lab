@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'https://api.donatellolab.com/';
   final Dio _dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
@@ -169,7 +169,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> generateGiftIdeasForRecipient(int recipientId, Map<String, dynamic> data) async {
-    final response = await _dio.post('/api/generate-gift-ideas/fake/recipient/$recipientId/', data: data); //TODO: remove fake
+    final response = await _dio.post('/api/generate-gift-ideas/recipient/$recipientId/', data: data);
     return response.data;
   }
 
