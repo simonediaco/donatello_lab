@@ -1,24 +1,148 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../models/recipient.dart';
+import '../services/auth_service.dart';
+import '../screens/auth/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
-import '../screens/auth/splash_screen.dart';
 import '../screens/auth/onboarding_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/recipients/recipients_list_screen.dart';
 import '../screens/recipients/add_recipient_screen.dart';
+import '../screens/recipients/edit_recipient_screen.dart';
+import '../screens/recipients/recipient_detail_screen.dart';
+import '../screens/gift_generation/gift_intro_screen.dart';
 import '../screens/gift_generation/gift_wizard_screen.dart';
+import '../screens/gift_generation/gift_wizard_recipient_screen.dart';
+import '../screens/gift_generation/gift_recipient_selection_screen.dart';
 import '../screens/gift_generation/gift_loading_screen.dart';
 import '../screens/gift_generation/gift_results_screen.dart';
-import '../screens/gift_generation/gift_wizard_recipient_screen.dart';
 import '../screens/saved_gifts/saved_gifts_screen.dart';
-import '../screens/recipients/recipient_detail_screen.dart'; // Import the detail screen
-import '../screens/recipients/edit_recipient_screen.dart'; // Import the edit screen
-import '../screens/gift_generation/gift_intro_screen.dart';
-import '../screens/gift_generation/gift_recipient_selection_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../models/recipient.dart';
+import '../models/gift.dart';
+
+// Custom page transition builders
+Page<T> _slideTransitionPage<T extends Object?>(
+  GoRouterState state,
+  Widget child, {
+  Offset beginOffset = const Offset(1.0, 0.0),
+}) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 350),
+    reverseTransitionDuration: const Duration(milliseconds: 300),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const curve = Curves.easeInOutCubic;
+
+      final slideAnimation = Tween<Offset>(
+        begin: beginOffset,
+        end: Offset.zero,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: curve,
+      ));
+
+      final fadeAnimation = Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: const Interval(0.3, 1.0, curve: curve),
+      ));
+
+      final scaleAnimation = Tween<double>(
+        begin: 0.95,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: curve,
+      ));
+
+      // Exit animation for the previous page
+      final exitSlideAnimation = Tween<Offset>(
+        begin: Offset.zero,
+        end: const Offset(-0.3, 0.0),
+      ).animate(CurvedAnimation(
+        parent: secondaryAnimation,
+        curve: curve,
+      ));
+
+      final exitFadeAnimation = Tween<double>(
+        begin: 1.0,
+        end: 0.8,
+      ).animate(CurvedAnimation(
+        parent: secondaryAnimation,
+        curve: curve,
+      ));
+
+      return Stack(
+        children: [
+          // Previous page (sliding out)
+          if (secondaryAnimation.value > 0)
+            SlideTransition(
+              position: exitSlideAnimation,
+              child: FadeTransition(
+                opacity: exitFadeAnimation,
+                child: child,
+              ),
+            ),
+          // New page (sliding in)
+          SlideTransition(
+            position: slideAnimation,
+            child: FadeTransition(
+              opacity: fadeAnimation,
+              child: ScaleTransition(
+                scale: scaleAnimation,
+                child: child,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Page<T> _fadeTransitionPage<T extends Object?>(
+  GoRouterState state,
+  Widget child,
+) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 400),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const curve = Curves.easeInOut;
+
+      final fadeAnimation = Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: curve,
+      ));
+
+      final scaleAnimation = Tween<double>(
+        begin: 0.9,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: curve,
+      ));
+
+      return FadeTransition(
+        opacity: fadeAnimation,
+        child: ScaleTransition(
+          scale: scaleAnimation,
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -31,26 +155,37 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      pageBuilder: (context, state) => NoTransitionPage(
-        child: const LoginScreen(),
+      name: 'login',
+      pageBuilder: (context, state) => _fadeTransitionPage(
+        state,
+        const LoginScreen(),
       ),
     ),
     GoRoute(
       path: '/register',
-      pageBuilder: (context, state) => NoTransitionPage(
-        child: const RegisterScreen(),
+      name: 'register',
+      pageBuilder: (context, state) => _slideTransitionPage(
+        state,
+        const RegisterScreen(),
+        beginOffset: const Offset(1.0, 0.0),
       ),
     ),
     GoRoute(
       path: '/forgot-password',
-      pageBuilder: (context, state) => NoTransitionPage(
-        child: const ForgotPasswordScreen(),
+      name: 'forgot-password',
+      pageBuilder: (context, state) => _slideTransitionPage(
+        state,
+        const ForgotPasswordScreen(),
+        beginOffset: const Offset(0.0, 1.0),
       ),
     ),
     GoRoute(
       path: '/onboarding',
-      pageBuilder: (context, state) => NoTransitionPage(
-        child: const OnboardingScreen(),
+      name: 'onboarding',
+      pageBuilder: (context, state) => _slideTransitionPage(
+        state,
+        const OnboardingScreen(),
+        beginOffset: const Offset(1.0, 0.0),
       ),
     ),
     GoRoute(
@@ -95,7 +230,7 @@ final appRouter = GoRouter(
         child: const GiftIntroScreen(),
       ),
     ),
-    
+
     GoRoute(
       path: '/select-recipient',
       pageBuilder: (context, state) => NoTransitionPage(

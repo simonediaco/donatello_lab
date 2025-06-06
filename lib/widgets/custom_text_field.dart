@@ -1,6 +1,7 @@
-
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../theme/cosmic_theme.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hint;
@@ -58,12 +59,12 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_onFocusChange);
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 1.02,
@@ -71,7 +72,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
       parent: _animationController,
       curve: Curves.easeOut,
     ));
-    
+
     _borderColorAnimation = ColorTween(
       begin: Colors.grey.shade300,
       end: AppTheme.primaryColor,
@@ -94,7 +95,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
     setState(() {
       _isFocused = _focusNode.hasFocus;
     });
-    
+
     if (_isFocused) {
       _animationController.forward();
     } else {
@@ -153,16 +154,16 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
                   onTap: widget.onTap,
                   textInputAction: widget.textInputAction,
                   onFieldSubmitted: widget.onSubmitted,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: widget.enabled ? AppTheme.textPrimaryColor : AppTheme.textTertiaryColor,
+                    color: widget.enabled ? CosmicTheme.textPrimary : CosmicTheme.textSecondary,
                     height: 1.4,
                   ),
                   decoration: InputDecoration(
                     hintText: widget.hintText ?? widget.hint,
-                    hintStyle: TextStyle(
-                      color: AppTheme.textTertiaryColor,
+                    hintStyle: GoogleFonts.inter(
+                      color: CosmicTheme.textSecondary,
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                     ),
@@ -179,7 +180,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
                         )
                       : null,
                     filled: true,
-                    fillColor: widget.enabled ? AppTheme.surfaceColor : AppTheme.cardColor,
+                    fillColor: widget.enabled ? Colors.white : Colors.grey.shade50,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
@@ -197,7 +198,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: _borderColorAnimation.value ?? AppTheme.primaryColor,
+                        color: CosmicTheme.primaryAccent,
                         width: 2.0,
                       ),
                     ),
@@ -217,7 +218,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
                     ),
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: widget.prefixIcon != null ? 0 : 20,
-                      vertical: widget.maxLines == 1 ? 18 : 20,
+                      vertical: widget.maxLines == 1 ? 14 : 12,
                     ),
                     isDense: false,
                   ),

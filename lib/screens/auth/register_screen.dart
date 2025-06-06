@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,8 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import '../../models/auth_exception.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -205,7 +207,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
               ),
             ],
           ),
-          backgroundColor: AppTheme.errorColor,
+          backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -250,7 +252,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppTheme.primaryColor,
+              primary: CosmicTheme.primaryAccent,
             ),
           ),
           child: child!,
@@ -269,301 +271,449 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: AppTheme.softShadow,
-            ),
-            child: Icon(
-              Icons.arrow_back,
-              color: AppTheme.textPrimaryColor,
-              size: 20,
-            ),
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Create Account',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+          gradient: CosmicTheme.cosmicGradient,
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Header
-                      Text(
-                        'Join Donatello Lab',
-                        style: Theme.of(context).textTheme.displayMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Create your account to start finding perfect gifts',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 40),
-
-                      // Form container
-                      Container(
-                        decoration: AppTheme.elevatedCardDecoration,
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
+          child: Stack(
+            children: [
+              // Floating cosmic shapes
+              _buildFloatingShapes(),
+              
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height - 
+                              MediaQuery.of(context).padding.top - 
+                              MediaQuery.of(context).padding.bottom,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        
+                        // Back button and header
+                        Row(
                           children: [
-                            // Name fields
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: CustomTextField(
-                                    hint: 'First name',
-                                    controller: _firstNameController,
-                                    keyboardType: TextInputType.name,
-                                  ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: CosmicTheme.textPrimaryOnDark,
+                                  size: 20,
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: CustomTextField(
-                                    hint: 'Last name',
-                                    controller: _lastNameController,
-                                    keyboardType: TextInputType.name,
-                                  ),
-                                ),
-                              ],
+                                onPressed: () => context.pop(),
+                              ),
                             ),
-
-                            const SizedBox(height: 20),
-
-                            // Email field
-                            CustomTextField(
-                              hint: 'Email address',
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
+                            const SizedBox(width: 16),
+                            Text(
+                              'Create Account',
+                              style: GoogleFonts.inter(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: CosmicTheme.textPrimaryOnDark,
+                              ),
                             ),
+                          ],
+                        ),
 
-                            const SizedBox(height: 20),
+                        const SizedBox(height: 40),
 
-                            // Birth date field
-                            GestureDetector(
-                              onTap: _selectDate,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppTheme.surfaceColor,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                    width: 1.5,
+                        // Welcome text
+                        Text(
+                          'Join Donatello Lab',
+                          style: GoogleFonts.inter(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: CosmicTheme.textPrimaryOnDark,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 8),
+                        
+                        Text(
+                          'Create your account to start finding perfect gifts',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: CosmicTheme.textSecondaryOnDark,
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // Registration form
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.03),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.calendar_today_outlined,
-                                        color: AppTheme.textTertiaryColor,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Text(
-                                          _birthdateController.text.isEmpty 
-                                            ? 'Birth date (dd/mm/yyyy)'
-                                            : _birthdateController.text,
-                                          style: TextStyle(
-                                            color: _birthdateController.text.isEmpty 
-                                              ? AppTheme.textTertiaryColor 
-                                              : AppTheme.textPrimaryColor,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
+                                ],
+                              ),
+                              padding: const EdgeInsets.all(32),
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  children: [
+                                    // Name fields
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: CustomTextField(
+                                            hint: 'First name',
+                                            controller: _firstNameController,
+                                            keyboardType: TextInputType.name,
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // Password field
-                            CustomTextField(
-                              hint: 'Password (min. 6 characters)',
-                              controller: _passwordController,
-                              isPassword: !_isPasswordVisible,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isPasswordVisible 
-                                    ? Icons.visibility_off_outlined 
-                                    : Icons.visibility_outlined,
-                                  color: AppTheme.textTertiaryColor,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _isPasswordVisible = !_isPasswordVisible;
-                                  });
-                                },
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // Confirm password field
-                            CustomTextField(
-                              hint: 'Confirm password',
-                              controller: _confirmPasswordController,
-                              isPassword: !_isConfirmPasswordVisible,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _isConfirmPasswordVisible 
-                                    ? Icons.visibility_off_outlined 
-                                    : Icons.visibility_outlined,
-                                  color: AppTheme.textTertiaryColor,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                                  });
-                                },
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Terms and conditions
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: AppTheme.cardColor,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.grey.shade200,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Checkbox(
-                                        value: _agreedToTerms,
-                                        onChanged: (value) {
-                                          setState(() => _agreedToTerms = value ?? false);
-                                        },
-                                        activeColor: AppTheme.primaryColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(4),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: CustomTextField(
+                                            hint: 'Last name',
+                                            controller: _lastNameController,
+                                            keyboardType: TextInputType.name,
+                                          ),
                                         ),
-                                      ),
-                                      Expanded(
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Email field
+                                    CustomTextField(
+                                      hint: 'Email address',
+                                      controller: _emailController,
+                                      keyboardType: TextInputType.emailAddress,
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Birth date field
+                                    GestureDetector(
+                                      onTap: _selectDate,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                            width: 1.0,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.04),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(top: 12, left: 8),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                          child: Row(
                                             children: [
-                                              Text(
-                                                'I agree to the terms and conditions',
-                                                style: Theme.of(context).textTheme.labelLarge,
+                                              Icon(
+                                                Icons.calendar_today_outlined,
+                                                color: CosmicTheme.textSecondary,
+                                                size: 20,
                                               ),
-                                              const SizedBox(height: 4),
-                                              GestureDetector(
-                                                onTap: () {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text('Terms of use will be available soon'),
-                                                    ),
-                                                  );
-                                                },
+                                              const SizedBox(width: 16),
+                                              Expanded(
                                                 child: Text(
-                                                  'Read terms of use and privacy policy',
-                                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                    color: AppTheme.primaryColor,
-                                                    decoration: TextDecoration.underline,
+                                                  _birthdateController.text.isEmpty 
+                                                    ? 'Birth date (dd/mm/yyyy)'
+                                                    : _birthdateController.text,
+                                                  style: GoogleFonts.inter(
+                                                    color: _birthdateController.text.isEmpty 
+                                                      ? CosmicTheme.textSecondary 
+                                                      : CosmicTheme.textPrimary,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                'I confirm that I am at least 13 years old and agree that my data will be processed according to the privacy policy to receive personalized gift ideas.',
-                                                style: Theme.of(context).textTheme.bodySmall,
                                               ),
                                             ],
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Password field
+                                    CustomTextField(
+                                      hint: 'Password (min. 6 characters)',
+                                      controller: _passwordController,
+                                      isPassword: !_isPasswordVisible,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _isPasswordVisible 
+                                            ? Icons.visibility_off_outlined 
+                                            : Icons.visibility_outlined,
+                                          color: CosmicTheme.textSecondary,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _isPasswordVisible = !_isPasswordVisible;
+                                          });
+                                        },
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 20),
+
+                                    // Confirm password field
+                                    CustomTextField(
+                                      hint: 'Confirm password',
+                                      controller: _confirmPasswordController,
+                                      isPassword: !_isConfirmPasswordVisible,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _isConfirmPasswordVisible 
+                                            ? Icons.visibility_off_outlined 
+                                            : Icons.visibility_outlined,
+                                          color: CosmicTheme.textSecondary,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                                          });
+                                        },
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 24),
+
+                                    // Terms and conditions
+                                    Container(
+                                      padding: const EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade50,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.grey.shade200,
+                                        ),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Checkbox(
+                                                value: _agreedToTerms,
+                                                onChanged: (value) {
+                                                  setState(() => _agreedToTerms = value ?? false);
+                                                },
+                                                activeColor: CosmicTheme.primaryAccent,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(top: 12, left: 8),
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'I agree to the terms and conditions',
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: CosmicTheme.textPrimary,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text('Terms of use will be available soon'),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: Text(
+                                                          'Read terms of use and privacy policy',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.w500,
+                                                            color: CosmicTheme.primaryAccent,
+                                                            decoration: TextDecoration.underline,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 8),
+                                                      Text(
+                                                        'I confirm that I am at least 13 years old and agree that my data will be processed according to the privacy policy to receive personalized gift ideas.',
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 12,
+                                                          color: CosmicTheme.textSecondary,
+                                                          height: 1.4,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 32),
+
+                                    // Register button
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 44,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: CosmicTheme.buttonGradient,
+                                          borderRadius: BorderRadius.circular(12),
+                                          boxShadow: CosmicTheme.lightShadow,
+                                        ),
+                                        child: ElevatedButton(
+                                          onPressed: _isLoading ? null : _register,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.transparent,
+                                            shadowColor: Colors.transparent,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                          child: _isLoading
+                                              ? const SizedBox(
+                                                  height: 18,
+                                                  width: 18,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  'Create Account',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    const SizedBox(height: 24),
+
+                                    // Sign in link
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Already have an account? ',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            color: CosmicTheme.textSecondary,
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () => context.pop(),
+                                          child: Text(
+                                            'Sign In',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: CosmicTheme.primaryAccent,
+                                              decoration: TextDecoration.underline,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-
-                            const SizedBox(height: 32),
-
-                            // Register button
-                            CustomButton(
-                              text: 'Create Account',
-                              onPressed: _register,
-                              isLoading: _isLoading,
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Sign in link
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Already have an account? ',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                                GestureDetector(
-                                  onTap: () => context.pop(),
-                                  child: Text(
-                                    'Sign In',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppTheme.primaryColor,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(height: 40),
-                    ],
+                        // Bottom spacer
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFloatingShapes() {
+    return Stack(
+      children: [
+        // Top left cosmic shape
+        Positioned(
+          top: 60,
+          left: -25,
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value * 0.05,
+                child: Container(
+                  width: 70,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: CosmicTheme.primaryAccent.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        
+        // Bottom right violet shape
+        Positioned(
+          bottom: 120,
+          right: -15,
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value * 0.06,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: CosmicTheme.primaryAccent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,27 +1,73 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../../widgets/custom_button.dart';
-import '../../theme/app_theme.dart';
 
-class OnboardingScreen extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../theme/cosmic_theme.dart';
+
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     with TickerProviderStateMixin {
+  late PageController _pageController;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
+  int _currentPage = 0;
+
+  final List<OnboardingPage> _pages = [
+    OnboardingPage(
+      icon: Icons.auto_awesome,
+      title: 'Benvenuto in Donatello Lab',
+      description: 'Scopri il potere dell\'arte del regalo. Lascia che la genialità di Donatello ti guidi nella creazione di doni perfetti.',
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+      ),
+    ),
+    OnboardingPage(
+      icon: Icons.people_outline,
+      title: 'Crea il profilo del destinatario',
+      description: 'Aggiungi i tuoi cari e costruisci profili dettagliati per ricevere suggerimenti sempre più personalizzati.',
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+      ),
+    ),
+    OnboardingPage(
+      icon: Icons.psychology,
+      title: 'Intelligenza Artificiale',
+      description: 'La nostra AI analizza interessi, relazioni e budget per suggerirti regali che toccheranno davvero il cuore.',
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFEC4899), Color(0xFFF59E0B)],
+      ),
+    ),
+    OnboardingPage(
+      icon: Icons.favorite_outline,
+      title: 'Inizia a creare magia',
+      description: 'Sei pronto per trasformare ogni occasione in un momento indimenticabile. Iniziamo questo viaggio insieme!',
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFF59E0B), Color(0xFF10B981)],
+      ),
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
@@ -30,23 +76,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
-    ));
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.7, curve: Curves.elasticOut),
+      curve: Curves.easeInOut,
     ));
 
     _animationController.forward();
@@ -54,8 +84,39 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   void dispose() {
+    _pageController.dispose();
     _animationController.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged(int page) {
+    setState(() {
+      _currentPage = page;
+    });
+  }
+
+  void _nextPage() {
+    if (_currentPage < _pages.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOutCubic,
+      );
+    } else {
+      _finishOnboarding();
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOutCubic,
+      );
+    }
+  }
+
+  void _finishOnboarding() {
+    context.go('/home');
   }
 
   @override
@@ -63,207 +124,278 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+          gradient: CosmicTheme.cosmicGradient,
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                // Hero section
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Animated logo
-                      ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: Container(
-                          width: 160,
-                          height: 160,
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.primaryGradient,
-                            borderRadius: BorderRadius.circular(40),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primaryColor.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.auto_awesome,
-                            size: 80,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 40),
-                      
-                      // Welcome text
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: SlideTransition(
-                          position: _slideAnimation,
-                          child: Column(
-                            children: [
-                              Text(
-                                'Welcome to',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  color: AppTheme.textSecondaryColor,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Donatello Lab',
-                                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Content section
-                Expanded(
-                  flex: 2,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
+            children: [
+              // Floating cosmic shapes
+              _buildFloatingShapes(),
+              
+              // Main content
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  children: [
+                    // Skip button
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(32),
-                            decoration: AppTheme.elevatedCardDecoration,
-                            child: Column(
-                              children: [
-                                Text(
-                                  "Let's craft the perfect gift together",
-                                  style: Theme.of(context).textTheme.headlineMedium,
-                                  textAlign: TextAlign.center,
+                          if (_currentPage > 0)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: CosmicTheme.textPrimaryOnDark,
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  "Share a few details about your recipient, and our AI will generate unique, personalized gift ideas tailored just for them.",
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    height: 1.6,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 32),
-                                
-                                // Features list
-                                _buildFeatureItem(
-                                  icon: Icons.psychology,
-                                  title: 'AI-Powered Suggestions',
-                                  subtitle: 'Smart recommendations based on preferences',
-                                ),
-                                const SizedBox(height: 16),
-                                _buildFeatureItem(
-                                  icon: Icons.favorite,
-                                  title: 'Personalized Results',
-                                  subtitle: 'Tailored to each recipient\'s unique interests',
-                                ),
-                                const SizedBox(height: 16),
-                                _buildFeatureItem(
-                                  icon: Icons.bookmark,
-                                  title: 'Save & Organize',
-                                  subtitle: 'Keep track of your favorite gift ideas',
-                                ),
-                              ],
+                                onPressed: _previousPage,
+                              ),
+                            )
+                          else
+                            const SizedBox(width: 48),
+                          TextButton(
+                            onPressed: _finishOnboarding,
+                            child: Text(
+                              'Salta',
+                              style: GoogleFonts.inter(
+                                color: CosmicTheme.textSecondaryOnDark,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                
-                // CTA section
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: Column(
-                      children: [
-                        CustomButton(
-                          text: 'Get Started',
-                          onPressed: () => context.go('/home'),
-                          icon: Icons.arrow_forward,
-                        ),
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: () => context.go('/home'),
-                          child: Text(
-                            'Skip for now',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppTheme.textSecondaryColor,
+
+                    // Page content
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: _onPageChanged,
+                        itemCount: _pages.length,
+                        itemBuilder: (context, index) {
+                          return _buildPage(_pages[index]);
+                        },
+                      ),
+                    ),
+
+                    // Page indicators and navigation
+                    Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        children: [
+                          // Page indicators
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              _pages.length,
+                              (index) => AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                width: index == _currentPage ? 24 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: index == _currentPage
+                                      ? Colors.white
+                                      : Colors.white.withOpacity(0.3),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                          
+                          const SizedBox(height: 32),
+
+                          // Next/Finish button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: _pages[_currentPage].gradient,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _pages[_currentPage].gradient.colors.first.withOpacity(0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: _nextPage,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _currentPage == _pages.length - 1 ? 'Inizia!' : 'Continua',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      _currentPage == _pages.length - 1 
+                                        ? Icons.rocket_launch 
+                                        : Icons.arrow_forward,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFeatureItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildPage(OnboardingPage page) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Icon with gradient background
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              gradient: page.gradient,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: page.gradient.colors.first.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Icon(
+              page.icon,
+              size: 60,
+              color: Colors.white,
+            ),
           ),
-          child: Icon(
-            icon,
-            color: AppTheme.primaryColor,
-            size: 24,
+
+          const SizedBox(height: 48),
+
+          // Title
+          Text(
+            page.title,
+            style: GoogleFonts.inter(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: CosmicTheme.textPrimaryOnDark,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          const SizedBox(height: 24),
+
+          // Description
+          Text(
+            page.description,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: CosmicTheme.textSecondaryOnDark,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingShapes() {
+    return Stack(
+      children: [
+        // Top right shape
+        Positioned(
+          top: 100,
+          right: -30,
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value * 0.1,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: _pages[_currentPage].gradient.colors.first,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              );
+            },
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
+        
+        // Bottom left shape
+        Positioned(
+          bottom: 150,
+          left: -40,
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value * 0.08,
+                child: Container(
+                  width: 100,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    color: _pages[_currentPage].gradient.colors.last.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
+              );
+            },
           ),
         ),
       ],
     );
   }
+}
+
+class OnboardingPage {
+  final IconData icon;
+  final String title;
+  final String description;
+  final LinearGradient gradient;
+
+  OnboardingPage({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.gradient,
+  });
 }

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../services/auth_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -138,9 +138,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppTheme.backgroundColor.withOpacity(_backgroundOpacity.value),
-                  AppTheme.cardColor.withOpacity(_backgroundOpacity.value),
-                  AppTheme.primaryColor.withOpacity(0.1 * _backgroundOpacity.value),
+                  CosmicTheme.gradientCosmicStart.withOpacity(_backgroundOpacity.value),
+                  CosmicTheme.gradientCosmicMid.withOpacity(_backgroundOpacity.value),
+                  CosmicTheme.gradientCosmicEnd.withOpacity(_backgroundOpacity.value),
                 ],
               ),
             ),
@@ -167,15 +167,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   width: 120,
                                   height: 120,
                                   decoration: BoxDecoration(
-                                    gradient: AppTheme.primaryGradient,
+                                    gradient: CosmicTheme.buttonGradient,
                                     borderRadius: BorderRadius.circular(32),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.primaryColor.withOpacity(0.3),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 10),
-                                      ),
-                                    ],
+                                    boxShadow: CosmicTheme.cosmicShadow,
                                   ),
                                   child: Container(
                                     width: 80,
@@ -217,7 +211,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     style: GoogleFonts.inter(
                                       fontSize: 32,
                                       fontWeight: FontWeight.w700,
-                                      color: AppTheme.textPrimaryColor,
+                                      color: CosmicTheme.textPrimaryOnDark,
                                       letterSpacing: -1,
                                     ),
                                   ),
@@ -227,7 +221,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
-                                      color: AppTheme.primaryColor,
+                                      color: CosmicTheme.primaryAccentOnDark,
                                       letterSpacing: 2,
                                     ),
                                   ),
@@ -253,7 +247,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     child: CircularProgressIndicator(
                                       strokeWidth: 3,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppTheme.primaryColor,
+                                        CosmicTheme.primaryAccentOnDark,
                                       ),
                                     ),
                                   ),
@@ -263,7 +257,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: AppTheme.textSecondaryColor,
+                                      color: CosmicTheme.textSecondaryOnDark,
                                     ),
                                   ),
                                 ],
@@ -299,7 +293,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: CosmicTheme.primaryAccent,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -321,7 +315,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   width: 80,
                   height: 140,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryLight,
+                    color: CosmicTheme.primaryAccentOnDark,
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
@@ -343,7 +337,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryDark,
+                    color: CosmicTheme.gradientCosmicMid,
                     shape: BoxShape.circle,
                   ),
                 ),
