@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/recipient.dart';
 import '../../services/api_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import 'gift_loading_screen.dart';
 
 class GiftWizardRecipientScreen extends ConsumerStatefulWidget {
@@ -184,10 +184,10 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: CosmicTheme.backgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimaryColor),
+          icon: Icon(Icons.arrow_back, color: CosmicTheme.textPrimary),
           onPressed: () {
             if (_currentStep > 0) {
               _previousStep();
@@ -196,52 +196,81 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
             }
           },
         ),
-        title: Text(
-          'Regalo per ${widget.recipient.name}',
-          style: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimaryColor,
-          ),
+        title: Column(
+          children: [
+            Text(
+              'Regalo per ${widget.recipient.name}',
+              style: GoogleFonts.inter(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: CosmicTheme.textPrimary,
+              ),
+            ),
+            Text(
+              '"L\'arte del donare è scritta nell\'universo"',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: CosmicTheme.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+          color: CosmicTheme.backgroundColor,
         ),
         child: Column(
           children: [
             // Progress indicator
-            Container(
-              padding: const EdgeInsets.all(24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: List.generate(_totalSteps, (index) {
-                      return Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(
-                            right: index < _totalSteps - 1 ? 8 : 0,
-                          ),
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: index <= _currentStep 
-                              ? AppTheme.primaryColor 
-                              : AppTheme.borderColor,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 16),
                   Text(
-                    'Passaggio ${_currentStep + 1} di $_totalSteps',
+                    'Step ${_currentStep + 1} di $_totalSteps',
                     style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: AppTheme.textSecondaryColor,
+                      color: CosmicTheme.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      height: 6,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: CosmicTheme.secondaryAccent,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Stack(
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                            width: MediaQuery.of(context).size.width * 
+                                   ((_currentStep + 1) / _totalSteps) * 
+                                   (1 - 48/MediaQuery.of(context).size.width), // Account for padding
+                            height: 6,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  CosmicTheme.primaryAccentOnDark,
+                                  CosmicTheme.primaryAccent,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -264,7 +293,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
 
             // Bottom navigation
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               child: Row(
                 children: [
                   if (_currentStep > 0)
@@ -272,8 +301,8 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                       child: OutlinedButton(
                         onPressed: _previousStep,
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.primaryColor,
-                          side: BorderSide(color: AppTheme.primaryColor),
+                          foregroundColor: CosmicTheme.primaryAccent,
+                          side: BorderSide(color: CosmicTheme.primaryAccent),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -292,15 +321,9 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: _currentStep == _totalSteps - 1 ? AppTheme.accentGradient : AppTheme.primaryGradient,
+                        gradient: CosmicTheme.buttonGradient,
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (_currentStep == _totalSteps - 1 ? AppTheme.accentColor : AppTheme.primaryColor).withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        boxShadow: CosmicTheme.lightShadow,
                       ),
                       child: ElevatedButton(
                         onPressed: _canProceedFromStep(_currentStep) 
@@ -308,23 +331,23 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                           : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 0,
-                          shadowColor: Colors.transparent,
                         ),
-                      child: Text(
-                        _currentStep == _totalSteps - 1 ? 'Genera idee regalo' : 'Continua',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        child: Text(
+                          _currentStep == _totalSteps - 1 ? 'Genera idee regalo' : 'Continua',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  )
                   ),
                 ],
               ),
@@ -353,14 +376,14 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
         // Recipient info card
         Container(
           padding: const EdgeInsets.all(20),
-          decoration: AppTheme.cardDecoration,
+          decoration: CosmicTheme.cardDecoration,
           child: Row(
             children: [
               Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
+                  gradient: CosmicTheme.accentGradient,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -386,7 +409,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimaryColor,
+                        color: CosmicTheme.textPrimary,
                       ),
                     ),
                     if (widget.recipient.relation.isNotEmpty) ...[
@@ -395,7 +418,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                         widget.recipient.relation,
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: AppTheme.textSecondaryColor,
+                          color: CosmicTheme.textSecondary,
                         ),
                       ),
                     ],
@@ -405,7 +428,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                         '${widget.recipient.age} anni',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: AppTheme.textSecondaryColor,
+                          color: CosmicTheme.textSecondary,
                         ),
                       ),
                     ],
@@ -419,20 +442,33 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
         const SizedBox(height: 32),
 
         // Occasion selection
-        Text(
-          'Per quale occasione?',
-          style: GoogleFonts.inter(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimaryColor,
-          ),
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
+                color: CosmicTheme.primaryAccentOnDark,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Per quale occasione?',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: CosmicTheme.textPrimary,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
           'Seleziona l\'occasione per rendere il regalo più appropriato',
           style: GoogleFonts.inter(
-            fontSize: 16,
-            color: AppTheme.textSecondaryColor,
+            fontSize: 14,
+            color: CosmicTheme.textSecondary,
           ),
         ),
         const SizedBox(height: 24),
@@ -461,18 +497,12 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              colors: [
-                AppTheme.primaryColor.withOpacity(0.1),
-                AppTheme.primaryColor.withOpacity(0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: CosmicTheme.surfaceColor,
             border: Border.all(
-              color: AppTheme.primaryColor.withOpacity(0.3),
+              color: CosmicTheme.primaryAccent.withOpacity(0.3),
               width: 1,
             ),
+            boxShadow: CosmicTheme.softShadow,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,12 +512,12 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.2),
+                      color: CosmicTheme.primaryAccent.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.edit_calendar,
-                      color: AppTheme.primaryColor,
+                      color: CosmicTheme.primaryAccent,
                       size: 20,
                     ),
                   ),
@@ -495,7 +525,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   Text(
                     'Occasione personalizzata',
                     style: GoogleFonts.inter(
-                      color: AppTheme.textPrimaryColor,
+                      color: CosmicTheme.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -506,13 +536,13 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
               TextFormField(
                 controller: _customOccasionController,
                 style: GoogleFonts.inter(
-                  color: AppTheme.textPrimaryColor,
+                  color: CosmicTheme.textPrimary,
                   fontSize: 16,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Es: festa di pensionamento, battesimo...',
                   hintStyle: GoogleFonts.inter(
-                    color: AppTheme.textSecondaryColor,
+                    color: CosmicTheme.textSecondary,
                     fontSize: 14,
                   ),
                   border: OutlineInputBorder(
@@ -520,7 +550,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: AppTheme.surfaceColor,
+                  fillColor: CosmicTheme.backgroundColor,
                   contentPadding: const EdgeInsets.all(16),
                 ),
                 onChanged: (value) {
@@ -545,31 +575,44 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Qual è il tuo budget?',
-          style: GoogleFonts.inter(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textPrimaryColor,
-          ),
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
+                color: CosmicTheme.primaryAccentOnDark,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Qual è il tuo budget?',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: CosmicTheme.textPrimary,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
-          'Seleziona la fascia di prezzo che preferisci',
+          'Scegli la fascia di prezzo più adatta alle tue esigenze',
           style: GoogleFonts.inter(
-            fontSize: 16,
-            color: AppTheme.textSecondaryColor,
+            fontSize: 14,
+            color: CosmicTheme.textSecondary,
           ),
         ),
         const SizedBox(height: 24),
 
-        _buildBudgetCard('Bozzetto', 'Pensieri dolci e semplici', '0€ - 20€', Icons.edit, 0, 20),
+        _buildBudgetCard('Essenziale', 'Regali semplici ma significativi', '0€ - 20€', Icons.favorite_border, 0, 20),
         const SizedBox(height: 16),
-        _buildBudgetCard('Regalo Piacevole', 'Idee bilanciate che fanno sorridere', '20€ - 50€', Icons.card_giftcard, 20, 50),
+        _buildBudgetCard('Classico', 'Il giusto equilibrio qualità-prezzo', '20€ - 50€', Icons.card_giftcard, 20, 50),
         const SizedBox(height: 16),
-        _buildBudgetCard('Regalo Speciale', 'Sorprendi con stile', '50€ - 100€', Icons.diamond, 50, 100),
+        _buildBudgetCard('Premium', 'Regali di qualità superiore', '50€ - 100€', Icons.diamond, 50, 100),
         const SizedBox(height: 16),
-        _buildBudgetCard('Capolavoro', 'Il regalo perfetto e indimenticabile', '100€+', Icons.auto_awesome, 100, 450),
+        _buildBudgetCard('Lusso', 'Per occasioni davvero speciali', '100€+', Icons.auto_awesome, 100, 450),
 
         const SizedBox(height: 32),
 
@@ -578,18 +621,12 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: [
-                AppTheme.primaryColor.withOpacity(0.1),
-                AppTheme.primaryColor.withOpacity(0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: CosmicTheme.surfaceColor,
             border: Border.all(
-              color: AppTheme.primaryColor.withOpacity(0.3),
+              color: CosmicTheme.primaryAccent.withOpacity(0.3),
               width: 1,
             ),
+            boxShadow: CosmicTheme.softShadow,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,12 +636,12 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.2),
+                      color: CosmicTheme.primaryAccent.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.tune,
-                      color: AppTheme.primaryColor,
+                      color: CosmicTheme.primaryAccent,
                       size: 20,
                     ),
                   ),
@@ -612,7 +649,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   Text(
                     'Budget personalizzato',
                     style: GoogleFonts.inter(
-                      color: AppTheme.textPrimaryColor,
+                      color: CosmicTheme.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -625,8 +662,8 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                 min: 0,
                 max: 450,
                 divisions: 45,
-                activeColor: AppTheme.primaryColor,
-                inactiveColor: AppTheme.borderColor,
+                activeColor: CosmicTheme.primaryAccent,
+                inactiveColor: CosmicTheme.secondaryAccent,
                 labels: RangeLabels(
                   '€${_minBudget.round()}',
                   '€${_maxBudget.round()}',
@@ -648,14 +685,14 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                       Text(
                         'Min',
                         style: GoogleFonts.inter(
-                          color: AppTheme.textSecondaryColor,
+                          color: CosmicTheme.textSecondary,
                           fontSize: 12,
                         ),
                       ),
                       Text(
                         '€${_minBudget.round()}',
                         style: GoogleFonts.inter(
-                          color: AppTheme.primaryColor,
+                          color: CosmicTheme.primaryAccent,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
@@ -668,14 +705,14 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                       Text(
                         'Max',
                         style: GoogleFonts.inter(
-                          color: AppTheme.textSecondaryColor,
+                          color: CosmicTheme.textSecondary,
                           fontSize: 12,
                         ),
                       ),
                       Text(
                         '€${_maxBudget.round()}',
                         style: GoogleFonts.inter(
-                          color: AppTheme.primaryColor,
+                          color: CosmicTheme.primaryAccent,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
@@ -703,19 +740,13 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
       }),
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : AppTheme.surfaceColor,
+          color: isSelected ? CosmicTheme.primaryAccent.withOpacity(0.15) : CosmicTheme.surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            color: isSelected ? CosmicTheme.primaryAccent : CosmicTheme.secondaryAccent,
             width: isSelected ? 3 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: AppTheme.primaryColor.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ] : AppTheme.softShadow,
+          boxShadow: isSelected ? CosmicTheme.cosmicShadow : CosmicTheme.softShadow,
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -726,12 +757,12 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: isSelected ? AppTheme.accentGradient : null,
-                  color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
+                  gradient: isSelected ? CosmicTheme.accentGradient : null,
+                  color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
                   shape: BoxShape.circle,
                   boxShadow: isSelected ? [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      color: CosmicTheme.primaryAccent.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -740,7 +771,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                 child: Icon(
                   icon,
                   size: 28,
-                  color: isSelected ? Colors.white : AppTheme.primaryColor,
+                  color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
                 ),
               ),
               const SizedBox(height: 12),
@@ -749,7 +780,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimaryColor,
+                  color: CosmicTheme.textPrimary,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -760,7 +791,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
+                    color: CosmicTheme.primaryAccent,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -792,19 +823,13 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withOpacity(0.15) : AppTheme.surfaceColor,
+          color: isSelected ? CosmicTheme.primaryAccent.withOpacity(0.15) : CosmicTheme.surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.borderColor,
+            color: isSelected ? CosmicTheme.primaryAccent : CosmicTheme.secondaryAccent,
             width: isSelected ? 3 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: AppTheme.primaryColor.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ] : AppTheme.softShadow,
+          boxShadow: isSelected ? CosmicTheme.cosmicShadow : CosmicTheme.softShadow,
         ),
         child: Row(
           children: [
@@ -812,12 +837,12 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                gradient: isSelected ? AppTheme.primaryGradient : null,
-                color: isSelected ? null : AppTheme.primaryColor.withOpacity(0.1),
+                gradient: isSelected ? CosmicTheme.accentGradient : null,
+                color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
                 shape: BoxShape.circle,
                 boxShadow: isSelected ? [
                   BoxShadow(
-                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    color: CosmicTheme.primaryAccent.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -826,7 +851,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
               child: Icon(
                 icon,
                 size: 28,
-                color: isSelected ? Colors.white : AppTheme.primaryColor,
+                color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
               ),
             ),
             const SizedBox(width: 16),
@@ -839,7 +864,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                     style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimaryColor,
+                      color: CosmicTheme.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -847,7 +872,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                     description,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: AppTheme.textSecondaryColor,
+                      color: CosmicTheme.textSecondary,
                     ),
                   ),
                 ],
@@ -861,7 +886,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
+                    color: CosmicTheme.primaryAccent,
                   ),
                 ),
                 if (isSelected) ...[
@@ -869,7 +894,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
+                      color: CosmicTheme.primaryAccent,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(

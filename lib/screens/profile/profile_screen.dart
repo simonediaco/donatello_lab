@@ -2,9 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
 import '../../models/user.dart';
@@ -16,7 +17,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -29,10 +31,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isSaving = false;
   User? _user;
 
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
   @override
   void initState() {
     super.initState();
     _loadProfile();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+    ));
+
+    _animationController.forward();
   }
 
   @override
@@ -42,6 +71,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _bioController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -65,12 +95,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Errore nel caricamento del profilo: ${e.toString()}'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+        _showError('Errore nel caricamento del profilo: ${e.toString()}');
       }
     }
   }
@@ -105,22 +130,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profilo aggiornato con successo!'),
-            backgroundColor: AppTheme.successColor,
-          ),
-        );
+        _showSuccess('Profilo aggiornato con successo!');
       }
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Errore nell\'aggiornamento: ${e.toString()}'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+        _showError('Errore nell\'aggiornamento: ${e.toString()}');
       }
     }
   }
@@ -136,20 +151,84 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     setState(() => _isEditing = false);
   }
 
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
+  void _showSuccess(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+          gradient: CosmicTheme.backgroundLightGradient,
         ),
         child: SafeArea(
           child: Column(
             children: [
-              _buildHeader(),
+              _buildCosmicHeader(),
               Expanded(
                 child: _isLoading 
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(CosmicTheme.primaryAccent),
+                      ),
+                    )
                   : _buildProfileContent(),
               ),
             ],
@@ -159,122 +238,256 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildCosmicHeader() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      child: Row(
+      height: 160,
+      decoration: const BoxDecoration(
+        gradient: CosmicTheme.cosmicGradient,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: Stack(
         children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppTheme.softShadow,
-              ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: AppTheme.textPrimaryColor,
-                size: 24,
-              ),
+          // Floating cosmic shapes
+          _buildFloatingShapes(),
+          
+          // Header content
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Navigation and edit button
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => context.pop(),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: CosmicTheme.textPrimaryOnDark,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        'Il mio Profilo',
+                        style: GoogleFonts.inter(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: CosmicTheme.textPrimaryOnDark,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                    if (!_isEditing) ...[
+                      GestureDetector(
+                        onTap: () => setState(() => _isEditing = true),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            gradient: CosmicTheme.buttonGradient,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Profile avatar
+                _buildProfileAvatar(),
+              ],
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              'Il mio Profilo',
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-          ),
-          if (!_isEditing) ...[
-            GestureDetector(
-              onTap: () => setState(() => _isEditing = true),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: AppTheme.softShadow,
-                ),
-                child: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildProfileContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            _buildProfileAvatar(),
-            const SizedBox(height: 32),
-            _buildPersonalInfoSection(),
-            const SizedBox(height: 24),
-            _buildContactInfoSection(),
-            const SizedBox(height: 24),
-            _buildBioSection(),
-            const SizedBox(height: 32),
-            if (_isEditing) _buildActionButtons(),
-            const SizedBox(height: 32),
-          ],
+  Widget _buildFloatingShapes() {
+    return Stack(
+      children: [
+        // Top right shape
+        Positioned(
+          top: 20,
+          right: -10,
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value * 0.1,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: CosmicTheme.primaryAccentOnDark,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              );
+            },
+          ),
         ),
-      ),
+        
+        // Bottom left shape
+        Positioned(
+          bottom: 10,
+          left: -20,
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value * 0.08,
+                child: Container(
+                  width: 60,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: CosmicTheme.primaryAccent.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildProfileAvatar() {
     return Container(
-      width: 120,
-      height: 120,
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
+        gradient: CosmicTheme.accentGradientOnDark,
         shape: BoxShape.circle,
-        boxShadow: AppTheme.mediumShadow,
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Center(
         child: _user?.firstName.isNotEmpty == true
           ? Text(
               '${_user!.firstName[0]}${_user!.lastName.isNotEmpty ? _user!.lastName[0] : ''}',
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 36,
+                fontSize: 28,
                 fontWeight: FontWeight.w700,
               ),
             )
           : const Icon(
               Icons.person,
               color: Colors.white,
-              size: 48,
+              size: 32,
             ),
+      ),
+    );
+  }
+
+  Widget _buildProfileContent() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                _buildPersonalInfoSection(),
+                const SizedBox(height: 20),
+                _buildContactInfoSection(),
+                const SizedBox(height: 20),
+                _buildBioSection(),
+                const SizedBox(height: 32),
+                if (_isEditing) _buildActionButtons(),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildPersonalInfoSection() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: AppTheme.cardDecoration,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: CosmicTheme.softShadow,
+        border: Border.all(
+          color: CosmicTheme.primaryAccent.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Informazioni Personali',
-            style: Theme.of(context).textTheme.headlineMedium,
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  gradient: CosmicTheme.buttonGradient,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  'Informazioni Personali',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           CustomTextField(
             label: 'Nome',
             hint: 'Inserisci il tuo nome',
@@ -287,7 +500,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           CustomTextField(
             label: 'Cognome',
             hint: 'Inserisci il tuo cognome',
@@ -300,7 +513,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           CustomTextField(
             label: 'Email',
             hint: 'La tua email',
@@ -315,23 +528,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildContactInfoSection() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: AppTheme.cardDecoration,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: CosmicTheme.softShadow,
+        border: Border.all(
+          color: CosmicTheme.primaryAccent.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Contatti',
-            style: Theme.of(context).textTheme.headlineMedium,
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  gradient: CosmicTheme.buttonGradient,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  'Contatti',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           CustomTextField(
             label: 'Telefono',
             hint: 'Inserisci il tuo numero di telefono',
             controller: _phoneController,
             enabled: _isEditing,
             keyboardType: TextInputType.phone,
-            prefixIcon: const Icon(Icons.phone_outlined),
+            prefixIcon: Icon(
+              Icons.phone_outlined,
+              color: CosmicTheme.primaryAccent,
+              size: 20,
+            ),
           ),
         ],
       ),
@@ -340,22 +585,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildBioSection() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: AppTheme.cardDecoration,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: CosmicTheme.softShadow,
+        border: Border.all(
+          color: CosmicTheme.primaryAccent.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Bio',
-            style: Theme.of(context).textTheme.headlineMedium,
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  gradient: CosmicTheme.buttonGradient,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  'Bio',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           CustomTextField(
             label: 'Biografia',
             hint: 'Racconta qualcosa di te...',
             controller: _bioController,
             enabled: _isEditing,
-            maxLines: 4,
+            maxLines: 3,
           ),
         ],
       ),
@@ -366,18 +639,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Row(
       children: [
         Expanded(
-          child: CustomButton(
-            text: 'Annulla',
-            onPressed: _cancelEdit,
-            // variant: ButtonVariant.outline,
+          child: SizedBox(
+            height: 48,
+            child: OutlinedButton(
+              onPressed: _cancelEdit,
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                side: BorderSide(
+                  color: CosmicTheme.primaryAccent,
+                  width: 2,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Annulla',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: CosmicTheme.primaryAccent,
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: CustomButton(
-            text: 'Salva',
-            onPressed: _saveProfile,
-            isLoading: _isSaving,
+          child: SizedBox(
+            height: 48,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: CosmicTheme.buttonGradient,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: CosmicTheme.lightShadow,
+              ),
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        'Salva',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ),
           ),
         ),
       ],

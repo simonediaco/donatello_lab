@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import '../../services/api_service.dart';
 import '../../models/recipient.dart';
 
@@ -23,12 +23,13 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late AnimationController _floatingController;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
@@ -37,16 +38,21 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOut,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
     ));
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
+      begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOut,
+      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
     ));
+
+    _floatingController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    )..repeat(reverse: true);
 
     _animationController.forward();
     _loadRecipients();
@@ -55,6 +61,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
   @override
   void dispose() {
     _animationController.dispose();
+    _floatingController.dispose();
     super.dispose();
   }
 
@@ -78,74 +85,160 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => context.pop(),
-          icon: Icon(
-            Icons.arrow_back,
-            color: AppTheme.textPrimaryColor,
-          ),
-          style: IconButton.styleFrom(
-            backgroundColor: AppTheme.surfaceColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+          gradient: CosmicTheme.cosmicGradient,
         ),
         child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    Text(
-                      'Scegli destinatario',
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Seleziona per chi vuoi generare idee regalo',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: AppTheme.textSecondaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Expanded(
-                      child: _isLoadingRecipients
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+          child: Stack(
+            children: [
+              // Floating cosmic shapes
+              _buildFloatingShapes(),
+              
+              Column(
+                children: [
+                  // Header section with cosmic background
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        // Back button row
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => context.pop(),
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                              ),
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.white.withOpacity(0.1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
                             ),
-                          )
-                        : _recipients.isEmpty
-                            ? _buildEmptyState()
-                            : _buildRecipientGrid(),
+                            const Spacer(),
+                          ],
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Title section
+                        Text(
+                          'Scegli destinatario',
+                          style: GoogleFonts.inter(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: CosmicTheme.textPrimaryOnDark,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 8),
+                        
+                        Text(
+                          'Seleziona per chi vuoi generare idee regalo',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: CosmicTheme.textSecondaryOnDark,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  
+                  // Content section with white background
+                  Expanded(
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: _isLoadingRecipients
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(CosmicTheme.primaryAccent),
+                                  ),
+                                )
+                              : _recipients.isEmpty
+                                  ? _buildEmptyState()
+                                  : _buildRecipientGrid(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFloatingShapes() {
+    return Stack(
+      children: [
+        // Top right cosmic element
+        Positioned(
+          top: 60,
+          right: -20,
+          child: AnimatedBuilder(
+            animation: _floatingController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, _floatingController.value * 12),
+                child: Opacity(
+                  opacity: 0.08,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: CosmicTheme.primaryAccent,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        
+        // Left side red accent
+        Positioned(
+          top: 150,
+          left: -30,
+          child: AnimatedBuilder(
+            animation: _floatingController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, -_floatingController.value * 8),
+                child: Opacity(
+                  opacity: 0.06,
+                  child: Container(
+                    width: 50,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: CosmicTheme.primaryAccentOnDark,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -153,7 +246,6 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
     return Center(
       child: Container(
         padding: const EdgeInsets.all(40),
-        decoration: AppTheme.cardDecoration,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -161,12 +253,12 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: CosmicTheme.primaryAccent.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
                 Icons.people_outline,
-                color: AppTheme.primaryColor,
+                color: CosmicTheme.primaryAccent,
                 size: 40,
               ),
             ),
@@ -176,7 +268,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
               style: GoogleFonts.inter(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.textPrimaryColor,
+                color: CosmicTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -185,7 +277,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
               'Inizia creando il profilo di una persona per cui vuoi trovare il regalo perfetto',
               style: GoogleFonts.inter(
                 fontSize: 16,
-                color: AppTheme.textSecondaryColor,
+                color: CosmicTheme.textSecondary,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -193,21 +285,29 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => context.go('/gift-wizard'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+              height: 44,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: CosmicTheme.buttonGradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: CosmicTheme.lightShadow,
                 ),
-                child: Text(
-                  'Crea primo destinatario',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                child: ElevatedButton(
+                  onPressed: () => context.go('/gift-wizard'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Crea primo destinatario',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -238,7 +338,21 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
 
   Widget _buildRecipientCard(Recipient recipient) {
     return Container(
-      decoration: AppTheme.cardDecoration,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -253,11 +367,11 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
+                    gradient: CosmicTheme.buttonGradient,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.primaryColor.withOpacity(0.3),
+                        color: CosmicTheme.primaryAccent.withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -282,7 +396,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimaryColor,
+                    color: CosmicTheme.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -294,7 +408,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                     recipient.relation,
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: AppTheme.textSecondaryColor,
+                      color: CosmicTheme.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 1,
@@ -306,7 +420,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: CosmicTheme.primaryAccent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -314,7 +428,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryColor,
+                      color: CosmicTheme.primaryAccent,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -330,21 +444,25 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
   Widget _buildAddNewRecipientCard() {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.primaryColor.withOpacity(0.3),
+          color: CosmicTheme.primaryAccent.withOpacity(0.3),
           width: 2,
-          strokeAlign: BorderSide.strokeAlignInside,
         ),
-        boxShadow: AppTheme.softShadow,
+        boxShadow: [
+          BoxShadow(
+            color: CosmicTheme.primaryAccent.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () async {
             final result = await context.push('/recipients/add');
-            // Ricarica la lista dei destinatari quando si torna indietro
             _loadRecipients();
           },
           borderRadius: BorderRadius.circular(20),
@@ -357,16 +475,16 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: CosmicTheme.primaryAccent.withOpacity(0.1),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppTheme.primaryColor.withOpacity(0.2),
+                      color: CosmicTheme.primaryAccent.withOpacity(0.2),
                       width: 2,
                     ),
                   ),
                   child: Icon(
                     Icons.add,
-                    color: AppTheme.primaryColor,
+                    color: CosmicTheme.primaryAccent,
                     size: 30,
                   ),
                 ),
@@ -376,7 +494,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimaryColor,
+                    color: CosmicTheme.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -385,7 +503,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: CosmicTheme.primaryAccent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -393,7 +511,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryColor,
+                      color: CosmicTheme.primaryAccent,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -407,7 +525,6 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
   }
 
   void _generateForExistingRecipient(Recipient recipient) {
-    // Navigate to occasion selection for existing recipient
     context.go('/gift-wizard-recipient', extra: recipient);
   }
 }

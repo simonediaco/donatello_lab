@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_theme.dart';
 import '../theme/cosmic_theme.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -75,7 +74,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
 
     _borderColorAnimation = ColorTween(
       begin: Colors.grey.shade300,
-      end: AppTheme.primaryColor,
+      end: CosmicTheme.primaryAccent,
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOut,
@@ -112,7 +111,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
           Text(
             widget.label!,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppTheme.textPrimaryColor,
+              color: CosmicTheme.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -128,7 +127,7 @@ class _CustomTextFieldState extends State<CustomTextField> with TickerProviderSt
                   boxShadow: _isFocused 
                     ? [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.12),
+                          color: CosmicTheme.primaryAccent.withOpacity(0.12),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),

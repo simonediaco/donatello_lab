@@ -25,7 +25,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _birthdateController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final _registerFormKey = GlobalKey<FormState>();
   bool _agreedToTerms = false;
   bool _isLoading = false;
   bool _isPasswordVisible = false;
@@ -370,7 +370,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                               ),
                               padding: const EdgeInsets.all(32),
                               child: Form(
-                                key: _formKey,
+                                key: _registerFormKey,
                                 child: Column(
                                   children: [
                                     // Name fields

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 
 class GiftLoadingScreen extends StatefulWidget {
   final String message;
@@ -22,46 +22,62 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
   late AnimationController _textController;
   late AnimationController _backgroundController;
   late AnimationController _iconController;
+  late AnimationController _starsController;
+  late AnimationController _galaxyController;
 
   late Animation<double> _particlesAnimation;
   late Animation<double> _textFadeAnimation;
   late Animation<double> _backgroundOpacity;
   late Animation<double> _iconPulse;
+  late Animation<double> _starsRotation;
+  late Animation<double> _galaxyRotation;
 
   List<String> _loadingMessages = [
-    'Analizzo i gusti e le preferenze...',
-    'Esploro migliaia di prodotti unici...',
-    'Confronto prezzi e caratteristiche...',
-    'Seleziono le migliori opzioni...',
-    'Creo suggerimenti personalizzati...',
-    'Quasi pronto con le idee perfette!',
+    '"Analizzando le stelle del cuore..."',
+    '"Creando la magia perfetta..."',
+    '"Quasi pronto, il tuo regalo sta nascendo..."',
   ];
 
   int _currentMessageIndex = 0;
+  List<Offset> _starPositions = [];
+  List<double> _starSizes = [];
+  List<Color> _starColors = [];
 
   @override
   void initState() {
     super.initState();
 
+    _generateStars();
+
     _particlesController = AnimationController(
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 6),
       vsync: this,
     )..repeat();
 
     _textController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
     _backgroundController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2500),
       vsync: this,
     );
 
     _iconController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat(reverse: true);
+
+    _starsController = AnimationController(
+      duration: const Duration(seconds: 20),
+      vsync: this,
+    )..repeat();
+
+    _galaxyController = AnimationController(
+      duration: const Duration(seconds: 15),
+      vsync: this,
+    )..repeat();
 
     _particlesAnimation = Tween<double>(
       begin: 0,
@@ -89,24 +105,62 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
 
     _iconPulse = Tween<double>(
       begin: 0.8,
-      end: 1.2,
+      end: 1.3,
     ).animate(CurvedAnimation(
       parent: _iconController,
       curve: Curves.easeInOut,
     ));
 
+    _starsRotation = Tween<double>(
+      begin: 0,
+      end: 2 * pi,
+    ).animate(CurvedAnimation(
+      parent: _starsController,
+      curve: Curves.linear,
+    ));
+
+    _galaxyRotation = Tween<double>(
+      begin: 0,
+      end: 2 * pi,
+    ).animate(CurvedAnimation(
+      parent: _galaxyController,
+      curve: Curves.linear,
+    ));
+
     _startAnimations();
+  }
+
+  void _generateStars() {
+    final random = Random();
+    _starPositions.clear();
+    _starSizes.clear();
+    _starColors.clear();
+
+    for (int i = 0; i < 30; i++) {
+      _starPositions.add(Offset(
+        random.nextDouble(),
+        random.nextDouble(),
+      ));
+      _starSizes.add(random.nextDouble() * 3 + 1);
+      _starColors.add([
+        Colors.white,
+        CosmicTheme.primaryAccent,
+        const Color(0xFFFFD700),
+        const Color(0xFF87CEEB),
+        const Color(0xFFDDA0DD),
+      ][random.nextInt(5)]);
+    }
   }
 
   void _startAnimations() async {
     _backgroundController.forward();
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 800));
     _startTextRotation();
   }
 
   void _startTextRotation() {
     _textController.forward().then((_) {
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {
           _textController.reverse().then((_) {
             if (mounted) {
@@ -128,6 +182,8 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
     _textController.dispose();
     _backgroundController.dispose();
     _iconController.dispose();
+    _starsController.dispose();
+    _galaxyController.dispose();
     super.dispose();
   }
 
@@ -138,25 +194,14 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
         animation: _backgroundController,
         builder: (context, child) {
           return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.backgroundColor.withOpacity(_backgroundOpacity.value),
-                  AppTheme.cardColor.withOpacity(_backgroundOpacity.value),
-                  AppTheme.primaryColor.withOpacity(0.1 * _backgroundOpacity.value),
-                ],
-              ),
+            decoration: const BoxDecoration(
+              gradient: CosmicTheme.cosmicGradient,
             ),
             child: SafeArea(
               child: Stack(
                 children: [
-                  // Floating geometric shapes in background (like splash screen)
-                  _buildFloatingShapes(),
-                  
-                  // Particles animation (cascata di stelle/cerchi)
-                  ...List.generate(25, (index) => _buildParticle(index)),
+                  // Elegant twinkling stars background
+                  _buildElegantStarField(),
 
                   // Main content
                   Padding(
@@ -166,10 +211,10 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
                       children: [
                         const Spacer(),
 
-                        // Central pulsating star animation - smooth and fluid
+                        // Central cosmic portal with pulsating icon
                         Container(
-                          width: 80,
-                          height: 80,
+                          width: 120,
+                          height: 120,
                           child: AnimatedBuilder(
                             animation: _iconController,
                             builder: (context, child) {
@@ -177,21 +222,37 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
                                 scale: _iconPulse.value,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(40),
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        CosmicTheme.primaryAccent.withOpacity(0.3),
+                                        CosmicTheme.primaryAccent.withOpacity(0.1),
+                                        Colors.transparent,
+                                      ],
+                                      stops: const [0.3, 0.7, 1.0],
+                                    ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppTheme.primaryColor.withOpacity(0.3 * _iconPulse.value),
-                                        blurRadius: 20 * _iconPulse.value,
+                                        color: CosmicTheme.primaryAccent.withOpacity(0.4 * _iconPulse.value),
+                                        blurRadius: 30 * _iconPulse.value,
                                         spreadRadius: 5 * (_iconPulse.value - 0.8),
                                       ),
                                     ],
                                   ),
-                                  child: ShaderMask(
-                                    shaderCallback: (bounds) => AppTheme.accentGradient.createShader(bounds),
-                                    child: const Icon(
-                                      Icons.auto_awesome,
-                                      size: 48,
-                                      color: Colors.white,
+                                  child: Center(
+                                    child: ShaderMask(
+                                      shaderCallback: (bounds) => LinearGradient(
+                                        colors: [
+                                          Colors.white,
+                                          CosmicTheme.primaryAccent,
+                                          const Color(0xFFFFD700),
+                                        ],
+                                      ).createShader(bounds),
+                                      child: const Icon(
+                                        Icons.auto_awesome,
+                                        size: 60,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -202,26 +263,33 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
 
                         const SizedBox(height: 60),
 
-                        // App title with consistent fonts
+                        // Cosmic title
                         Text(
-                          'Donatello',
+                          'Donatello Lab',
                           style: GoogleFonts.inter(
                             fontSize: 36,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimaryColor,
+                            color: CosmicTheme.textPrimaryOnDark,
                             letterSpacing: -1,
+                            shadows: [
+                              Shadow(
+                                color: CosmicTheme.primaryAccent.withOpacity(0.5),
+                                blurRadius: 20,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           textAlign: TextAlign.center,
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
 
                         Text(
-                          'sta lavorando per te',
+                          'Laboratorio Cosmico dei Regali',
                           style: GoogleFonts.inter(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.primaryColor,
+                            color: CosmicTheme.textSecondaryOnDark,
                             letterSpacing: 2,
                           ),
                           textAlign: TextAlign.center,
@@ -229,89 +297,72 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
 
                         const SizedBox(height: 60),
 
-                        // Dynamic loading messages
-                        Container(
-                          height: 100,
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          child: AnimatedBuilder(
-                            animation: _textFadeAnimation,
-                            builder: (context, child) {
-                              return Opacity(
-                                opacity: _textFadeAnimation.value,
-                                child: Container(
-                                  padding: const EdgeInsets.all(24),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.surfaceColor.withOpacity(0.8),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: AppTheme.primaryColor.withOpacity(0.3),
-                                      width: 1,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.primaryColor.withOpacity(0.1),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 8),
-                                      ),
+                        // Dynamic loading message
+                        AnimatedBuilder(
+                          animation: _textFadeAnimation,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _textFadeAnimation.value,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white.withOpacity(0.1),
+                                      Colors.white.withOpacity(0.05),
                                     ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.primaryColor.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Icon(
-                                          Icons.psychology_outlined,
-                                          color: AppTheme.primaryColor,
-                                          size: 24,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Text(
-                                          _loadingMessages[_currentMessageIndex],
-                                          style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            color: AppTheme.textPrimaryColor,
-                                            fontWeight: FontWeight.w500,
-                                            height: 1.3,
-                                          ),
-                                          textAlign: TextAlign.left,
-                                        ),
-                                      ),
-                                    ],
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                                    width: 1,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                                child: Text(
+                                  _loadingMessages[_currentMessageIndex],
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: CosmicTheme.textPrimaryOnDark,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.4,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 40),
 
-                        // Progress indicators
+                        // Elegant progress indicators
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(6, (index) {
+                          children: List.generate(3, (index) {
                             return AnimatedContainer(
-                              duration: Duration(milliseconds: 400 + (index * 50)),
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: _currentMessageIndex >= index ? 32 : 12,
+                              duration: Duration(milliseconds: 600 + (index * 100)),
+                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              width: _currentMessageIndex >= index ? 24 : 8,
                               height: 8,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(4),
                                 gradient: _currentMessageIndex >= index 
-                                    ? AppTheme.primaryGradient
+                                    ? LinearGradient(
+                                        colors: [
+                                          CosmicTheme.primaryAccent,
+                                          const Color(0xFFFFD700),
+                                        ],
+                                      )
                                     : null,
                                 color: _currentMessageIndex >= index 
                                     ? null 
-                                    : AppTheme.textTertiaryColor.withOpacity(0.3),
+                                    : Colors.white.withOpacity(0.3),
                                 boxShadow: _currentMessageIndex >= index ? [
                                   BoxShadow(
-                                    color: AppTheme.primaryColor.withOpacity(0.3),
+                                    color: CosmicTheme.primaryAccent.withOpacity(0.4),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -322,37 +373,6 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
                         ),
 
                         const Spacer(),
-
-                        // Bottom text
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.palette_outlined,
-                                color: AppTheme.primaryColor.withOpacity(0.7),
-                                size: 24,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'L\'arte del regalo perfetto\nrichiede creatività e intelligenza',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  color: AppTheme.textSecondaryColor,
-                                  fontStyle: FontStyle.italic,
-                                  height: 1.4,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -365,118 +385,85 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
     );
   }
 
-  Widget _buildParticle(int index) {
-    final delay = index * 0.15;
-
+  Widget _buildElegantStarField() {
     return AnimatedBuilder(
-      animation: _particlesAnimation,
+      animation: Listenable.merge([_starsController, _backgroundController]),
       builder: (context, child) {
-        final progress = (_particlesAnimation.value + delay) % 1.0;
-        final size = MediaQuery.of(context).size;
-
-        final x = (index % 5) * (size.width / 5) + 
-                  30 * sin(progress * 2 * 3.14159 + index);
-        final y = progress * (size.height + 100) - 50;
-
-        return Positioned(
-          left: x.clamp(0, size.width - 20),
-          top: y,
-          child: Opacity(
-            opacity: (1 - progress) * 0.6,
-            child: Transform.rotate(
-              angle: progress * 2 * 3.14159,
-              child: Container(
-                width: 8 + (index % 3) * 4,
-                height: 8 + (index % 3) * 4,
-                child: ShaderMask(
-                  shaderCallback: (bounds) => AppTheme.accentGradient.createShader(bounds),
-                  child: Icon(
-                    Icons.star,
-                    size: 8 + (index % 3) * 4,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+        return Opacity(
+          opacity: _backgroundOpacity.value,
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: ElegantStarFieldPainter(
+              stars: _starPositions,
+              sizes: _starSizes,
+              colors: _starColors,
+              animation: _starsRotation.value,
             ),
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildFloatingShapes() {
-    return Stack(
-      children: [
-        // Top right circle
-        Positioned(
-          top: -50,
-          right: -30,
-          child: AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _backgroundOpacity.value * 0.1,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        
-        // Bottom left rounded rectangle
-        Positioned(
-          bottom: -40,
-          left: -20,
-          child: AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _backgroundOpacity.value * 0.08,
-                child: Container(
-                  width: 80,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryLight,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        
-        // Center right small circle
-        Positioned(
-          top: MediaQuery.of(context).size.height * 0.3,
-          right: -15,
-          child: AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _backgroundOpacity.value * 0.06,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryDark,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
+class ElegantStarFieldPainter extends CustomPainter {
+  final List<Offset> stars;
+  final List<double> sizes;
+  final List<Color> colors;
+  final double animation;
+
+  ElegantStarFieldPainter({
+    required this.stars,
+    required this.sizes,
+    required this.colors,
+    required this.animation,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (int i = 0; i < stars.length; i++) {
+      final star = stars[i];
+      final starSize = sizes[i];
+      final color = colors[i];
+
+      final x = star.dx * size.width;
+      final y = star.dy * size.height;
+
+      // Slow, elegant twinkling
+      final twinklePhase = (animation * 0.3 + i * 0.2) % (2 * pi);
+      final opacity = 0.2 + 0.6 * (sin(twinklePhase) * 0.5 + 0.5);
+      final scale = 0.7 + 0.3 * (sin(twinklePhase + pi / 4) * 0.5 + 0.5);
+
+      final paint = Paint()
+        ..color = color.withOpacity(opacity)
+        ..style = PaintingStyle.fill;
+
+      // Draw elegant twinkling star
+      canvas.drawCircle(
+        Offset(x, y),
+        starSize * scale,
+        paint,
+      );
+
+      // Draw subtle glow for brighter stars
+      if (opacity > 0.6) {
+        final glowPaint = Paint()
+          ..color = color.withOpacity(opacity * 0.3)
+          ..style = PaintingStyle.fill;
+
+        canvas.drawCircle(
+          Offset(x, y),
+          starSize * scale * 2,
+          glowPaint,
+        );
+      }
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 double sin(double value) {
-  return (value * 180 / 3.14159).remainder(360) * 3.14159 / 180;
+  return (value * 180 / pi).remainder(360) * pi / 180;
 }

@@ -12,6 +12,7 @@ class CosmicTheme {
   // TESTI
   static const Color textPrimary = Color(0xFF1F2937);
   static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textTertiary = Color(0xFF9CA3AF);
   static const Color textLink = Color(0xFF7C3AED);
 
   // TEMA SCURO "COSMIC GRADIENT"
@@ -86,6 +87,17 @@ class CosmicTheme {
       backgroundColor,
       surfaceColor,
     ],
+  );
+
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF7C3AED),
+      Color(0xFF8B5CF6),
+      Color(0xFF9333EA),
+    ],
+    stops: [0.0, 0.5, 1.0],
   );
 
   // TEMA CHIARO

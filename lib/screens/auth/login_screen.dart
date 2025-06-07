@@ -22,7 +22,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final _loginFormKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _obscurePassword = true;
@@ -245,7 +245,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               ),
                               padding: const EdgeInsets.all(32),
                               child: Form(
-                                key: _formKey,
+                                key: _loginFormKey,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [

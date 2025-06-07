@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,7 +18,7 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     with TickerProviderStateMixin {
   final _emailController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final _forgotPasswordFormKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _emailSent = false;
 
@@ -77,7 +76,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     try {
       final authService = ref.read(authServiceProvider);
       await authService.requestPasswordReset(_emailController.text.trim());
-      
+
       if (mounted) {
         setState(() {
           _emailSent = true;
@@ -133,7 +132,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       message = error.message;
     } else {
       message = 'Error sending reset email. Please try again.';
-      
+
       if (error.toString().contains('DioException')) {
         if (error.toString().contains('status code of 404')) {
           message = 'Email address not found';
@@ -160,7 +159,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
             children: [
               // Floating cosmic shapes
               _buildFloatingShapes(),
-              
+
               SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -173,7 +172,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                     child: Column(
                       children: [
                         const SizedBox(height: 20),
-                        
+
                         // Back button and header
                         Row(
                           children: [
@@ -204,7 +203,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                         ),
 
                         SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                        
+
                         // Icon
                         Container(
                           width: 80,
@@ -232,7 +231,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                             color: Colors.white,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 32),
 
                         // Title and description
@@ -245,9 +244,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                             letterSpacing: -0.5,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 8),
-                        
+
                         Text(
                           _emailSent 
                             ? 'We\'ve sent a password reset link to ${_emailController.text.trim()}'
@@ -283,7 +282,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                 ),
                                 padding: const EdgeInsets.all(32),
                                 child: Form(
-                                  key: _formKey,
+                                  key: _forgotPasswordFormKey,
                                   child: Column(
                                     children: [
                                       // Email field
@@ -297,7 +296,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                           size: 20,
                                         ),
                                       ),
-                                      
+
                                       const SizedBox(height: 32),
 
                                       // Send reset button
@@ -371,9 +370,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                       size: 64,
                                       color: const Color(0xFF10B981),
                                     ),
-                                    
+
                                     const SizedBox(height: 24),
-                                    
+
                                     Text(
                                       'Email sent successfully!',
                                       style: GoogleFonts.inter(
@@ -382,9 +381,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                         color: const Color(0xFF10B981),
                                       ),
                                     ),
-                                    
+
                                     const SizedBox(height: 12),
-                                    
+
                                     Text(
                                       'Check your inbox and follow the instructions to reset your password.',
                                       style: GoogleFonts.inter(
@@ -394,9 +393,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    
+
                                     const SizedBox(height: 32),
-                                    
+
                                     SizedBox(
                                       width: double.infinity,
                                       height: 44,
@@ -426,9 +425,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                         ),
                                       ),
                                     ),
-                                    
+
                                     const SizedBox(height: 16),
-                                    
+
                                     TextButton(
                                       onPressed: () {
                                         setState(() {
@@ -451,7 +450,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                             ),
                           ),
                         ],
-                        
+
                         // Bottom spacer
                         const SizedBox(height: 40),
                       ],
@@ -490,7 +489,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
             },
           ),
         ),
-        
+
         // Bottom left cosmic shape
         Positioned(
           bottom: 100,

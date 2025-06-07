@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/gift.dart';
 import '../../models/recipient.dart';
 import '../../services/api_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GiftResultsScreen extends ConsumerStatefulWidget {
@@ -101,7 +100,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Regalo salvato con successo!'),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: CosmicTheme.primaryAccent,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -186,16 +185,18 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool _allGiftsSaved = false;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: CosmicTheme.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.home, color: AppTheme.textPrimaryColor),
+          icon: Icon(Icons.home, color: CosmicTheme.textPrimary),
           onPressed: () => context.go('/home'),
           style: IconButton.styleFrom(
-            backgroundColor: AppTheme.surfaceColor,
+            backgroundColor: CosmicTheme.surfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -204,160 +205,283 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
         title: Text(
           'Idee Regalo',
           style: GoogleFonts.inter(
-            color: AppTheme.textPrimaryColor,
+            color: CosmicTheme.textPrimary,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
         centerTitle: true,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Save Recipient Banner (solo se non viene da destinatario esistente)
-              if (widget.existingRecipient == null && !_recipientSaved) _buildSaveRecipientBanner(),
-
-              // Recipient info section
-              _buildRecipientInfoSection(),
-
-              // Gift Ideas section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.card_giftcard,
-                        color: AppTheme.primaryColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Idee Regalo Personalizzate',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimaryColor,
-                      ),
-                    ),
-                  ],
-                ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Elegant cosmic header - simpler and more refined
+            Container(
+              decoration: const BoxDecoration(
+                gradient: CosmicTheme.cosmicGradient,
               ),
-
-              const SizedBox(height: 16),
-
-              // Gift list
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: _displayedGifts.map((gift) => 
-                    _buildModernGiftCard(gift)
-                  ).toList(),
-                ),
-              ),
-
-              // Load More/Show Less button
-              if (_allGifts.length > 4)
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.accentGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.accentColor.withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: _showingMore ? _showLess : _loadMore,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+                  child: Column(
+                    children: [
+                      // Main title with subtle cosmic glow
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Column(
                           children: [
-                            Icon(
-                              _showingMore ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 8),
                             Text(
-                              _showingMore 
-                                ? 'Mostra meno regali' 
-                                : 'Carica altri regali (${_allGifts.length - 4})',
+                              'Regali per ${widget.recipientName}',
                               style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                                shadows: [
+                                  Shadow(
+                                    color: CosmicTheme.primaryAccent.withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
+                              textAlign: TextAlign.center,
                             ),
+                            if (widget.recipientAge != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                '${widget.recipientAge} anni',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
-                    ),
+
+                      // Cosmic quote with elegant styling
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          '"Ogni regalo racconta una storia scritta nelle stelle"',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: Colors.white.withOpacity(0.9),
+                            fontStyle: FontStyle.italic,
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+
+                      // Save recipient button if not saved
+                      if (widget.existingRecipient == null && !_recipientSaved) ...[
+                        const SizedBox(height: 24),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.3),
+                                Colors.white.withOpacity(0.1),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton.icon(
+                            onPressed: _showSaveRecipientModal,
+                            icon: const Icon(Icons.bookmark_add, color: Colors.white, size: 20),
+                            label: Text(
+                              'Salva destinatario',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-            ],
-          ),
+              ),
+            ),
+
+              // White background section for gifts
+            // White background section for gifts
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
+
+                  // Gift Ideas section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: CosmicTheme.primaryAccent.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.card_giftcard,
+                            color: CosmicTheme.primaryAccent,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Idee Regalo Personalizzate',
+                          style: GoogleFonts.inter(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: CosmicTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Gift list
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: _displayedGifts.map((gift) => 
+                        _buildModernGiftCard(gift)
+                      ).toList(),
+                    ),
+                  ),
+
+                  // Load More/Show Less button
+                  if (_allGifts.length > 4)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: CosmicTheme.buttonGradient,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: _showingMore ? _showLess : _loadMore,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _showingMore ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _showingMore 
+                                    ? 'Mostra meno regali' 
+                                    : 'Carica altri regali (${_allGifts.length - 4})',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSaveRecipientBanner() {
+  Widget _buildCosmicSaveRecipientBanner() {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.accentColor.withOpacity(0.1),
-            AppTheme.primaryColor.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.accentColor.withOpacity(0.3),
+          color: Colors.white.withOpacity(0.3),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.accentColor.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.bookmark_add,
-              color: AppTheme.accentColor,
+              color: Colors.white,
               size: 24,
             ),
           ),
@@ -371,7 +495,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -379,7 +503,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                   'Potrai generare nuove idee regalo più facilmente in futuro',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: AppTheme.textSecondaryColor,
+                    color: Colors.white.withOpacity(0.9),
                   ),
                 ),
               ],
@@ -389,7 +513,89 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
           ElevatedButton(
             onPressed: _showSaveRecipientModal,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: Colors.white,
+              foregroundColor: CosmicTheme.primaryAccent,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Salva',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSaveRecipientBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            CosmicTheme.primaryAccent.withOpacity(0.1),
+            CosmicTheme.primaryAccent.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: CosmicTheme.primaryAccent.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: CosmicTheme.primaryAccent.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.bookmark_add,
+              color: CosmicTheme.primaryAccent,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Salva questo destinatario',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Potrai generare nuove idee regalo più facilmente in futuro',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: CosmicTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          ElevatedButton(
+            onPressed: _showSaveRecipientModal,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: CosmicTheme.primaryAccent,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -402,6 +608,164 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCosmicRecipientInfoSection() {
+    // Determina quale nome mostrare
+    String displayName = widget.recipientName;
+    int? displayAge = widget.recipientAge;
+
+    // Se abbiamo salvato un destinatario, usa i suoi dati
+    if (_recipientSaved && _savedRecipientData != null) {
+      displayName = _savedRecipientData!['name'] ?? widget.recipientName;
+      // Calcola l'età dalla data di nascita se disponibile
+      if (_savedRecipientData!['birth_date'] != null) {
+        try {
+          final birthDate = DateTime.parse(_savedRecipientData!['birth_date']);
+          final now = DateTime.now();
+          displayAge = now.year - birthDate.year;
+          if (now.month < birthDate.month || 
+              (now.month == birthDate.month && now.day < birthDate.day)) {
+            displayAge = displayAge! - 1;
+          }
+        } catch (e) {
+          // Se c'è un errore nel parsing, mantieni l'età originale
+        }
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(24, widget.existingRecipient == null && !_recipientSaved ? 0 : 24, 24, 24),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.9),
+                  Colors.white.withOpacity(0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                displayName.isNotEmpty 
+                  ? displayName[0].toUpperCase() 
+                  : '?',
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: CosmicTheme.primaryAccent,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Idee regalo per',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (_recipientSaved || widget.existingRecipient != null) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.4),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.bookmark,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Salvato',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  displayName.isNotEmpty 
+                    ? displayName 
+                    : 'Destinatario',
+                  style: GoogleFonts.inter(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                if (displayAge != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '$displayAge anni',
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],
@@ -440,18 +804,18 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.accentColor.withOpacity(0.1),
-            AppTheme.primaryColor.withOpacity(0.05),
+            CosmicTheme.primaryAccent.withOpacity(0.1),
+            CosmicTheme.primaryAccent.withOpacity(0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.primaryColor.withOpacity(0.3),
+          color: CosmicTheme.primaryAccent.withOpacity(0.3),
           width: 1,
         ),
-        boxShadow: AppTheme.softShadow,
+        boxShadow: CosmicTheme.softShadow,
       ),
       child: Row(
         children: [
@@ -459,11 +823,11 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+              gradient: CosmicTheme.primaryGradient,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  color: CosmicTheme.primaryAccent.withOpacity(0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -493,7 +857,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                       'Idee regalo per',
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: AppTheme.primaryColor,
+                        color: CosmicTheme.primaryAccent,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -502,10 +866,10 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppTheme.accentColor.withOpacity(0.2),
+                          color: CosmicTheme.primaryAccent.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: AppTheme.accentColor.withOpacity(0.4),
+                            color: CosmicTheme.primaryAccent.withOpacity(0.4),
                             width: 1,
                           ),
                         ),
@@ -514,7 +878,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                           children: [
                             Icon(
                               Icons.bookmark,
-                              color: AppTheme.accentColor,
+                              color: CosmicTheme.primaryAccent,
                               size: 12,
                             ),
                             const SizedBox(width: 4),
@@ -522,7 +886,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                               'Salvato',
                               style: GoogleFonts.inter(
                                 fontSize: 11,
-                                color: AppTheme.accentColor,
+                                color: CosmicTheme.primaryAccent,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -540,7 +904,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
+                    color: CosmicTheme.textPrimary,
                   ),
                 ),
                 if (displayAge != null) ...[
@@ -549,7 +913,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                     '$displayAge anni',
                     style: GoogleFonts.inter(
                       fontSize: 15,
-                      color: AppTheme.textSecondaryColor,
+                      color: CosmicTheme.textSecondary,
                     ),
                   ),
                 ],
@@ -567,18 +931,18 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.surfaceColor,
-            AppTheme.surfaceColor.withOpacity(0.8),
+            CosmicTheme.surfaceColor,
+            CosmicTheme.surfaceColor.withOpacity(0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppTheme.borderColor,
+          color: CosmicTheme.secondaryAccent,
           width: 1,
         ),
-        boxShadow: AppTheme.softShadow,
+        boxShadow: CosmicTheme.softShadow,
       ),
       child: Column(
         children: [
@@ -614,7 +978,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                               errorBuilder: (context, error2, stackTrace2) {
                                 return Container(
                                   decoration: BoxDecoration(
-                                    gradient: AppTheme.primaryGradient,
+                                    gradient: CosmicTheme.primaryGradient,
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(20),
                                       topRight: Radius.circular(20),
@@ -640,7 +1004,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               decoration: BoxDecoration(
-                                gradient: AppTheme.primaryGradient,
+                                gradient: CosmicTheme.primaryGradient,
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(20),
                                   topRight: Radius.circular(20),
@@ -656,7 +1020,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                             );
                           },
                         ),
-                  
+
                   // Overlay gradient per leggibilità
                   Container(
                     decoration: BoxDecoration(
@@ -674,7 +1038,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                       ),
                     ),
                   ),
-                  
+
                   // Testo sovrapposto
                   Positioned(
                     bottom: 16,
@@ -738,7 +1102,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                     children: [
                       Icon(
                         Icons.analytics,
-                        color: AppTheme.primaryColor,
+                        color: CosmicTheme.primaryAccent,
                         size: 16,
                       ),
                       const SizedBox(width: 6),
@@ -746,7 +1110,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                         'Compatibilità: ${gift.match}%',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: AppTheme.textSecondaryColor,
+                          color: CosmicTheme.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -765,11 +1129,11 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        gradient: AppTheme.primaryGradient,
+                        gradient: CosmicTheme.primaryGradient,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withOpacity(0.3),
+                            color: CosmicTheme.primaryAccent.withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -790,10 +1154,10 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                     // Bottone salva
                     Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: CosmicTheme.surfaceColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppTheme.borderColor,
+                          color: CosmicTheme.secondaryAccent,
                           width: 1,
                         ),
                       ),
@@ -804,8 +1168,8 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                             ? Icons.hourglass_empty 
                             : Icons.favorite_border,
                           color: _isLoading 
-                            ? AppTheme.textTertiaryColor 
-                            : AppTheme.primaryColor,
+                            ? CosmicTheme.textTertiary 
+                            : CosmicTheme.primaryAccent,
                           size: 20,
                         ),
                         tooltip: 'Salva regalo',
@@ -819,32 +1183,36 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(
-                              color: AppTheme.accentColor.withOpacity(0.3),
-                              width: 1,
-                            ),
+                            gradient: CosmicTheme.primaryGradient,
                             borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: TextButton.icon(
                             onPressed: () => _showPurchaseDisclaimer(gift),
                             style: TextButton.styleFrom(
-                              foregroundColor: AppTheme.accentColor,
+                              foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.open_in_new,
                               size: 16,
-                              color: AppTheme.accentColor,
+                              color: Colors.white,
                             ),
                             label: Text(
                               'Vedi prodotto',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: AppTheme.accentColor,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -879,10 +1247,10 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: CosmicTheme.surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.borderColor,
+            color: CosmicTheme.secondaryAccent,
             width: 1,
           ),
         ),
@@ -893,12 +1261,12 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: CosmicTheme.primaryAccent.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 Icons.favorite,
-                color: AppTheme.primaryColor,
+                color: CosmicTheme.primaryAccent,
                 size: 32,
               ),
             ),
@@ -910,7 +1278,7 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: CosmicTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -921,7 +1289,7 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
               'Per salvare "${gift.name}" e associarlo al destinatario, devi prima creare il destinatario.',
               style: GoogleFonts.inter(
                 fontSize: 16,
-                color: AppTheme.textSecondaryColor,
+                color: CosmicTheme.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -931,10 +1299,10 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.accentColor.withOpacity(0.1),
+                color: CosmicTheme.primaryAccent.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppTheme.accentColor.withOpacity(0.3),
+                  color: CosmicTheme.primaryAccent.withOpacity(0.3),
                   width: 1,
                 ),
               ),
@@ -942,7 +1310,7 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.lightbulb_outline,
-                    color: AppTheme.accentColor,
+                    color: CosmicTheme.primaryAccent,
                     size: 20,
                   ),
                   const SizedBox(width: 12),
@@ -951,7 +1319,7 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
                       'Salvare i regali per un destinatario aiuterà l\'AI a trovare regali ancora più personalizzati in futuro!',
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: AppTheme.textSecondaryColor,
+                        color: CosmicTheme.textSecondary,
                       ),
                     ),
                   ),
@@ -969,7 +1337,7 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: onCreateRecipient,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: CosmicTheme.primaryAccent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -994,7 +1362,7 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.textSecondaryColor,
+                      foregroundColor: CosmicTheme.textSecondary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: Text(
@@ -1029,10 +1397,10 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: CosmicTheme.surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.borderColor,
+            color: CosmicTheme.secondaryAccent,
             width: 1,
           ),
         ),
@@ -1060,7 +1428,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimaryColor,
+                color: CosmicTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -1071,7 +1439,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
               'Sarai reindirizzato al negozio online per acquistare "${gift.name}". Cosa vuoi fare?',
               style: GoogleFonts.inter(
                 fontSize: 16,
-                color: AppTheme.textSecondaryColor,
+                color: CosmicTheme.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -1086,7 +1454,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => Navigator.of(context).pop('save_and_follow'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: CosmicTheme.primaryAccent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -1111,7 +1479,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => Navigator.of(context).pop('follow_only'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentColor,
+                      backgroundColor: CosmicTheme.primaryAccent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -1136,7 +1504,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop('cancel'),
                     style: TextButton.styleFrom(
-                      foregroundColor: AppTheme.textSecondaryColor,
+                      foregroundColor: CosmicTheme.textSecondary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: Text(
@@ -1319,7 +1687,7 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Destinatario salvato con successo!'),
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: CosmicTheme.primaryAccent,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1350,10 +1718,10 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
         padding: const EdgeInsets.all(24),
         constraints: const BoxConstraints(maxHeight: 600),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: CosmicTheme.surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.borderColor,
+            color: CosmicTheme.secondaryAccent,
             width: 1,
           ),
         ),
@@ -1370,12 +1738,12 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: CosmicTheme.primaryAccent.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.person_add,
-                        color: AppTheme.primaryColor,
+                        color: CosmicTheme.primaryAccent,
                         size: 24,
                       ),
                     ),
@@ -1386,7 +1754,7 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                         style: GoogleFonts.inter(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimaryColor,
+                          color: CosmicTheme.textPrimary,
                         ),
                       ),
                     ),
@@ -1394,7 +1762,7 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                       onPressed: () => Navigator.of(context).pop(),
                       icon: Icon(
                         Icons.close,
-                        color: AppTheme.textSecondaryColor,
+                        color: CosmicTheme.textSecondary,
                       ),
                     ),
                   ],
@@ -1483,8 +1851,8 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                         : 'Seleziona data',
                       style: TextStyle(
                         color: _birthDate != null 
-                          ? AppTheme.textPrimaryColor 
-                          : AppTheme.textSecondaryColor,
+                          ? CosmicTheme.textPrimary 
+                          : CosmicTheme.textSecondary,
                       ),
                     ),
                   ),
@@ -1510,9 +1878,9 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                     const SizedBox(width: 8),
                     IconButton(
                       onPressed: _addInterest,
-                      icon: Icon(Icons.add, color: AppTheme.primaryColor),
+                      icon: Icon(Icons.add, color: CosmicTheme.primaryAccent),
                       style: IconButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                        backgroundColor: CosmicTheme.primaryAccent.withOpacity(0.1),
                       ),
                     ),
                   ],
@@ -1528,7 +1896,7 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                         label: Text(interest),
                         deleteIcon: const Icon(Icons.close, size: 18),
                         onDeleted: () => _removeInterest(interest),
-                        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                        backgroundColor: CosmicTheme.primaryAccent.withOpacity(0.1),
                       );
                     }).toList(),
                   ),
@@ -1561,7 +1929,7 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.textSecondaryColor,
+                            color: CosmicTheme.textSecondary,
                           ),
                         ),
                       ),
@@ -1571,7 +1939,7 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _saveRecipient,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
+                          backgroundColor: CosmicTheme.primaryAccent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
