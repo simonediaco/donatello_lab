@@ -35,6 +35,16 @@ class CosmicTheme {
   // COLORI STARS/STELLE
   static const Color star = Color(0x66374151); // rgba(55, 65, 81, 0.4)
 
+  // COLORI AGGIUNTIVI USATI NELL'APP
+  static const Color yellow = Color(0xFFFBBF24); // Giallo principale
+  static const Color yellowLight = Color(0xFFFEF3C7); // Giallo chiaro
+  static const Color red = Color(0xFFEF4444); // Rosso principale
+  static const Color redLight = Color(0xFFFEE2E2); // Rosso chiaro
+  static const Color green = Color(0xFF10B981); // Verde principale
+  static const Color greenLight = Color(0xFFD1FAE5); // Verde chiaro
+  static const Color orange = Color(0xFFF97316); // Arancione principale
+  static const Color orangeLight = Color(0xFFFED7AA); // Arancione chiaro
+
   // GETTER PER FACILITÀ D'USO
   static Color get surface => surfaceColor;
 

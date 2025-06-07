@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../widgets/custom_button.dart';
 
 class AddRecipientScreen extends ConsumerStatefulWidget {
   const AddRecipientScreen({Key? key}) : super(key: key);
@@ -73,7 +73,7 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
@@ -110,16 +110,40 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
   }
 
   void _nextStep() {
-    if (_formKey.currentState!.validate()) {
-      if (_currentStep < 3) {
+    if (_currentStep < 3) {
+      if (_validateCurrentStep()) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
         setState(() => _currentStep++);
-      } else {
-        _saveRecipient();
       }
+    } else {
+      _saveRecipient();
+    }
+  }
+
+  bool _validateCurrentStep() {
+    switch (_currentStep) {
+      case 0:
+        if (_nameController.text.trim().isEmpty) {
+          _showError('Il nome è obbligatorio');
+          return false;
+        }
+        if (_selectedGender == null) {
+          _showError('Seleziona il genere');
+          return false;
+        }
+        return true;
+      case 1:
+        final relation = _showCustomRelation ? _customRelationController.text.trim() : _selectedRelation;
+        if (relation == null || relation.isEmpty) {
+          _showError('Specifica la relazione');
+          return false;
+        }
+        return true;
+      default:
+        return true;
     }
   }
 
@@ -135,12 +159,53 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
     }
   }
 
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: CosmicTheme.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(1995),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: CosmicTheme.primaryAccent,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && mounted) {
       setState(() {
@@ -173,16 +238,7 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
   Future<void> _saveRecipient() async {
     setState(() => _errorMessage = null);
 
-    if (_selectedGender == null) {
-      setState(() => _errorMessage = 'Seleziona il genere');
-      return;
-    }
-
     final relation = _showCustomRelation ? _customRelationController.text.trim() : _selectedRelation;
-    if (relation == null || relation.isEmpty) {
-      setState(() => _errorMessage = 'Specifica la relazione');
-      return;
-    }
 
     setState(() => _isLoading = true);
 
@@ -201,7 +257,28 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
       await apiService.createRecipient(recipientData);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Destinatario salvato con successo')),
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Destinatario salvato con successo!',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: CosmicTheme.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
         );
         context.pop();
       }
@@ -212,95 +289,347 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
     }
   }
 
-  Widget _buildStep1() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Informazioni base',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          CustomTextField(
-            hint: 'Inserisci il nome',
-            controller: _nameController,
-            label: 'Nome',
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Il nome è obbligatorio';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          const Text('Genere', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _genderOptions.map((option) {
-              final isSelected = _selectedGender == option['value'];
-              return GestureDetector(
-                onTap: () => setState(() => _selectedGender = option['value']),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: CosmicTheme.cosmicGradient,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
+              
+              // Progress
+              _buildProgress(),
+              
+              // Content
+              Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: isSelected ? AppTheme.primaryColor : Colors.grey[300]!,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(option['icon']!, style: const TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
-                      Text(
-                        option['label']!,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        ),
-                      ),
-                    ],
+                  child: Form(
+                    key: _formKey,
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildStep1(),
+                        _buildStep2(),
+                        _buildStep3(),
+                        _buildStep4(),
+                      ],
+                    ),
                   ),
                 ),
-              );
-            }).toList(),
+              ),
+              
+              // Bottom actions
+              _buildBottomActions(),
+            ],
           ),
-          const SizedBox(height: 16),
-          CustomTextField(
-            hint: 'YYYY-MM-DD',
-            controller: _birthDateController,
-            label: 'Data di nascita (opzionale)',
-            hintText: 'YYYY-MM-DD',
-            readOnly: true,
-            onTap: _selectDate,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Nuovo Destinatario',
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Crea un profilo per trovare regali perfetti',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildProgress() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        children: List.generate(4, (index) {
+          final isActive = index <= _currentStep;
+          return Expanded(
+            child: Container(
+              margin: EdgeInsets.only(right: index < 3 ? 8 : 0),
+              height: 4,
+              decoration: BoxDecoration(
+                color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildStep1() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Step indicator
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: CosmicTheme.primaryAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Passo 1 di 4',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.primaryAccent,
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              Text(
+                'Informazioni Base',
+                style: GoogleFonts.inter(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: CosmicTheme.textPrimary,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              
+              const SizedBox(height: 8),
+              
+              Text(
+                'Iniziamo con le informazioni essenziali',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: CosmicTheme.textSecondary,
+                ),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              CustomTextField(
+                hint: 'Inserisci il nome',
+                controller: _nameController,
+                label: 'Nome *',
+              ),
+              
+              const SizedBox(height: 24),
+              
+              Text(
+                'Genere *',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: CosmicTheme.textPrimary,
+                ),
+              ),
+              
+              const SizedBox(height: 12),
+              
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: _genderOptions.map((option) {
+                  final isSelected = _selectedGender == option['value'];
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedGender = option['value']),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: isSelected ? CosmicTheme.buttonGradient : null,
+                        color: isSelected ? null : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                          width: 1,
+                        ),
+                        boxShadow: isSelected ? CosmicTheme.lightShadow : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(option['icon']!, style: const TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Text(
+                            option['label']!,
+                            style: GoogleFonts.inter(
+                              color: isSelected ? Colors.white : CosmicTheme.textPrimary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              GestureDetector(
+                onTap: _selectDate,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Data di nascita (opzionale)',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: CosmicTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            color: CosmicTheme.textSecondary,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _birthDateController.text.isNotEmpty 
+                              ? _birthDateController.text 
+                              : 'Seleziona data',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              color: _birthDateController.text.isNotEmpty 
+                                ? CosmicTheme.textPrimary 
+                                : CosmicTheme.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStep2() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Relazione',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: CosmicTheme.primaryAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Passo 2 di 4',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: CosmicTheme.primaryAccent,
+              ),
+            ),
           ),
-          const SizedBox(height: 20),
-          const Text('Che relazione hai con questa persona?'),
-          const SizedBox(height: 16),
+          
+          const SizedBox(height: 24),
+          
+          Text(
+            'Relazione',
+            style: GoogleFonts.inter(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: CosmicTheme.textPrimary,
+              letterSpacing: -0.5,
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Text(
+            'Che relazione hai con questa persona?',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: CosmicTheme.textSecondary,
+            ),
+          ),
+          
+          const SizedBox(height: 32),
+          
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 12,
+            runSpacing: 12,
             children: _relationOptions.map((option) {
               final isSelected = _selectedRelation == option['value'];
               return GestureDetector(
@@ -308,14 +637,18 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
                   _selectedRelation = option['value'];
                   _showCustomRelation = false;
                 }),
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(25),
+                    gradient: isSelected ? CosmicTheme.buttonGradient : null,
+                    color: isSelected ? null : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? AppTheme.primaryColor : Colors.grey[300]!,
+                      color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                      width: 1,
                     ),
+                    boxShadow: isSelected ? CosmicTheme.lightShadow : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -324,9 +657,10 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
                       const SizedBox(width: 8),
                       Text(
                         option['label']!,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        style: GoogleFonts.inter(
+                          color: isSelected ? Colors.white : CosmicTheme.textPrimary,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -335,20 +669,26 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
               );
             }).toList(),
           ),
+          
           const SizedBox(height: 16),
+          
           GestureDetector(
             onTap: () => setState(() {
               _showCustomRelation = !_showCustomRelation;
               if (_showCustomRelation) _selectedRelation = null;
             }),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: _showCustomRelation ? AppTheme.primaryColor : Colors.grey[100],
-                borderRadius: BorderRadius.circular(25),
+                gradient: _showCustomRelation ? CosmicTheme.buttonGradient : null,
+                color: _showCustomRelation ? null : Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _showCustomRelation ? AppTheme.primaryColor : Colors.grey[300]!,
+                  color: _showCustomRelation ? Colors.transparent : Colors.grey.shade200,
+                  width: 1,
                 ),
+                boxShadow: _showCustomRelation ? CosmicTheme.lightShadow : null,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -357,27 +697,23 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
                   const SizedBox(width: 8),
                   Text(
                     'Altro',
-                    style: TextStyle(
-                      color: _showCustomRelation ? Colors.white : Colors.black87,
-                      fontWeight: _showCustomRelation ? FontWeight.w600 : FontWeight.normal,
+                    style: GoogleFonts.inter(
+                      color: _showCustomRelation ? Colors.white : CosmicTheme.textPrimary,
+                      fontWeight: _showCustomRelation ? FontWeight.w600 : FontWeight.w500,
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
             ),
           ),
+          
           if (_showCustomRelation) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             CustomTextField(
               hint: 'es: Cugino, Vicino di casa...',
               controller: _customRelationController,
-              label: 'Specifica la relazione',
-              validator: (value) {
-                if (_showCustomRelation && (value == null || value.isEmpty)) {
-                  return 'Specifica la relazione';
-                }
-                return null;
-              },
+              label: 'Specifica la relazione *',
             ),
           ],
         ],
@@ -387,20 +723,53 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
 
   Widget _buildStep3() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Interessi',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: CosmicTheme.primaryAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Passo 3 di 4',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: CosmicTheme.primaryAccent,
+              ),
+            ),
           ),
-          const SizedBox(height: 20),
-          const Text('Seleziona gli interessi di questa persona:'),
-          const SizedBox(height: 16),
+          
+          const SizedBox(height: 24),
+          
+          Text(
+            'Interessi',
+            style: GoogleFonts.inter(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: CosmicTheme.textPrimary,
+              letterSpacing: -0.5,
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Text(
+            'Seleziona gli interessi di questa persona',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: CosmicTheme.textSecondary,
+            ),
+          ),
+          
+          const SizedBox(height: 32),
+          
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 12,
+            runSpacing: 12,
             children: _interestOptions.map((option) {
               final isSelected = _selectedInterests.contains(option['value']);
               return GestureDetector(
@@ -411,14 +780,18 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
                     _selectedInterests.add(option['value']!);
                   }
                 }),
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(25),
+                    gradient: isSelected ? CosmicTheme.buttonGradient : null,
+                    color: isSelected ? null : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? AppTheme.primaryColor : Colors.grey[300]!,
+                      color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                      width: 1,
                     ),
+                    boxShadow: isSelected ? CosmicTheme.lightShadow : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -427,9 +800,10 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
                       const SizedBox(width: 8),
                       Text(
                         option['value']!,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        style: GoogleFonts.inter(
+                          color: isSelected ? Colors.white : CosmicTheme.textPrimary,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          fontSize: 14,
                         ),
                       ),
                     ],
@@ -438,7 +812,9 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
               );
             }).toList(),
           ),
-          const SizedBox(height: 20),
+          
+          const SizedBox(height: 24),
+          
           Row(
             children: [
               Expanded(
@@ -448,23 +824,58 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
                   label: 'Aggiungi interesse personalizzato',
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: _addCustomInterest,
-                icon: const Icon(Icons.add_circle, color: AppTheme.primaryColor),
+              const SizedBox(width: 12),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: CosmicTheme.buttonGradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: CosmicTheme.lightShadow,
+                ),
+                child: IconButton(
+                  onPressed: _addCustomInterest,
+                  icon: const Icon(Icons.add, color: Colors.white),
+                ),
               ),
             ],
           ),
+          
           if (_customInterests.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: _customInterests.map((interest) {
-                return Chip(
-                  label: Text(interest),
-                  onDeleted: () => setState(() => _customInterests.remove(interest)),
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: CosmicTheme.primaryAccent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        interest,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: CosmicTheme.primaryAccent,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => setState(() => _customInterests.remove(interest)),
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
+                          color: CosmicTheme.primaryAccent,
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }).toList(),
             ),
@@ -476,15 +887,50 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
 
   Widget _buildStep4() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Note aggiuntive',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: CosmicTheme.primaryAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Passo 4 di 4',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: CosmicTheme.primaryAccent,
+              ),
+            ),
           ),
-          const SizedBox(height: 20),
+          
+          const SizedBox(height: 24),
+          
+          Text(
+            'Note Aggiuntive',
+            style: GoogleFonts.inter(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: CosmicTheme.textPrimary,
+              letterSpacing: -0.5,
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Text(
+            'Aggiungi dettagli che ci aiutino a trovare regali perfetti',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: CosmicTheme.textSecondary,
+            ),
+          ),
+          
+          const SizedBox(height: 32),
+          
           Row(
             children: [
               Expanded(
@@ -492,50 +938,98 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
                   hint: 'es: Horror, Pesce, Sport estremi',
                   controller: _dislikesController,
                   label: 'Cose che non gradisce (separare con virgole)',
-                  hintText: 'es: Horror, Pesce, Sport estremi',
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: _addDislike,
-                icon: const Icon(Icons.add_circle, color: AppTheme.primaryColor),
+              const SizedBox(width: 12),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: CosmicTheme.buttonGradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: CosmicTheme.lightShadow,
+                ),
+                child: IconButton(
+                  onPressed: _addDislike,
+                  icon: const Icon(Icons.add, color: Colors.white),
+                ),
               ),
             ],
           ),
+          
           if (_dislikes.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: _dislikes.map((dislike) {
-                return Chip(
-                  label: Text(dislike),
-                  onDeleted: () => setState(() => _dislikes.remove(dislike)),
-                  backgroundColor: Colors.red.withOpacity(0.1),
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: CosmicTheme.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: CosmicTheme.red.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        dislike,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: CosmicTheme.red,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => setState(() => _dislikes.remove(dislike)),
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
+                          color: CosmicTheme.red,
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }).toList(),
             ),
           ],
-          const SizedBox(height: 20),
+          
+          const SizedBox(height: 24),
+          
           CustomTextField(
             hint: 'Aggiungi qualsiasi informazione utile...',
             controller: _notesController,
             label: 'Note personali (opzionale)',
-            hintText: 'Aggiungi qualsiasi informazione utile...',
             maxLines: 4,
           ),
+          
           if (_errorMessage != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                color: CosmicTheme.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: CosmicTheme.red.withOpacity(0.3)),
               ),
-              child: Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: CosmicTheme.red, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _errorMessage!,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: CosmicTheme.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -544,96 +1038,87 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Aggiungi Destinatario'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+  Widget _buildBottomActions() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, -8),
+          ),
+        ],
       ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Progress indicator
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
-                children: List.generate(4, (index) {
-                  final isActive = index <= _currentStep;
-                  final isCompleted = index < _currentStep;
-                  return Expanded(
-                    child: Container(
-                      margin: EdgeInsets.only(right: index < 3 ? 8 : 0),
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isActive ? AppTheme.primaryColor : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildStep1(),
-                  _buildStep2(),
-                  _buildStep3(),
-                  _buildStep4(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
+      child: SafeArea(
         child: Row(
           children: [
-            if (_currentStep > 0)
+            if (_currentStep > 0) ...[
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _previousStep,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: AppTheme.primaryColor),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                    ),
                   ),
-                  child: const Text('Indietro'),
+                  child: TextButton(
+                    onPressed: _previousStep,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Indietro',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: CosmicTheme.primaryAccent,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            if (_currentStep > 0) const SizedBox(width: 16),
+              const SizedBox(width: 16),
+            ],
             Expanded(
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _nextStep,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: CosmicTheme.buttonGradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: CosmicTheme.lightShadow,
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : Text(
-                        _currentStep < 3 ? 'Avanti' : 'Salva',
-                        style: const TextStyle(color: Colors.white),
-                      ),
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _nextStep,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          _currentStep < 3 ? 'Continua' : 'Salva Destinatario',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
               ),
             ),
           ],

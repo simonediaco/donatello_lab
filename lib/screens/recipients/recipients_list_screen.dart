@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/api_service.dart';
 import '../../models/recipient.dart';
+import '../../models/gift.dart';
 import '../../widgets/custom_bottom_navigation.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 
 class RecipientsListScreen extends ConsumerStatefulWidget {
   const RecipientsListScreen({Key? key}) : super(key: key);
@@ -17,6 +20,8 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
     with TickerProviderStateMixin {
   List<Recipient> _recipients = [];
   List<Recipient> _filteredRecipients = [];
+  Map<int, List<Gift>> _giftsByRecipient = {};
+  Set<int> _expandedRecipients = {};
   bool _isLoading = true;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -49,7 +54,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
       curve: Curves.easeOut,
     ));
 
-    _loadRecipients();
+    _loadData();
   }
 
   @override
@@ -61,27 +66,41 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
 
   void _navigateToAddRecipient() async {
     await context.push('/recipients/add');
-    _loadRecipients();
+    _loadData();
   }
 
-  Future<void> _loadRecipients() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final apiService = ref.read(apiServiceProvider);
+
+      // Load recipients
       final recipientsData = await apiService.getRecipients();
-      
+      final recipients = recipientsData.map((data) => Recipient.fromJson(data)).toList();
+
+      // Load saved gifts
+      final giftsData = await apiService.getSavedGifts();
+      final gifts = giftsData.map((data) => Gift.fromJson(data)).toList();
+
+      // Group gifts by recipient
+      final giftsByRecipient = <int, List<Gift>>{};
+      for (final gift in gifts) {
+        if (gift.recipient != null) {
+          giftsByRecipient.putIfAbsent(gift.recipient!, () => []).add(gift);
+        }
+      }
+
       setState(() {
-        _recipients = recipientsData
-            .map((data) => Recipient.fromJson(data))
-            .toList();
-        _filteredRecipients = _recipients;
+        _recipients = recipients;
+        _filteredRecipients = recipients;
+        _giftsByRecipient = giftsByRecipient;
         _isLoading = false;
       });
-      
+
       _animationController.forward();
     } catch (e) {
-      print("Error loading recipients: $e");
+      print("Error loading data: $e");
       setState(() => _isLoading = false);
     }
   }
@@ -103,33 +122,150 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
     });
   }
 
-  Future<void> _refreshRecipients() async {
-    await _loadRecipients();
+  Future<void> _refreshData() async {
+    await _loadData();
+  }
+
+  void _toggleRecipient(int recipientId) {
+    final gifts = _giftsByRecipient[recipientId] ?? [];
+
+    // Se non ci sono regali, non fare nulla
+    if (gifts.isEmpty) return;
+
+    setState(() {
+      if (_expandedRecipients.contains(recipientId)) {
+        _expandedRecipients.remove(recipientId);
+      } else {
+        _expandedRecipients.add(recipientId);
+      }
+    });
+  }
+
+  Future<void> _launchUrl(String? url) async {
+    if (url == null || url == 'None' || url.isEmpty) return;
+
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _deleteGift(Gift gift) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Rimuovi Regalo',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: CosmicTheme.textPrimary,
+          ),
+        ),
+        content: Text(
+          'Sei sicuro di voler rimuovere "${gift.name}" dai tuoi regali salvati?',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: CosmicTheme.textSecondary,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Annulla',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: CosmicTheme.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Rimuovi',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true && gift.id != null) {
+      try {
+        final apiService = ref.read(apiServiceProvider);
+        await apiService.deleteSavedGift(gift.id!);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Regalo rimosso con successo',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+
+        _loadData();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Errore nella rimozione: ${e.toString()}',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header with search
-              _buildHeader(),
-              
-              // Content
-              Expanded(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header with cosmic background
+            Container(
+              decoration: const BoxDecoration(
+                gradient: CosmicTheme.cosmicGradient,
+              ),
+              child: _buildHeader(),
+            ),
+
+            // Content with normal background
+            Expanded(
+              child: Container(
+                color: Colors.grey.shade50,
                 child: _isLoading
                     ? _buildLoadingState()
                     : _recipients.isEmpty
                         ? _buildEmptyState()
                         : _buildRecipientsList(),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: _buildFloatingActionButton(),
@@ -151,13 +287,22 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recipients',
-                    style: Theme.of(context).textTheme.displaySmall,
+                    'Destinatari',
+                    style: GoogleFonts.inter(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: CosmicTheme.textPrimaryOnDark,
+                      letterSpacing: -1,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_recipients.length} people in your circle',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    '${_recipients.length} ${_recipients.length == 1 ? 'persona' : 'persone'} nella tua cerchia',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: CosmicTheme.textSecondaryOnDark,
+                    ),
                   ),
                 ],
               ),
@@ -165,13 +310,13 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: CosmicTheme.primaryAccent.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '${_recipients.length}',
-                    style: TextStyle(
-                      color: AppTheme.primaryColor,
+                    style: GoogleFonts.inter(
+                      color: CosmicTheme.primaryAccent,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
@@ -179,9 +324,9 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                 ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Search bar
           if (_recipients.isNotEmpty) _buildSearchBar(),
         ],
@@ -191,25 +336,39 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
 
   Widget _buildSearchBar() {
     return Container(
-      decoration: AppTheme.cardDecoration,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: TextField(
         controller: _searchController,
         onChanged: _filterRecipients,
+        style: GoogleFonts.inter(
+          fontSize: 16,
+          color: CosmicTheme.textPrimary,
+        ),
         decoration: InputDecoration(
-          hintText: 'Search recipients...',
-          hintStyle: TextStyle(
-            color: AppTheme.textTertiaryColor,
+          hintText: 'Cerca destinatari...',
+          hintStyle: GoogleFonts.inter(
+            color: CosmicTheme.textTertiary,
             fontSize: 16,
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: AppTheme.textTertiaryColor,
+            color: CosmicTheme.textTertiary,
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: Icon(
                     Icons.clear,
-                    color: AppTheme.textTertiaryColor,
+                    color: CosmicTheme.textTertiary,
                   ),
                   onPressed: () {
                     _searchController.clear();
@@ -229,15 +388,18 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
 
   Widget _buildLoadingState() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 40),
         const CircularProgressIndicator(
-          color: AppTheme.primaryColor,
+          color: CosmicTheme.primaryAccent,
         ),
         const SizedBox(height: 16),
         Text(
-          'Loading recipients...',
-          style: Theme.of(context).textTheme.bodyMedium,
+          'Caricamento destinatari...',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: CosmicTheme.textSecondary,
+          ),
         ),
       ],
     );
@@ -258,59 +420,79 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: CosmicTheme.primaryAccent.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(60),
                 ),
                 child: Icon(
                   Icons.people_outline,
                   size: 60,
-                  color: AppTheme.primaryColor,
+                  color: CosmicTheme.primaryAccent,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               Text(
-                'No recipients yet',
-                style: Theme.of(context).textTheme.displayMedium,
+                'Nessun destinatario',
+                style: GoogleFonts.inter(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: CosmicTheme.textPrimary,
+                ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               Text(
-                'Add people you want to find the perfect gift for. The more details you provide, the better our suggestions will be!',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                'Aggiungi le persone per cui vuoi trovare il regalo perfetto. Più dettagli fornisci, migliori saranno i nostri suggerimenti!',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: CosmicTheme.textSecondary,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Call to action
               Container(
                 padding: const EdgeInsets.all(24),
-                decoration: AppTheme.elevatedCardDecoration,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
                 child: Column(
                   children: [
                     Icon(
                       Icons.lightbulb_outline,
-                      color: AppTheme.warningColor,
+                      color: CosmicTheme.yellow,
                       size: 32,
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Pro Tip',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: AppTheme.warningColor,
+                      'Consiglio',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: CosmicTheme.yellow,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Include interests, favorite colors, and what they don\'t like for more personalized gift suggestions.',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      'Includi interessi, colori preferiti e cosa non gradiscono per suggerimenti più personalizzati.',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: CosmicTheme.textSecondary,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -329,12 +511,12 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
       child: SlideTransition(
         position: _slideAnimation,
         child: RefreshIndicator(
-          onRefresh: _refreshRecipients,
-          color: AppTheme.primaryColor,
+          onRefresh: _refreshData,
+          color: CosmicTheme.primaryAccent,
           child: _filteredRecipients.isEmpty
               ? _buildNoResultsState()
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
                   itemCount: _filteredRecipients.length,
                   itemBuilder: (context, index) {
                     return _buildRecipientCard(_filteredRecipients[index], index);
@@ -355,17 +537,24 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
             Icon(
               Icons.search_off,
               size: 64,
-              color: AppTheme.textTertiaryColor,
+              color: CosmicTheme.textSecondary,
             ),
             const SizedBox(height: 16),
             Text(
-              'No results found',
-              style: Theme.of(context).textTheme.headlineMedium,
+              'Nessun risultato',
+              style: GoogleFonts.inter(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: CosmicTheme.textPrimary,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Try adjusting your search terms',
-              style: Theme.of(context).textTheme.bodyMedium,
+              'Prova a modificare i termini di ricerca',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: CosmicTheme.textSecondary,
+              ),
             ),
           ],
         ),
@@ -374,159 +563,456 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
   }
 
   Widget _buildRecipientCard(Recipient recipient, int index) {
+    final gifts = _giftsByRecipient[recipient.id] ?? [];
+    final isExpanded = _expandedRecipients.contains(recipient.id);
+    final hasGifts = gifts.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: AppTheme.cardDecoration,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () async {
-            final result = await context.push('/recipients/${recipient.id}');
-            if (result == true) {
-              _loadRecipients();
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // Avatar
-                Hero(
-                  tag: 'recipient_avatar_${recipient.id}',
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: AppTheme.softShadow,
-                    ),
-                    child: Center(
-                      child: Text(
-                        recipient.name.isNotEmpty 
-                          ? recipient.name[0].toUpperCase()
-                          : '?',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header clickable per accordion
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () async {
+              if (hasGifts) {
+                _toggleRecipient(recipient.id!);
+              } else {
+                final result = await context.push('/recipients/${recipient.id}');
+                if (result == true) {
+                  _loadData();
+                }
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  // Avatar - clickable per dettagli
+                  GestureDetector(
+                    onTap: () async {
+                      final result = await context.push('/recipients/${recipient.id}');
+                      if (result == true) {
+                        _loadData();
+                      }
+                    },
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: CosmicTheme.buttonGradient,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          recipient.name.isNotEmpty 
+                            ? recipient.name[0].toUpperCase()
+                            : '?',
+                          style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                
-                const SizedBox(width: 16),
-                
-                // Content
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Name and age
-                      Row(
+
+                  const SizedBox(width: 16),
+
+                  // Content - clickable per dettagli
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        final result = await context.push('/recipients/${recipient.id}');
+                        if (result == true) {
+                          _loadData();
+                        }
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              recipient.name,
-                              style: Theme.of(context).textTheme.headlineSmall,
-                              overflow: TextOverflow.ellipsis,
+                          // Name and age
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  recipient.name,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: CosmicTheme.textPrimary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (recipient.age != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: CosmicTheme.primaryAccent.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '${recipient.age}y',
+                                    style: GoogleFonts.inter(
+                                      color: CosmicTheme.primaryAccent,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          // Relationship and gifts count
+                          Row(
+                            children: [
+                              Text(
+                                recipient.relation,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: CosmicTheme.primaryAccent,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              if (hasGifts) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: CosmicTheme.red.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.favorite,
+                                        color: CosmicTheme.red,
+                                        size: 12,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${gifts.length}',
+                                        style: GoogleFonts.inter(
+                                          color: CosmicTheme.red,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Interests chips
+                          if (recipient.interests.isNotEmpty)
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: recipient.interests
+                                  .take(3)
+                                  .map((interest) => Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade100,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          interest,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            color: CosmicTheme.textSecondary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+
+                          // Show more interests indicator
+                          if (recipient.interests.length > 3) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              '+${recipient.interests.length - 3} altro',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: CosmicTheme.textTertiary,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Actions section
+                  if (hasGifts)
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: CosmicTheme.textTertiary,
+                        size: 24,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Expanded content with gifts - smooth animation
+        AnimatedSize(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+          child: isExpanded && hasGifts
+              ? AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: isExpanded ? 1.0 : 0.0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Regali Salvati (${gifts.length})',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: CosmicTheme.textPrimary,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton.icon(
+                              onPressed: () async {
+                                final result = await context.push('/recipients/${recipient.id}');
+                                if (result == true) {
+                                  _loadData();
+                                }
+                              },
+                              icon: Icon(
+                                Icons.visibility,
+                                size: 16,
+                                color: CosmicTheme.primaryAccent,
+                              ),
+                              label: Text(
+                                'Vedi dettagli',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: CosmicTheme.primaryAccent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ...gifts.asMap().entries.map((entry) {
+                          final giftIndex = entry.key;
+                          final gift = entry.value;
+                          return Column(
+                            children: [
+                              _buildGiftCard(gift),
+                              if (giftIndex < gifts.length - 1) const SizedBox(height: 12),
+                            ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],)
+    );
+  }
+
+  Widget _buildGiftCard(Gift gift) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Gift icon
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      CosmicTheme.primaryAccent.withOpacity(0.3),
+                      CosmicTheme.primaryAccent.withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.card_giftcard,
+                  color: CosmicTheme.primaryAccent,
+                  size: 24,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // Gift info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      gift.name,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: CosmicTheme.textPrimary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    // Price and match
+                    Row(
+                      children: [
+                        if (gift.price > 0) ...[
+                          Text(
+                            '€${gift.price.toStringAsFixed(2)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green,
                             ),
                           ),
-                          if (recipient.age != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                          const SizedBox(width: 8),
+                        ],
+
+                        if (gift.match != null && gift.match! > 0) ...[
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.stars,
+                                color: CosmicTheme.yellow,
+                                size: 12,
                               ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${recipient.age}y',
-                                style: TextStyle(
-                                  color: AppTheme.primaryColor,
+                              const SizedBox(width: 2),
+                              Text(
+                                '${gift.match}%',
+                                style: GoogleFonts.inter(
+                                  color: CosmicTheme.yellow,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 4),
-                      
-                      // Relationship
-                      Text(
-                        recipient.relation,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 8),
-                      
-                      // Interests chips
-                      if (recipient.interests.isNotEmpty)
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: recipient.interests
-                              .take(3)
-                              .map((interest) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.cardColor,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
-                                        width: 0.5,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      interest,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: AppTheme.textSecondaryColor,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ))
-                              .toList(),
-                        ),
-                      
-                      // Show more interests indicator
-                      if (recipient.interests.length > 3) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          '+${recipient.interests.length - 3} more',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.textTertiaryColor,
-                            fontStyle: FontStyle.italic,
+                            ],
                           ),
-                        ),
+                        ],
                       ],
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Actions
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (gift.amazonLink != null && gift.amazonLink != 'None' && gift.amazonLink!.isNotEmpty)
+                    IconButton(
+                      onPressed: () => _launchUrl(gift.amazonLink),
+                      icon: Icon(
+                        Icons.shopping_cart,
+                        color: CosmicTheme.yellow,
+                        size: 20,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+
+                  const SizedBox(width: 4),
+
+                  IconButton(
+                    onPressed: () => _deleteGift(gift),
+                    icon: Icon(
+                      Icons.delete,
+                      color: CosmicTheme.red,
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
-                ),
-                
-                // Arrow
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: AppTheme.textTertiaryColor,
-                  size: 16,
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
-        ),
+
+          // Description
+          if (gift.description?.isNotEmpty == true) ...[
+            const SizedBox(height: 8),
+            Text(
+              gift.description!,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: CosmicTheme.textSecondary,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -534,11 +1020,11 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
   Widget _buildFloatingActionButton() {
     return Container(
       decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
+        gradient: CosmicTheme.buttonGradient,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: CosmicTheme.primaryAccent.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),

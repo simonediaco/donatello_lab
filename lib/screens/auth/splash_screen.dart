@@ -19,7 +19,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late AnimationController _logoController;
   late AnimationController _loadingController;
   late AnimationController _backgroundController;
-  
+
   late Animation<double> _logoScale;
   late Animation<double> _logoOpacity;
   late Animation<double> _loadingOpacity;
@@ -28,17 +28,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _loadingController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _backgroundController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
@@ -82,18 +82,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void _startAnimations() async {
     // Start background animation immediately
     _backgroundController.forward();
-    
+
     // Small delay then logo animation
     await Future.delayed(const Duration(milliseconds: 300));
     _logoController.forward();
-    
+
     // Start loading animation after logo
     await Future.delayed(const Duration(milliseconds: 800));
     _loadingController.forward();
 
     // Wait for animations to complete
     await Future.delayed(const Duration(milliseconds: 1500));
-    
+
     // Check auth and navigate
     await _checkAuthAndNavigate();
   }
@@ -102,7 +102,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     try {
       final authService = ref.read(authServiceProvider);
       final user = await authService.getCurrentUser();
-      
+
       if (mounted) {
         if (user != null) {
           ref.read(currentUserProvider.notifier).state = user;
@@ -149,7 +149,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 children: [
                   // Floating geometric shapes in background
                   _buildFloatingShapes(),
-                  
+
                   // Main content
                   Center(
                     child: Column(
@@ -167,27 +167,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   width: 120,
                                   height: 120,
                                   decoration: BoxDecoration(
-                                    gradient: CosmicTheme.buttonGradient,
-                                    borderRadius: BorderRadius.circular(32),
+                                    borderRadius: BorderRadius.circular(28),
                                     boxShadow: CosmicTheme.cosmicShadow,
                                   ),
-                                  child: Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                    ),
-                                    child: ClipOval(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(0),
-                                        child: SvgPicture.asset(
-                                          'assets/images/logos/donatello_logo.svg',
-                                          width: 64,
-                                          height: 64,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(28),
+                                    child: Image.asset(
+                                      'assets/images/logos/logo-donatello.png',
+                                      width: 120,
+                                      height: 120,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
@@ -301,7 +290,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             },
           ),
         ),
-        
+
         // Bottom left rounded rectangle
         Positioned(
           bottom: -40,
@@ -323,7 +312,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             },
           ),
         ),
-        
+
         // Center right small circle
         Positioned(
           top: MediaQuery.of(context).size.height * 0.3,

@@ -1,12 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/recipient.dart';
 import '../../services/api_service.dart';
-import '../../theme/app_theme.dart';
+import '../../theme/cosmic_theme.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../widgets/custom_button.dart';
 
 class EditRecipientScreen extends ConsumerStatefulWidget {
   final int recipientId;
@@ -23,22 +22,22 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
   final _nameController = TextEditingController();
   final _birthDateController = TextEditingController();
   final _relationController = TextEditingController();
-  final _interestsController = TextEditingController();
   final _notesController = TextEditingController();
-  final _dislikesController = TextEditingController();
   final _interestController = TextEditingController();
+  final _dislikeController = TextEditingController();
 
   bool _isLoading = true;
   bool _isSaving = false;
   String? _errorMessage;
   String? _selectedGender;
-  List<String> _selectedFavoriteColors = [];
   List<String> _interests = [];
   List<String> _dislikes = [];
   Recipient? _recipient;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
 
   final List<Map<String, String>> _genderOptions = [
     {'value': 'M', 'label': 'Uomo', 'icon': '👨'},
@@ -48,29 +47,38 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
     {'value': 'O', 'label': 'Altro', 'icon': '👤'},
   ];
 
-  final List<Map<String, dynamic>> _colorOptions = [
-    {'value': 'Rosso', 'color': Colors.red, 'icon': '🔴'},
-    {'value': 'Blu', 'color': Colors.blue, 'icon': '🔵'},
-    {'value': 'Verde', 'color': Colors.green, 'icon': '🟢'},
-    {'value': 'Giallo', 'color': Colors.yellow, 'icon': '🟡'},
-    {'value': 'Viola', 'color': Colors.purple, 'icon': '🟣'},
-    {'value': 'Arancione', 'color': Colors.orange, 'icon': '🟠'},
-    {'value': 'Rosa', 'color': Colors.pink, 'icon': '🩷'},
-    {'value': 'Nero', 'color': Colors.black, 'icon': '⚫'},
-    {'value': 'Bianco', 'color': Colors.grey[300], 'icon': '⚪'},
-    {'value': 'Marrone', 'color': Colors.brown, 'icon': '🟤'},
-  ];
-
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+    ));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+    ));
+
     _loadRecipient();
   }
 
@@ -79,10 +87,9 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
     _nameController.dispose();
     _birthDateController.dispose();
     _relationController.dispose();
-    _interestsController.dispose();
     _notesController.dispose();
-    _dislikesController.dispose();
     _interestController.dispose();
+    _dislikeController.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -97,9 +104,7 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
         _selectedGender = _recipient?.gender;
         _birthDateController.text = _recipient?.birthDate ?? '';
         _relationController.text = _recipient?.relation ?? '';
-        _interestsController.text = _recipient?.interests?.join(', ') ?? '';
         _notesController.text = _recipient?.notes ?? '';
-        _selectedFavoriteColors = List<String>.from(_recipient?.favoriteColors ?? []);
         _interests = List<String>.from(_recipient?.interests ?? []);
         _dislikes = List<String>.from(_recipient?.dislikes ?? []);
         _isLoading = false;
@@ -121,6 +126,16 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
         : DateTime(1995),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: CosmicTheme.primaryAccent,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && mounted) {
       setState(() {
@@ -140,20 +155,64 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
   }
 
   void _addDislike() {
-    final text = _dislikesController.text.trim();
+    final text = _dislikeController.text.trim();
     if (text.isNotEmpty) {
-      final newDislikes = text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
       setState(() {
-        _dislikes.addAll(newDislikes);
-        _dislikesController.clear();
+        _dislikes.add(text);
+        _dislikeController.clear();
       });
     }
   }
 
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: CosmicTheme.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
   Future<void> _saveRecipient() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_nameController.text.trim().isEmpty) {
+      _showError('Il nome è obbligatorio');
+      return;
+    }
+
+    if (_selectedGender == null) {
+      _showError('Seleziona il genere');
+      return;
+    }
+
+    if (_relationController.text.trim().isEmpty) {
+      _showError('La relazione è obbligatoria');
+      return;
+    }
 
     setState(() => _isSaving = true);
+
     try {
       final apiService = ref.read(apiServiceProvider);
       final updatedData = {
@@ -162,17 +221,35 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
         'birth_date': _birthDateController.text.isNotEmpty ? _birthDateController.text : null,
         'relation': _relationController.text.trim(),
         'interests': _interests,
-        'favorite_colors': _selectedFavoriteColors,
+        'favorite_colors': _recipient?.favoriteColors ?? [],
         'dislikes': _dislikes,
         'notes': _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
       };
       await apiService.updateRecipient(widget.recipientId, updatedData);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Destinatario aggiornato con successo'),
-            backgroundColor: Colors.green,
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Destinatario aggiornato con successo!',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: CosmicTheme.green,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
           ),
         );
         context.pop(true);
@@ -184,12 +261,576 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
     }
   }
 
-  Widget _buildSection(String title, Widget content, {IconData? icon}) {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: CosmicTheme.cosmicGradient,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
+
+              // Content
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? _buildLoadingState()
+                      : _recipient == null
+                          ? _buildErrorState()
+                          : _buildEditForm(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Modifica Destinatario',
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _recipient?.name ?? 'Caricamento...',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: CosmicTheme.primaryAccent),
+          SizedBox(height: 16),
+          Text('Caricamento destinatario...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: CosmicTheme.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(40),
+              ),
+              child: Icon(
+                Icons.error_outline,
+                size: 40,
+                color: CosmicTheme.red,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Errore di caricamento',
+              style: GoogleFonts.inter(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: CosmicTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Non è stato possibile caricare i dati del destinatario.',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: CosmicTheme.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditForm() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile header
+                Center(
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        gradient: CosmicTheme.buttonGradient,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          _nameController.text.isNotEmpty 
+                            ? _nameController.text[0].toUpperCase()
+                            : '?',
+                          style: GoogleFonts.inter(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Basic Information Section
+                _buildSection(
+                  'Informazioni Base',
+                  Icons.person_outline,
+                  [
+                    CustomTextField(
+                      hint: 'Inserisci il nome',
+                      controller: _nameController,
+                      label: 'Nome *',
+                      onChanged: (value) => setState(() {}), // Update avatar
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Text(
+                      'Genere *',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: CosmicTheme.textPrimary,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: _genderOptions.map((option) {
+                        final isSelected = _selectedGender == option['value'];
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedGender = option['value']),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              gradient: isSelected ? CosmicTheme.buttonGradient : null,
+                              color: isSelected ? null : Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                                width: 1,
+                              ),
+                              boxShadow: isSelected ? CosmicTheme.lightShadow : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(option['icon']!, style: const TextStyle(fontSize: 16)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  option['label']!,
+                                  style: GoogleFonts.inter(
+                                    color: isSelected ? Colors.white : CosmicTheme.textPrimary,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    GestureDetector(
+                      onTap: _selectDate,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Data di nascita',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: CosmicTheme.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  color: CosmicTheme.textSecondary,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _birthDateController.text.isNotEmpty 
+                                    ? _birthDateController.text 
+                                    : 'Seleziona data',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    color: _birthDateController.text.isNotEmpty 
+                                      ? CosmicTheme.textPrimary 
+                                      : CosmicTheme.textTertiary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // Relationship Section
+                _buildSection(
+                  'Relazione',
+                  Icons.people_outline,
+                  [
+                    CustomTextField(
+                      hint: 'es: amico, partner, famiglia...',
+                      controller: _relationController,
+                      label: 'Che relazione hai con questa persona? *',
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // Interests Section
+                _buildSection(
+                  'Interessi',
+                  Icons.favorite_outline,
+                  [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            hint: 'es: Musica, Sport, Tecnologia...',
+                            controller: _interestController,
+                            label: 'Aggiungi interesse',
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: CosmicTheme.buttonGradient,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: CosmicTheme.lightShadow,
+                          ),
+                          child: IconButton(
+                            onPressed: _addInterest,
+                            icon: const Icon(Icons.add, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    if (_interests.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _interests.map((interest) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: CosmicTheme.primaryAccent.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  interest,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: CosmicTheme.primaryAccent,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: () => setState(() => _interests.remove(interest)),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: CosmicTheme.primaryAccent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // Dislikes Section
+                _buildSection(
+                  'Cose che Non Gradisce',
+                  Icons.thumb_down_outlined,
+                  [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            hint: 'es: Horror, Pesce, Sport estremi...',
+                            controller: _dislikeController,
+                            label: 'Aggiungi cosa che non gradisce',
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: CosmicTheme.buttonGradient,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: CosmicTheme.lightShadow,
+                          ),
+                          child: IconButton(
+                            onPressed: _addDislike,
+                            icon: const Icon(Icons.add, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    if (_dislikes.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _dislikes.map((dislike) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: CosmicTheme.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: CosmicTheme.red.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  dislike,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: CosmicTheme.red,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: () => setState(() => _dislikes.remove(dislike)),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: CosmicTheme.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // Notes Section
+                _buildSection(
+                  'Note Aggiuntive',
+                  Icons.note_alt_outlined,
+                  [
+                    CustomTextField(
+                      hint: 'Aggiungi qualsiasi informazione utile...',
+                      controller: _notesController,
+                      label: 'Note personali',
+                      maxLines: 4,
+                    ),
+                  ],
+                ),
+
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: CosmicTheme.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: CosmicTheme.red.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: CosmicTheme.red, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: CosmicTheme.red,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 32),
+
+                // Save button
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: CosmicTheme.buttonGradient,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: CosmicTheme.lightShadow,
+                  ),
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _saveRecipient,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'Salva Modifiche',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, IconData icon, List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade100,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -198,419 +839,37 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, color: AppTheme.primaryColor, size: 20),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            content,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGenderSelection() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: _genderOptions.map((option) {
-        final isSelected = _selectedGender == option['value'];
-        return GestureDetector(
-          onTap: () => setState(() => _selectedGender = option['value']),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isSelected ? AppTheme.primaryColor : Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected ? AppTheme.primaryColor : Colors.grey[200]!,
-                width: isSelected ? 2 : 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(option['icon']!, style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-                Text(
-                  option['label']!,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildColorSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Seleziona i colori preferiti:',
-          style: TextStyle(fontSize: 14, color: AppTheme.textSecondaryColor),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: _colorOptions.map((option) {
-            final isSelected = _selectedFavoriteColors.contains(option['value']);
-            return GestureDetector(
-              onTap: () => setState(() {
-                if (isSelected) {
-                  _selectedFavoriteColors.remove(option['value']);
-                } else {
-                  _selectedFavoriteColors.add(option['value']!);
-                }
-              }),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.primaryColor.withOpacity(0.1) : Colors.grey[50],
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey[200]!,
-                    width: isSelected ? 2 : 1,
-                  ),
+                  color: CosmicTheme.primaryAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: option['color'],
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey[300]!, width: 1),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      option['value']!,
-                      style: TextStyle(
-                        color: isSelected ? AppTheme.primaryColor : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+                child: Icon(
+                  icon,
+                  color: CosmicTheme.primaryAccent,
+                  size: 20,
                 ),
               ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInterestsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: CustomTextField(
-                hint: 'es: Musica, Sport, Tecnologia',
-                controller: _interestController,
-                label: 'Aggiungi interesse',
-                hintText: 'Inserisci un interesse',
+              const SizedBox(width: 16),
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: CosmicTheme.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                onPressed: _addInterest,
-                icon: const Icon(Icons.add, color: Colors.white),
-                tooltip: 'Aggiungi',
-              ),
-            ),
-          ],
-        ),
-        if (_interests.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          const Text(
-            'Interessi:',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ],
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _interests.map((interest) {
-              return Chip(
-                label: Text(
-                  interest,
-                  style: const TextStyle(fontSize: 12),
-                ),
-                onDeleted: () => setState(() => _interests.remove(interest)),
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                deleteIconColor: AppTheme.primaryColor,
-                side: BorderSide(color: AppTheme.primaryColor.withOpacity(0.3)),
-              );
-            }).toList(),
-          ),
+          const SizedBox(height: 20),
+          ...children,
         ],
-      ],
-    );
-  }
-
-  Widget _buildDislikesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: CustomTextField(
-                hint: 'es: Horror, Pesce, Sport estremi',
-                controller: _dislikesController,
-                label: 'Aggiungi cosa che non gradisce',
-                hintText: 'Separare con virgole',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                onPressed: _addDislike,
-                icon: const Icon(Icons.add, color: Colors.white),
-                tooltip: 'Aggiungi',
-              ),
-            ),
-          ],
-        ),
-        if (_dislikes.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          const Text(
-            'Cose che non gradisce:',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _dislikes.map((dislike) {
-              return Chip(
-                label: Text(
-                  dislike,
-                  style: const TextStyle(fontSize: 12),
-                ),
-                onDeleted: () => setState(() => _dislikes.remove(dislike)),
-                backgroundColor: Colors.red.withOpacity(0.1),
-                deleteIconColor: Colors.red,
-                side: BorderSide(color: Colors.red.withOpacity(0.3)),
-              );
-            }).toList(),
-          ),
-        ],
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          'Modifica Destinatario',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor),
-            )
-          : FadeTransition(
-              opacity: _fadeAnimation,
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (_errorMessage != null)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.red.withOpacity(0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.error_outline, color: Colors.red),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                _errorMessage!,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    _buildSection(
-                      'Informazioni Base',
-                      Column(
-                        children: [
-                          CustomTextField(
-                            hint: 'Inserisci il nome',
-                            controller: _nameController,
-                            label: 'Nome',
-                            validator: (value) => value!.isEmpty ? 'Il nome è obbligatorio' : null,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Genere',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildGenderSelection(),
-                          const SizedBox(height: 16),
-                          CustomTextField(
-                            hint: 'YYYY-MM-DD',
-                            controller: _birthDateController,
-                            label: 'Data di nascita',
-                            readOnly: true,
-                            onTap: _selectDate,
-                          ),
-                        ],
-                      ),
-                      icon: Icons.person,
-                    ),
-
-                    _buildSection(
-                      'Relazione',
-                      CustomTextField(
-                        hint: 'es: amico, partner, famiglia...',
-                        controller: _relationController,
-                        label: 'Che relazione hai con questa persona?',
-                      ),
-                      icon: Icons.people,
-                    ),
-
-                    
-
-                    // _buildSection(
-                    //   'Colori Preferiti',
-                    //   _buildColorSelection(),
-                    //   icon: Icons.palette,
-                    // ),
-
-                    _buildSection(
-                      'Interessi',
-                      _buildInterestsSection(),
-                      icon: Icons.favorite,
-                    ),
-
-                    _buildSection(
-                      'Cose che Non Gradisce',
-                      _buildDislikesSection(),
-                      icon: Icons.not_interested,
-                    ),
-
-                    _buildSection(
-                      'Note Aggiuntive',
-                      CustomTextField(
-                        hint: 'Aggiungi qualsiasi informazione utile...',
-                        controller: _notesController,
-                        label: 'Note personali',
-                        maxLines: 4,
-                      ),
-                      icon: Icons.note_alt,
-                    ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: ElevatedButton(
-            onPressed: _isSaving ? null : _saveRecipient,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: _isSaving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text(
-                    'Salva Modifiche',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-          ),
-        ),
       ),
     );
   }
