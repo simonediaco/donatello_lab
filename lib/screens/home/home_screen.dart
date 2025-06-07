@@ -215,22 +215,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Logo/Title
-                        Text(
-                          'Donatello',
-                          style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: CosmicTheme.textPrimaryOnDark,
+                        // Logo
+                        Container(
+                          width: 44,
+                          height: 44,
+                          child: Image.asset(
+                            'assets/images/logos/logo-donatello-no-bg.png',
+                            fit: BoxFit.contain,
                           ),
                         ),
                         
                         // Profile and settings
                         Row(
                           children: [
-                            _buildCosmicIconButton(
-                              icon: Icons.notifications_outlined,
-                              onTap: () {
+                            IconButton(
+                              icon: Icon(
+                                Icons.notifications_outlined,
+                                color: CosmicTheme.textPrimaryOnDark,
+                                size: 26,
+                              ),
+                              onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Notifications coming soon')),
                                 );
@@ -403,7 +407,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         height: 44,
         decoration: BoxDecoration(
           gradient: CosmicTheme.buttonGradient,
-          borderRadius: BorderRadius.circular(12),
+          shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: CosmicTheme.primaryAccent.withOpacity(0.4),
@@ -579,26 +583,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   padding: const EdgeInsets.all(24),
                   child: Row(
                     children: [
-                      // Icon with cosmic glow
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.auto_awesome,
-                          color: Colors.white,
-                          size: 28,
-                        ),
+                      // Icon pulito senza container - stelle gialle
+                      const Icon(
+                        Icons.auto_awesome,
+                        color: Color(0xFFF59E0B), // Giallo del tema
+                        size: 32,
                       ),
                       const SizedBox(width: 20),
                       
@@ -628,19 +617,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ),
                       
-                      // Arrow with cosmic accent
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward,
-                          color: Colors.white,
-                          size: 18,
-                        ),
+                      // Freccia pulita senza container
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 24,
                       ),
                     ],
                   ),

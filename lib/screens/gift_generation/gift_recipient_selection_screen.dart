@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -94,7 +93,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
             children: [
               // Floating cosmic shapes
               _buildFloatingShapes(),
-              
+
               Column(
                 children: [
                   // Header section with cosmic background
@@ -110,20 +109,15 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                               icon: const Icon(
                                 Icons.arrow_back,
                                 color: Colors.white,
-                              ),
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.white.withOpacity(0.1),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                size: 26,
                               ),
                             ),
                             const Spacer(),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Title section
                         Text(
                           'Scegli destinatario',
@@ -134,9 +128,9 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                             letterSpacing: -1,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 8),
-                        
+
                         Text(
                           'Seleziona per chi vuoi generare idee regalo',
                           style: GoogleFonts.inter(
@@ -147,7 +141,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                       ],
                     ),
                   ),
-                  
+
                   // Content section with white background
                   Expanded(
                     child: FadeTransition(
@@ -213,7 +207,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
             },
           ),
         ),
-        
+
         // Left side red accent
         Positioned(
           top: 150,

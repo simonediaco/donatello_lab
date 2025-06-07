@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +24,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _bioController = TextEditingController();
-  
+
   bool _isLoading = true;
   bool _isEditing = false;
   bool _isSaving = false;
@@ -78,19 +77,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Future<void> _loadProfile() async {
     try {
       setState(() => _isLoading = true);
-      
+
       final apiService = ref.read(apiServiceProvider);
       final profileData = await apiService.getProfile();
-      
+
       _user = User.fromJson(profileData);
-      
+
       // Popoliamo i controller con i dati esistenti
       _firstNameController.text = _user!.firstName;
       _lastNameController.text = _user!.lastName;
       _emailController.text = _user!.email;
       _phoneController.text = _user!.profile?.phoneNumber ?? '';
       _bioController.text = _user!.profile?.bio ?? '';
-      
+
       setState(() => _isLoading = false);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -107,7 +106,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       setState(() => _isSaving = true);
 
       final apiService = ref.read(apiServiceProvider);
-      
+
       final updateData = {
         'first_name': _firstNameController.text.trim(),
         'last_name': _lastNameController.text.trim(),
@@ -118,11 +117,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       };
 
       final updatedData = await apiService.updateProfile(updateData);
-      
+
       // Aggiorniamo l'utente nel provider
       final updatedUser = User.fromJson(updatedData);
       ref.read(currentUserProvider.notifier).state = updatedUser;
-      
+
       setState(() {
         _user = updatedUser;
         _isEditing = false;
@@ -219,17 +218,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           gradient: CosmicTheme.backgroundLightGradient,
         ),
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              _buildCosmicHeader(),
-              Expanded(
-                child: _isLoading 
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(CosmicTheme.primaryAccent),
-                      ),
-                    )
-                  : _buildProfileContent(),
+              // Main content
+              Column(
+                children: [
+                  _buildCosmicHeader(),
+                  Expanded(
+                    child: _isLoading 
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(CosmicTheme.primaryAccent),
+                          ),
+                        )
+                      : _buildProfileContent(),
+                  ),
+                ],
+              ),
+              
+              // Profile avatar posizionato sopra tutto
+              Positioned(
+                top: 120, // 160 - 40 (altezza header - metà avatar)
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: _buildProfileAvatar(),
+                ),
               ),
             ],
           ),
@@ -252,7 +266,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         children: [
           // Floating cosmic shapes
           _buildFloatingShapes(),
-          
+
           // Header content
           Padding(
             padding: const EdgeInsets.all(24),
@@ -263,22 +277,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   children: [
                     GestureDetector(
                       onTap: () => context.pop(),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back,
-                          color: CosmicTheme.textPrimaryOnDark,
-                          size: 20,
-                        ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: CosmicTheme.textPrimaryOnDark,
+                        size: 20,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -296,38 +298,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     if (!_isEditing) ...[
                       GestureDetector(
                         onTap: () => setState(() => _isEditing = true),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            gradient: CosmicTheme.buttonGradient,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                        child: const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 20,
                         ),
                       ),
                     ],
                   ],
                 ),
-                
+
                 const SizedBox(height: 20),
-                
-                // Profile avatar
-                _buildProfileAvatar(),
               ],
             ),
           ),
+
+          
         ],
       ),
     );
@@ -357,7 +343,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             },
           ),
         ),
-        
+
         // Bottom left shape
         Positioned(
           bottom: 10,
@@ -427,7 +413,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       child: SlideTransition(
         position: _slideAnimation,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(24, 64, 24, 24), // Top padding per avatar
           child: Form(
             key: _formKey,
             child: Column(

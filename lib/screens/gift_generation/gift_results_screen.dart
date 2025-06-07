@@ -193,14 +193,8 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.home, color: CosmicTheme.textPrimary),
+          icon: Icon(Icons.home, color: CosmicTheme.textPrimary, size: 26),
           onPressed: () => context.go('/home'),
-          style: IconButton.styleFrom(
-            backgroundColor: CosmicTheme.surfaceColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
         ),
         title: Text(
           'Idee Regalo',
@@ -216,18 +210,20 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Elegant cosmic header - simpler and more refined
+            // Elegant cosmic header - centered and balanced
             Container(
               decoration: const BoxDecoration(
                 gradient: CosmicTheme.cosmicGradient,
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Main title with subtle cosmic glow
                       Container(
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         child: Column(
                           children: [
@@ -257,75 +253,55 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                                   color: Colors.white.withOpacity(0.8),
                                   fontWeight: FontWeight.w500,
                                 ),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ],
                         ),
                       ),
 
-                      // Cosmic quote with elegant styling
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          '"Ogni regalo racconta una storia scritta nelle stelle"',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.9),
-                            fontStyle: FontStyle.italic,
-                            height: 1.4,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                      // Save recipient button if not saved
+                      // Save recipient button if not saved - centered
                       if (widget.existingRecipient == null && !_recipientSaved) ...[
-                        const SizedBox(height: 24),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.white.withOpacity(0.3),
-                                Colors.white.withOpacity(0.1),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withOpacity(0.3),
+                                  Colors.white.withOpacity(0.1),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                            child: ElevatedButton.icon(
+                              onPressed: _showSaveRecipientModal,
+                              icon: const Icon(Icons.bookmark_add, color: Colors.white, size: 20),
+                              label: Text(
+                                'Salva destinatario',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ],
-                          ),
-                          child: ElevatedButton.icon(
-                            onPressed: _showSaveRecipientModal,
-                            icon: const Icon(Icons.bookmark_add, color: Colors.white, size: 20),
-                            label: Text(
-                              'Salva destinatario',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 14,
+                                ),
                               ),
                             ),
                           ),
@@ -963,63 +939,52 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
               child: Stack(
                 children: [
                   // Immagine di sfondo
-                  gift.category != null && gift.category!.isNotEmpty
-                      ? Image.asset(
-                          'assets/images/categories/${gift.category!.toLowerCase().replaceAll(' ', '_')}.png',
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: 160,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              'assets/images/categories/placeholder.png',
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: 160,
-                              errorBuilder: (context, error2, stackTrace2) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    gradient: CosmicTheme.primaryGradient,
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      topRight: Radius.circular(20),
-                                    ),
+                  Builder(
+                    builder: (context) {
+                      // Determina quale immagine usare
+                      String imagePath;
+                      if (gift.category != null && gift.category!.isNotEmpty) {
+                        imagePath = 'assets/images/categories/${gift.category!.toLowerCase().replaceAll(' ', '_')}.jpg';
+                      } else {
+                        imagePath = 'assets/images/categories/placeholder.png';
+                      }
+
+                      return Image.asset(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 160,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Se l'immagine della categoria non esiste, prova con placeholder
+                          return Image.asset(
+                            'assets/images/categories/placeholder.png',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 160,
+                            errorBuilder: (context, error2, stackTrace2) {
+                              // Se anche placeholder non esiste, mostra un container con gradient
+                              return Container(
+                                decoration: BoxDecoration(
+                                  gradient: CosmicTheme.primaryGradient,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20),
                                   ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.card_giftcard,
-                                      color: Colors.white,
-                                      size: 48,
-                                    ),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.card_giftcard,
+                                    color: Colors.white,
+                                    size: 48,
                                   ),
-                                );
-                              },
-                            );
-                          },
-                        )
-                      : Image.asset(
-                          'assets/images/categories/placeholder.png',
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: 160,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                gradient: CosmicTheme.primaryGradient,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(20),
-                                  topRight: Radius.circular(20),
                                 ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.card_giftcard,
-                                  color: Colors.white,
-                                  size: 48,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
 
                   // Overlay gradient per leggibilità
                   Container(
@@ -1122,101 +1087,43 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                 // Price and actions row
                 Row(
                   children: [
-                    // Prezzo con gradient primary
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                    // Prezzo senza sfondo - più pulito
+                    Text(
+                      '€${gift.price?.toStringAsFixed(0) ?? '0'}',
+                      style: GoogleFonts.inter(
+                        color: CosmicTheme.primaryAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
                       ),
-                      decoration: BoxDecoration(
-                        gradient: CosmicTheme.primaryGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                    ),
+
+                    const Spacer(),
+
+                    // Bottone salva con cuore rosso pulito
+                    IconButton(
+                      onPressed: _isLoading ? null : () => _saveGift(gift),
+                      icon: Icon(
+                        _isLoading 
+                          ? Icons.hourglass_empty 
+                          : Icons.favorite,
+                        color: Colors.red.shade600,
+                        size: 28,
                       ),
-                      child: Text(
-                        '€${gift.price?.toStringAsFixed(0) ?? '0'}',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      tooltip: 'Salva regalo',
                     ),
 
                     const SizedBox(width: 12),
 
-                    // Bottone salva
-                    Container(
-                      decoration: BoxDecoration(
-                        color: CosmicTheme.surfaceColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: CosmicTheme.secondaryAccent,
-                          width: 1,
-                        ),
-                      ),
-                      child: IconButton(
-                        onPressed: _isLoading ? null : () => _saveGift(gift),
-                        icon: Icon(
-                          _isLoading 
-                            ? Icons.hourglass_empty 
-                            : Icons.favorite_border,
-                          color: _isLoading 
-                            ? CosmicTheme.textTertiary 
-                            : CosmicTheme.primaryAccent,
-                          size: 20,
-                        ),
-                        tooltip: 'Salva regalo',
-                      ),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    // Bottone acquisto - stesso livello
+                    // Bottone acquisto con icona gialla pulita
                     if (gift.amazonLink != null && gift.amazonLink != 'None')
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: CosmicTheme.primaryGradient,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: TextButton.icon(
-                            onPressed: () => _showPurchaseDisclaimer(gift),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            icon: const Icon(
-                              Icons.open_in_new,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                            label: Text(
-                              'Vedi prodotto',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                      IconButton(
+                        onPressed: () => _showPurchaseDisclaimer(gift),
+                        icon: const Icon(
+                          Icons.open_in_new,
+                          color: Color(0xFFF59E0B),
+                          size: 28,
                         ),
+                        tooltip: 'Vai al prodotto',
                       ),
                   ],
                 ),
@@ -1244,84 +1151,148 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(24),
+        width: MediaQuery.of(context).size.width * 0.95,
+        margin: const EdgeInsets.symmetric(vertical: 40),
+        padding: const EdgeInsets.all(40),
+        constraints: const BoxConstraints(
+          maxWidth: 520,
+          maxHeight: 680,
+        ),
         decoration: BoxDecoration(
-          color: CosmicTheme.surfaceColor,
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: CosmicTheme.secondaryAccent,
-            width: 1,
+            color: CosmicTheme.primaryAccent.withOpacity(0.4),
+            width: 3,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: CosmicTheme.primaryAccent.withOpacity(0.3),
+              blurRadius: 32,
+              offset: const Offset(0, 12),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
+            // Header cosmico più grande
             Container(
-              padding: const EdgeInsets.all(16),
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
-                color: CosmicTheme.primaryAccent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                gradient: CosmicTheme.primaryGradient,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: CosmicTheme.primaryAccent.withOpacity(0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Icon(
-                Icons.favorite,
-                color: CosmicTheme.primaryAccent,
-                size: 32,
+                Icons.auto_awesome,
+                color: Colors.white,
+                size: 48,
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
 
+            // Titolo più grande e chiaro
             Text(
-              'Salva il regalo',
+              'Crea il tuo destinatario',
               style: GoogleFonts.inter(
-                fontSize: 20,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
                 color: CosmicTheme.textPrimary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 12),
-
-            Text(
-              'Per salvare "${gift.name}" e associarlo al destinatario, devi prima creare il destinatario.',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                color: CosmicTheme.textSecondary,
+                letterSpacing: -1,
               ),
               textAlign: TextAlign.center,
             ),
 
             const SizedBox(height: 16),
 
+            Text(
+              'nel cosmo di Donatello',
+              style: GoogleFonts.inter(
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+                color: CosmicTheme.primaryAccent,
+                letterSpacing: -0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Messaggio principale più chiaro
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: CosmicTheme.primaryAccent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    CosmicTheme.primaryAccent.withOpacity(0.08),
+                    CosmicTheme.primaryAccent.withOpacity(0.03),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                  width: 1,
+                  color: CosmicTheme.primaryAccent.withOpacity(0.2),
+                  width: 1.5,
                 ),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Icon(
-                    Icons.lightbulb_outline,
-                    color: CosmicTheme.primaryAccent,
-                    size: 20,
+                  Text(
+                    'Per salvare',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      color: CosmicTheme.textSecondary,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Salvare i regali per un destinatario aiuterà l\'AI a trovare regali ancora più personalizzati in futuro!',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: CosmicTheme.textSecondary,
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: CosmicTheme.primaryAccent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                        width: 1,
                       ),
                     ),
+                    child: Text(
+                      '"${gift.name}"',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: CosmicTheme.primaryAccent,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'devi prima creare il destinatario nel tuo universo personale.',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      color: CosmicTheme.textSecondary,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -1329,44 +1300,110 @@ class _SaveGiftDisclaimerModal extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Action buttons
+            // Benefit box più visibile
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    CosmicTheme.secondaryAccent.withOpacity(0.15),
+                    CosmicTheme.secondaryAccent.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: CosmicTheme.secondaryAccent.withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: CosmicTheme.accentGradient,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.stars,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Ogni regalo salvato rende le future scoperte più magiche e personalizzate!',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: CosmicTheme.textPrimary,
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 36),
+
+            // Action buttons più grandi
             Column(
               children: [
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: onCreateRecipient,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: CosmicTheme.primaryAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  height: 60,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: CosmicTheme.buttonGradient,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CosmicTheme.primaryAccent.withOpacity(0.5),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    icon: const Icon(Icons.person_add),
-                    label: Text(
-                      'Crea destinatario e salva regalo',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    child: ElevatedButton.icon(
+                      onPressed: onCreateRecipient,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      icon: const Icon(Icons.auto_awesome, size: 24),
+                      label: Text(
+                        'Crea destinatario cosmico',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
 
                 SizedBox(
                   width: double.infinity,
+                  height: 52,
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
                       foregroundColor: CosmicTheme.textSecondary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: CosmicTheme.textSecondary.withOpacity(0.08),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: Text(
-                      'Non ora',
+                      'Forse più tardi',
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -1394,29 +1431,53 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(24),
+        width: MediaQuery.of(context).size.width * 0.9,
+        margin: const EdgeInsets.symmetric(vertical: 80),
+        padding: const EdgeInsets.all(28),
+        constraints: const BoxConstraints(
+          maxWidth: 420,
+          maxHeight: 480,
+        ),
         decoration: BoxDecoration(
-          color: CosmicTheme.surfaceColor,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: CosmicTheme.secondaryAccent,
-            width: 1,
+            color: Colors.orange.withOpacity(0.3),
+            width: 2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.withOpacity(0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
+            // Header with cosmic styling
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.orange.withOpacity(0.9),
+                    Colors.deepOrange.withOpacity(0.7),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.orange.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Icon(
-                Icons.open_in_new,
-                color: Colors.orange,
+                Icons.rocket_launch,
+                color: Colors.white,
                 size: 32,
               ),
             ),
@@ -1424,9 +1485,9 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
             const SizedBox(height: 20),
 
             Text(
-              'Stai per uscire dall\'app',
+              'Viaggio nel cosmo',
               style: GoogleFonts.inter(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: CosmicTheme.textPrimary,
               ),
@@ -1436,10 +1497,11 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
             const SizedBox(height: 12),
 
             Text(
-              'Sarai reindirizzato al negozio online per acquistare "${gift.name}". Cosa vuoi fare?',
+              'Stai per acquistare "${gift.name}". Come vuoi procedere?',
               style: GoogleFonts.inter(
-                fontSize: 16,
+                fontSize: 15,
                 color: CosmicTheme.textSecondary,
+                height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),
@@ -1449,24 +1511,39 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
             // Action buttons
             Column(
               children: [
+                // Primary action - Save and go
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.of(context).pop('save_and_follow'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: CosmicTheme.primaryAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  height: 48,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: CosmicTheme.buttonGradient,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CosmicTheme.primaryAccent.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    icon: const Icon(Icons.bookmark_add),
-                    label: Text(
-                      'Salva regalo e vai al negozio',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.of(context).pop('save_and_follow'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.bookmark_add, size: 18),
+                      label: Text(
+                        'Salva e vai al negozio',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -1474,24 +1551,39 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
+                // Secondary action - Just go (orange gradient)
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.of(context).pop('follow_only'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: CosmicTheme.primaryAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  height: 48,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: CosmicTheme.accentGradient,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CosmicTheme.secondaryAccent.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    icon: const Icon(Icons.open_in_new),
-                    label: Text(
-                      'Vai solo al negozio',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.of(context).pop('follow_only'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.open_in_new, size: 18),
+                      label: Text(
+                        'Vai solo al negozio',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -1499,18 +1591,26 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
+                // Cancel action
                 SizedBox(
                   width: double.infinity,
-                  child: TextButton(
+                  height: 44,
+                  child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop('cancel'),
-                    style: TextButton.styleFrom(
+                    style: OutlinedButton.styleFrom(
                       foregroundColor: CosmicTheme.textSecondary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(
+                        color: CosmicTheme.textSecondary.withOpacity(0.3),
+                        width: 1,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: Text(
-                      'Annulla e rimani nell\'app',
+                      'Rimani qui',
                       style: GoogleFonts.inter(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -1525,7 +1625,7 @@ class _PurchaseDisclaimerModal extends StatelessWidget {
   }
 }
 
-// Modal per salvare il destinatario
+// Modal per salvare il destinatario - versione cosmica
 class _SaveRecipientModal extends ConsumerStatefulWidget {
   final String recipientName;
   final int? recipientAge;
@@ -1714,16 +1814,32 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(24),
-        constraints: const BoxConstraints(maxHeight: 600),
+        width: MediaQuery.of(context).size.width * 0.92,
+        margin: const EdgeInsets.symmetric(vertical: 40),
+        padding: const EdgeInsets.all(20),
+        constraints: const BoxConstraints(
+          maxWidth: 480,
+          maxHeight: 600,
+        ),
         decoration: BoxDecoration(
-          color: CosmicTheme.surfaceColor,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: CosmicTheme.secondaryAccent,
-            width: 1,
+            color: CosmicTheme.primaryAccent.withOpacity(0.2),
+            width: 2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: CosmicTheme.primaryAccent.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Form(
           key: _formKey,
@@ -1732,30 +1848,30 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
+                // Header compatto
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: CosmicTheme.primaryAccent.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.person_add,
-                        color: CosmicTheme.primaryAccent,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
-                      child: Text(
-                        'Salva Destinatario',
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: CosmicTheme.textPrimary,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Crea destinatario',
+                            style: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: CosmicTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Salva per il futuro',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: CosmicTheme.primaryAccent,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     IconButton(
@@ -1763,25 +1879,48 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                       icon: Icon(
                         Icons.close,
                         color: CosmicTheme.textSecondary,
+                        size: 24,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: CosmicTheme.textSecondary.withOpacity(0.1),
+                        padding: const EdgeInsets.all(8),
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // Nome
                 TextFormField(
                   controller: _nameController,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                   decoration: InputDecoration(
-                    labelText: 'Nome',
+                    labelText: 'Nome destinatario',
+                    labelStyle: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: CosmicTheme.primaryAccent,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: CosmicTheme.primaryAccent.withOpacity(0.3)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: CosmicTheme.primaryAccent.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: CosmicTheme.primaryAccent, width: 2),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Il nome è obbligatorio';
+                      return 'Nome obbligatorio';
                     }
                     return null;
                   },
@@ -1795,35 +1934,77 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: _selectedGender,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: CosmicTheme.textPrimary,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Genere',
+                          labelStyle: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: CosmicTheme.secondaryAccent,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: CosmicTheme.secondaryAccent.withOpacity(0.3)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: CosmicTheme.secondaryAccent.withOpacity(0.3)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: CosmicTheme.secondaryAccent, width: 2),
                           ),
                         ),
                         items: _genderOptions.map((option) {
                           return DropdownMenuItem(
                             value: option['value'],
-                            child: Text(option['label']!),
+                            child: Text(
+                              option['label']!,
+                              style: GoogleFonts.inter(fontSize: 14),
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) => setState(() => _selectedGender = value!),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: _selectedRelation,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: CosmicTheme.textPrimary,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Relazione',
+                          labelStyle: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: CosmicTheme.secondaryAccent,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: CosmicTheme.secondaryAccent.withOpacity(0.3)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: CosmicTheme.secondaryAccent.withOpacity(0.3)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: CosmicTheme.secondaryAccent, width: 2),
                           ),
                         ),
                         items: _relationOptions.map((option) {
                           return DropdownMenuItem(
                             value: option['value'],
-                            child: Text(option['label']!),
+                            child: Text(
+                              option['label']!,
+                              style: GoogleFonts.inter(fontSize: 14),
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) => setState(() => _selectedRelation = value!),
@@ -1837,19 +2018,35 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                 // Data di nascita
                 InkWell(
                   onTap: _selectDate,
+                  borderRadius: BorderRadius.circular(12),
                   child: InputDecorator(
                     decoration: InputDecoration(
                       labelText: 'Data di nascita',
+                      labelStyle: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: CosmicTheme.primaryAccent,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: CosmicTheme.primaryAccent.withOpacity(0.3)),
                       ),
-                      suffixIcon: const Icon(Icons.calendar_today),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: CosmicTheme.primaryAccent.withOpacity(0.3)),
+                      ),
+                      suffixIcon: Icon(
+                        Icons.calendar_today,
+                        color: CosmicTheme.primaryAccent,
+                        size: 18,
+                      ),
                     ),
                     child: Text(
                       _birthDate != null
                         ? '${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}'
                         : 'Seleziona data',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
                         color: _birthDate != null 
                           ? CosmicTheme.textPrimary 
                           : CosmicTheme.textSecondary,
@@ -1916,52 +2113,79 @@ class _SaveRecipientModalState extends ConsumerState<_SaveRecipientModal> {
                   maxLines: 3,
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // Pulsanti
-                Row(
+                Column(
                   children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(
-                          'Annulla',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: CosmicTheme.textSecondary,
+                    // Pulsante principale
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: CosmicTheme.buttonGradient,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _saveRecipient,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
+                          child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'Crea destinatario',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _saveRecipient,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: CosmicTheme.primaryAccent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+
+                    const SizedBox(height: 12),
+
+                    // Pulsante secondario
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: TextButton.styleFrom(
+                          foregroundColor: CosmicTheme.textSecondary,
+                          backgroundColor: CosmicTheme.textSecondary.withOpacity(0.08),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              'Salva',
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                        child: Text(
+                          'Annulla',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
                   ],
