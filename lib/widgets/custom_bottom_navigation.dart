@@ -19,10 +19,10 @@ class CustomBottomNavigation extends StatelessWidget {
         context.go('/recipients');
         break;
       case 2:
-        context.go('/saved-gifts');
+        context.go('/generate-gifts');
         break;
       case 3:
-        context.go('/generate-gifts');
+        context.go('/profile');
         break;
     }
   }
@@ -42,31 +42,31 @@ class CustomBottomNavigation extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(
-                icon: Icons.dashboard_rounded,
+                icon: Icons.public,
                 label: 'Home',
                 isActive: currentIndex == 0,
                 onTap: () => _onNavTap(context, 0),
               ),
               _buildNavItem(
-                icon: Icons.people_outline,
+                icon: Icons.favorite_outline,
                 label: 'Recipients',
                 isActive: currentIndex == 1,
                 onTap: () => _onNavTap(context, 1),
               ),
               _buildNavItem(
-                icon: currentIndex == 2 ? Icons.favorite : Icons.favorite_outline,
-                label: 'Saved',
+                icon: Icons.auto_awesome,
+                label: 'Generate',
                 isActive: currentIndex == 2,
                 onTap: () => _onNavTap(context, 2),
               ),
               _buildNavItem(
-                icon: Icons.auto_awesome,
-                label: 'Generate',
+                icon: Icons.person_outline,
+                label: 'Profile',
                 isActive: currentIndex == 3,
                 onTap: () => _onNavTap(context, 3),
               ),
@@ -86,7 +86,7 @@ class CustomBottomNavigation extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -95,7 +95,7 @@ class CustomBottomNavigation extends StatelessWidget {
               color: isActive ? AppTheme.primaryColor : AppTheme.textTertiaryColor,
               size: 24,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(

@@ -225,7 +225,7 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
           ),
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavigation(currentIndex: 2),
+      bottomNavigationBar: const CustomBottomNavigation(currentIndex: 3),
     );
   }
 

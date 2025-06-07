@@ -92,7 +92,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _loadingController.forward();
 
     // Wait for animations to complete
-    await Future.delayed(const Duration(milliseconds: 1500));
+    await Future.delayed(const Duration(milliseconds: 3000));
 
     // Check auth and navigate
     await _checkAuthAndNavigate();

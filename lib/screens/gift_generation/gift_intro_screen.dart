@@ -105,20 +105,7 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                 textAlign: TextAlign.center,
                               ),
 
-                              const SizedBox(height: 16),
-
-                              Text(
-                                'La nostra IA ti aiuterà a trovare idee regalo uniche e personalizzate',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: CosmicTheme.textSecondaryOnDark,
-                                  height: 1.5,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 24),
 
                               Text(
                                 '"Ogni regalo racconta una storia scritta nelle stelle"',
@@ -152,27 +139,27 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                   ),
                                 ],
                               ),
-                              padding: const EdgeInsets.all(24),
+                              padding: const EdgeInsets.all(20),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     'Per chi stai cercando un regalo?',
                                     style: GoogleFonts.inter(
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                       color: CosmicTheme.textPrimary,
                                     ),
                                   ),
 
-                                  const SizedBox(height: 24),
+                                  const SizedBox(height: 20),
 
                                   // Existing recipient option
                                   Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(14),
                                       border: Border.all(
                                         color: Colors.grey.shade200,
                                         width: 1,
@@ -189,23 +176,15 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                       color: Colors.transparent,
                                       child: InkWell(
                                         onTap: () => context.push('/select-recipient'),
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(14),
                                         child: Padding(
-                                          padding: const EdgeInsets.all(20),
+                                          padding: const EdgeInsets.all(16),
                                           child: Row(
                                             children: [
-                                              Container(
-                                                width: 48,
-                                                height: 48,
-                                                decoration: BoxDecoration(
-                                                  color: CosmicTheme.primaryAccent.withOpacity(0.1),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Icon(
-                                                  Icons.people,
-                                                  color: CosmicTheme.primaryAccent,
-                                                  size: 24,
-                                                ),
+                                              Icon(
+                                                Icons.people,
+                                                color: CosmicTheme.primaryAccent,
+                                                size: 24,
                                               ),
                                               const SizedBox(width: 16),
                                               Expanded(
@@ -215,16 +194,16 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                                     Text(
                                                       'Qualcuno che conosco già',
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 16,
+                                                        fontSize: 15,
                                                         fontWeight: FontWeight.w600,
                                                         color: CosmicTheme.textPrimary,
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 4),
+                                                    const SizedBox(height: 2),
                                                     Text(
                                                       'Scegli tra i destinatari salvati',
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 14,
+                                                        fontSize: 13,
                                                         color: CosmicTheme.textSecondary,
                                                       ),
                                                     ),
@@ -243,37 +222,29 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                     ),
                                   ),
 
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 12),
 
                                   // New recipient option with cosmic accent
                                   Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
                                       gradient: CosmicTheme.buttonGradient,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(14),
                                       boxShadow: CosmicTheme.lightShadow,
                                     ),
                                     child: Material(
                                       color: Colors.transparent,
                                       child: InkWell(
                                         onTap: () => context.go('/gift-wizard'),
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(14),
                                         child: Padding(
-                                          padding: const EdgeInsets.all(20),
+                                          padding: const EdgeInsets.all(16),
                                           child: Row(
                                             children: [
-                                              Container(
-                                                width: 48,
-                                                height: 48,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white.withOpacity(0.2),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.person_add,
-                                                  color: Colors.white,
-                                                  size: 24,
-                                                ),
+                                              const Icon(
+                                                Icons.person_add,
+                                                color: Colors.white,
+                                                size: 24,
                                               ),
                                               const SizedBox(width: 16),
                                               Expanded(
@@ -283,16 +254,16 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                                     Text(
                                                       'Inizia il wizard',
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 16,
+                                                        fontSize: 15,
                                                         fontWeight: FontWeight.w600,
                                                         color: Colors.white,
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 4),
+                                                    const SizedBox(height: 2),
                                                     Text(
                                                       'Crea idee regalo personalizzate',
                                                       style: GoogleFonts.inter(
-                                                        fontSize: 14,
+                                                        fontSize: 13,
                                                         color: Colors.white.withOpacity(0.9),
                                                       ),
                                                     ),
@@ -301,17 +272,17 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                               ),
                                               Container(
                                                 padding: const EdgeInsets.symmetric(
-                                                  horizontal: 12,
-                                                  vertical: 6,
+                                                  horizontal: 10,
+                                                  vertical: 4,
                                                 ),
                                                 decoration: BoxDecoration(
                                                   color: CosmicTheme.primaryAccentOnDark,
-                                                  borderRadius: BorderRadius.circular(20),
+                                                  borderRadius: BorderRadius.circular(16),
                                                 ),
                                                 child: Text(
                                                   'Inizia',
                                                   style: GoogleFonts.inter(
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     fontWeight: FontWeight.w600,
                                                     color: Colors.white,
                                                   ),
@@ -323,13 +294,58 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                       ),
                                     ),
                                   ),
+
+                                  const SizedBox(height: 16),
+
+                                  // Last search option
+                                  GestureDetector(
+                                    onTap: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Funzionalità in arrivo!',
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          backgroundColor: CosmicTheme.primaryAccent,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.history,
+                                          color: CosmicTheme.textSecondary,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Guarda la tua ultima ricerca',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: CosmicTheme.textSecondary,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
                                 ],
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -346,19 +362,13 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                     color: CosmicTheme.textSecondaryOnDark,
                   ),
                   onPressed: () => _showHelpDialog(),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavigation(currentIndex: 3),
+      bottomNavigationBar: const CustomBottomNavigation(currentIndex: 2),
     );
   }
 

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -170,16 +169,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 child: Column(
                   children: [
                     const SizedBox(height: 32),
-                    
+
                     // Quick Actions with cosmic elements
                     _buildQuickActions(),
-                    
+
                     // Recent Recipients
                     _buildRecentRecipients(),
-                    
+
                     // Popular Gifts Carousel
                     _buildGiftCarousel(),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -202,7 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         children: [
           // Floating cosmic elements
           _buildFloatingCosmicElements(),
-          
+
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -217,14 +216,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       children: [
                         // Logo
                         Container(
-                          width: 44,
-                          height: 44,
+                          width: 36,
+                          height: 36,
                           child: Image.asset(
                             'assets/images/logos/logo-donatello-no-bg.png',
                             fit: BoxFit.contain,
                           ),
                         ),
-                        
+
                         // Profile and settings
                         Row(
                           children: [
@@ -241,7 +240,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               },
                             ),
                             const SizedBox(width: 12),
-                            _buildProfileButton(user),
+                            _buildSettingsButton(),
                           ],
                         ),
                       ],
@@ -261,8 +260,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     const SizedBox(height: 8),
                     Text(
                       user?.firstName != null 
-                        ? '${user.firstName}!'
-                        : 'Welcome!',
+                        ? '${user.firstName}'
+                        : 'Utente',
                       style: GoogleFonts.inter(
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
@@ -272,7 +271,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Scopri il regalo perfetto con l\'aiuto dell\'intelligenza artificiale',
+                      'Scopri il regalo perfetto con l\'aiuto dell\'intelligenza artificiale.',
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
@@ -399,39 +398,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildProfileButton(dynamic user) {
+  Widget _buildSettingsButton() {
     return GestureDetector(
       onTap: () => _showProfileMenu(),
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          gradient: CosmicTheme.buttonGradient,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: CosmicTheme.primaryAccent.withOpacity(0.4),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: user?.firstName != null
-          ? Center(
-              child: Text(
-                user.firstName[0].toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            )
-          : const Icon(
-              Icons.person_outline,
-              color: Colors.white,
-              size: 20,
-            ),
+      child: const Icon(
+        Icons.settings_outlined,
+        color: Colors.white,
+        size: 24,
       ),
     );
   }
@@ -467,15 +440,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             const SizedBox(height: 24),
 
             _buildMenuOption(
-              icon: Icons.person_outline,
-              title: 'Profile',
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/profile');
-              },
-            ),
-
-            _buildMenuOption(
               icon: Icons.help_outline,
               title: 'Help & Support',
               onTap: () {
@@ -483,6 +447,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Help section coming soon')),
                 );
+              },
+            ),
+
+            _buildMenuOption(
+              icon: Icons.language,
+              title: 'Scopri Donatello',
+              onTap: () async {
+                Navigator.pop(context);
+                try {
+                  final uri = Uri.parse('https://donatellolab.com');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Impossibile aprire il sito web')),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Errore nell\'apertura del sito web')),
+                    );
+                  }
+                }
               },
             ),
 
@@ -543,7 +533,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 width: 6,
                 height: 6,
                 decoration: const BoxDecoration(
-                  gradient: CosmicTheme.buttonGradient,
+                  gradient: CosmicTheme.accentGradientOnDark,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -590,7 +580,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         size: 32,
                       ),
                       const SizedBox(width: 20),
-                      
+
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -616,7 +606,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           ],
                         ),
                       ),
-                      
+
                       // Freccia pulita senza container
                       const Icon(
                         Icons.arrow_forward,
@@ -647,7 +637,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 width: 6,
                 height: 6,
                 decoration: const BoxDecoration(
-                  gradient: CosmicTheme.buttonGradient,
+                  gradient: CosmicTheme.accentGradientOnDark,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -661,7 +651,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
               ),
               const Spacer(),
-              
+
               // View all button with cosmic styling
               Container(
                 decoration: BoxDecoration(
@@ -867,7 +857,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 width: 6,
                 height: 6,
                 decoration: const BoxDecoration(
-                  gradient: CosmicTheme.buttonGradient,
+                  gradient: CosmicTheme.accentGradientOnDark,
                   shape: BoxShape.circle,
                 ),
               ),

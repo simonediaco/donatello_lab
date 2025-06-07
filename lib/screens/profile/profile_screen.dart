@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
 import '../../theme/cosmic_theme.dart';
+import '../../widgets/custom_bottom_navigation.dart';
 import '../../widgets/custom_text_field.dart';
-import '../../widgets/custom_button.dart';
 import '../../models/user.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -235,32 +234,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                 ],
               ),
+
               
-              // Profile avatar posizionato sopra tutto
-              Positioned(
-                top: 120, // 160 - 40 (altezza header - metà avatar)
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: _buildProfileAvatar(),
-                ),
-              ),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: const CustomBottomNavigation(currentIndex: 3),
     );
   }
 
   Widget _buildCosmicHeader() {
     return Container(
-      height: 160,
+      height: _isEditing ? 100 : 160,
       decoration: const BoxDecoration(
         gradient: CosmicTheme.cosmicGradient,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
       ),
       child: Stack(
         children: [
@@ -272,48 +260,74 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                // Navigation and edit button
-                Row(
+                // Header content
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: CosmicTheme.textPrimaryOnDark,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        'Il mio Profilo',
-                        style: GoogleFonts.inter(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: CosmicTheme.textPrimaryOnDark,
-                          letterSpacing: -0.5,
+                    // Title and edit button row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Il mio Profilo',
+                            style: GoogleFonts.inter(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: CosmicTheme.textPrimaryOnDark,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
                         ),
-                      ),
+                        if (!_isEditing) ...[
+                          // Edit button with pencil icon (no box)
+                          GestureDetector(
+                            onTap: () => setState(() => _isEditing = true),
+                            child: const Icon(
+                              Icons.edit_outlined,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
+                    
                     if (!_isEditing) ...[
+                      const SizedBox(height: 12),
+                      // Share profile button below title
                       GestureDetector(
-                        onTap: () => setState(() => _isEditing = true),
-                        child: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                          size: 20,
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Funzionalità in arrivo!')),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            'Condividi profilo',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
+                      const SizedBox(height: 20),
                     ],
                   ],
                 ),
-
-                const SizedBox(height: 20),
               ],
             ),
           ),
-
-          
         ],
       ),
     );
@@ -369,51 +383,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildProfileAvatar() {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        gradient: CosmicTheme.accentGradientOnDark,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Center(
-        child: _user?.firstName.isNotEmpty == true
-          ? Text(
-              '${_user!.firstName[0]}${_user!.lastName.isNotEmpty ? _user!.lastName[0] : ''}',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-              ),
-            )
-          : const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 32,
-            ),
-      ),
-    );
-  }
+  
 
   Widget _buildProfileContent() {
+    if (_isEditing) {
+      return Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildPersonalInfoSection(),
+                    const SizedBox(height: 20),
+                    _buildContactInfoSection(),
+                    const SizedBox(height: 20),
+                    _buildBioSection(),
+                    const SizedBox(height: 32),
+                    _buildActionButtons(),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
         position: _slideAnimation,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 64, 24, 24), // Top padding per avatar
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
           child: Form(
             key: _formKey,
             child: Column(
@@ -423,8 +437,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 _buildContactInfoSection(),
                 const SizedBox(height: 20),
                 _buildBioSection(),
-                const SizedBox(height: 32),
-                if (_isEditing) _buildActionButtons(),
                 const SizedBox(height: 32),
               ],
             ),
@@ -437,7 +449,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildPersonalInfoSection() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: _isEditing ? null : BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: CosmicTheme.softShadow,
@@ -515,7 +527,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildContactInfoSection() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: _isEditing ? null : BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: CosmicTheme.softShadow,
@@ -572,7 +584,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildBioSection() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: _isEditing ? null : BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: CosmicTheme.softShadow,
