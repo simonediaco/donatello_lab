@@ -5,6 +5,10 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+flutter {
+    source = "../.."
+}
+
 android {
     namespace = "com.simonediaco.donatellolab.donatello_lab"
     compileSdk = flutter.compileSdkVersion
@@ -37,8 +41,17 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
-}
 
-flutter {
-    source = "../.."
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def flavor = variant.flavorName ?: "default"
+            def buildType = variant.buildType.name
+            def versionName = variant.versionName
+            def appName = "donatellolab"
+
+            if (output.outputFileName.endsWith('.apk')) {
+                output.outputFileName = "${appName}-${versionName}-${buildType}.apk"
+            }
+        }
+    }
 }
