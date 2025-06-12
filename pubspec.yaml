@@ -36,6 +36,10 @@ dependencies:
   url_launcher: ^6.2.2
 
   flutter_svg: ^1.1.6
+  
+  #sentry for error tracking
+  sentry_flutter: ^8.14.2
+
 
 dev_dependencies:
   flutter_test:

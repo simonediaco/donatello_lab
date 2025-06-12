@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
@@ -98,7 +99,8 @@ class ApiService {
       }
 
       return response.data;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      await Sentry.captureException(e,stackTrace: stackTrace);
       // If refresh fails, clear all tokens
       await _storage.delete(key: 'jwt_token');
       await _storage.delete(key: 'jwt_refresh_token');
@@ -142,8 +144,9 @@ class ApiService {
     try {
       final response = await _dio.post('/api/recipients/', data: recipientData);
       return response.data;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error creating recipient: $e');
+      await Sentry.captureException(e,stackTrace: stackTrace);
       throw Exception('Errore nella creazione del destinatario');
     }
   }
@@ -164,7 +167,7 @@ class ApiService {
 
   // Gift generation endpoints
   Future<Map<String, dynamic>> generateGiftIdeas(Map<String, dynamic> data) async {
-    final response = await _dio.post('/api/generate-gift-ideas/fake/', data: data); //TODO: remove fake
+    final response = await _dio.post('/api/generate-gift-ideas/', data: data); //TODO: remove fake
     return response.data;
   }
 
