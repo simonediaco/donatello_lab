@@ -8,6 +8,7 @@ import '../../theme/cosmic_theme.dart';
 import '../../widgets/custom_bottom_navigation.dart';
 import '../../services/api_service.dart';
 import '../../models/recipient.dart';
+import '../../services/search_history_service.dart';
 
 class GiftIntroScreen extends ConsumerStatefulWidget {
   const GiftIntroScreen({Key? key}) : super(key: key);
@@ -23,6 +24,9 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late AnimationController _floatingController;
+
+  String? _lastSearchSummary;
+  bool _hasLastSearch = false;
 
   @override
   void initState() {
@@ -54,6 +58,51 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
     )..repeat(reverse: true);
 
     _animationController.forward();
+
+    _loadLastSearch();
+  }
+
+  Future<void> _loadLastSearch() async {
+    final hasSearch = await SearchHistoryService.hasLastSearch();
+    if (hasSearch) {
+      final summary = await SearchHistoryService.getLastSearchSummary();
+      setState(() {
+        _hasLastSearch = true;
+        _lastSearchSummary = summary ?? 'Guarda la tua ultima ricerca';
+      });
+    } else {
+      setState(() {
+        _hasLastSearch = false;
+        _lastSearchSummary = null;
+      });
+    }
+  }
+
+  void _openLastSearch() async {
+    final lastSearch = await SearchHistoryService.getLastSearch();
+    if (lastSearch != null) {
+      // Navigate to results page with last search parameters
+      context.go('/results', extra: lastSearch);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Nessuna ricerca precedente trovata.',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: CosmicTheme.primaryAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -298,46 +347,33 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                   const SizedBox(height: 16),
 
                                   // Last search option
-                                  GestureDetector(
-                                    onTap: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Funzionalità in arrivo!',
-                                            style: GoogleFonts.inter(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500,
+                                  if (_hasLastSearch)
+                                    GestureDetector(
+                                      onTap: _openLastSearch,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.history,
+                                            color: CosmicTheme.primaryAccent,
+                                            size: 16,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              _lastSearchSummary ?? 'Guarda la tua ultima ricerca',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: CosmicTheme.primaryAccent,
+                                                decoration: TextDecoration.underline,
+                                              ),
+                                              textAlign: TextAlign.center,
                                             ),
                                           ),
-                                          backgroundColor: CosmicTheme.primaryAccent,
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.history,
-                                          color: CosmicTheme.textSecondary,
-                                          size: 16,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'Guarda la tua ultima ricerca',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                            color: CosmicTheme.textSecondary,
-                                            decoration: TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
 
                                 ],
                               ),

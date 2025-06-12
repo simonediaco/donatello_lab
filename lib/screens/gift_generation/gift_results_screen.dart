@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/gift.dart';
 import '../../models/recipient.dart';
 import '../../services/api_service.dart';
+import '../../services/search_history_service.dart';
 import '../../theme/cosmic_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -46,9 +47,26 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
     // Se abbiamo un destinatario esistente, significa che è già salvato
     _recipientSaved = widget.existingRecipient != null;
 
+    // Salva questa ricerca come ultima ricerca
+    _saveCurrentSearch();
+
     // Debug print per controllare il parametro
     print('GiftResultsScreen - existingRecipient: ${widget.existingRecipient}');
     print('GiftResultsScreen - _recipientSaved: $_recipientSaved');
+  }
+
+  Future<void> _saveCurrentSearch() async {
+    try {
+      await SearchHistoryService.saveLastSearch(
+        recipientName: widget.recipientName,
+        recipientAge: widget.recipientAge,
+        gifts: widget.gifts,
+        existingRecipientId: widget.existingRecipient?.id,
+        wizardData: widget.wizardData,
+      );
+    } catch (e) {
+      print('Errore nel salvare l\'ultima ricerca: $e');
+    }
   }
 
   Future<void> _saveGift(Gift gift) async {

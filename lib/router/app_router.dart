@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../services/auth_service.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
@@ -22,6 +23,7 @@ import '../screens/saved_gifts/saved_gifts_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../models/recipient.dart';
 import '../models/gift.dart';
+import '../services/search_history_service.dart';
 
 // Custom page transition builders
 Page<T> _slideTransitionPage<T extends Object?>(
@@ -230,7 +232,6 @@ final appRouter = GoRouter(
         child: const GiftIntroScreen(),
       ),
     ),
-
     GoRoute(
       path: '/select-recipient',
       pageBuilder: (context, state) => NoTransitionPage(

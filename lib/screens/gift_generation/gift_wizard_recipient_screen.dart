@@ -107,25 +107,82 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
   bool _canProceedFromStep(int step) {
     switch (step) {
       case 0: // Occasion step
-        return _selectedOccasion.isNotEmpty || _customOccasion.isNotEmpty;
+        return _selectedOccasion.isNotEmpty || _customOccasion.trim().isNotEmpty;
       case 1: // Budget step
-        return true; // Budget always has a default value
+        return _validateBudget();
       default:
         return false;
     }
   }
 
+  bool _validateBudget() {
+    // Check if user has actually set a budget (not the default values)
+    return _minBudget >= 0 && _maxBudget > 0 && _minBudget < _maxBudget && 
+           !(_minBudget == 0 && _maxBudget == 100); // Not default values
+  }
+
+  bool _validateRecipientWizardData() {
+    // Validate occasion
+    if (_selectedOccasion.isEmpty && _customOccasion.trim().isEmpty) {
+      _showError('Seleziona un\'occasione per il regalo');
+      return false;
+    }
+
+    // Validate budget
+    if (!_validateBudget()) {
+      _showError('Imposta un budget valido (diverso da quello predefinito)');
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            style: GoogleFonts.inter(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _generateGifts() async {
+    // Validate all required data before making API call
+    if (!_validateRecipientWizardData()) {
+      return;
+    }
+
+    // Additional validation for recipient ID
+    if (widget.recipient.id == null) {
+      _showError('Errore: ID destinatario non valido');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       final apiService = ref.read(apiServiceProvider);
+      
+      // Prepare the final occasion value
+      final finalOccasion = _customOccasion.trim().isNotEmpty 
+          ? _customOccasion.trim() 
+          : _selectedOccasion;
+
       final response = await apiService.generateGiftIdeasForRecipient(
         widget.recipient.id!,
         {
-          'occasion': _customOccasion.isNotEmpty ? _customOccasion : _selectedOccasion,
+          'occasion': finalOccasion,
           'min_price': _minBudget.round(),
           'max_price': _maxBudget.round(),
         }

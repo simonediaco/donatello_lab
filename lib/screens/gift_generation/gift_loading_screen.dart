@@ -1,7 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math';
+import 'dart:math' as math;
 import '../../theme/cosmic_theme.dart';
 
 class GiftLoadingScreen extends StatefulWidget {
@@ -113,7 +112,7 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
 
     _starsRotation = Tween<double>(
       begin: 0,
-      end: 2 * pi,
+      end: 2 * math.pi,
     ).animate(CurvedAnimation(
       parent: _starsController,
       curve: Curves.linear,
@@ -121,7 +120,7 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
 
     _galaxyRotation = Tween<double>(
       begin: 0,
-      end: 2 * pi,
+      end: 2 * math.pi,
     ).animate(CurvedAnimation(
       parent: _galaxyController,
       curve: Curves.linear,
@@ -131,7 +130,7 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
   }
 
   void _generateStars() {
-    final random = Random();
+    final random = math.Random();
     _starPositions.clear();
     _starSizes.clear();
     _starColors.clear();
@@ -240,19 +239,10 @@ class _GiftLoadingScreenState extends State<GiftLoadingScreen>
                                     ],
                                   ),
                                   child: Center(
-                                    child: ShaderMask(
-                                      shaderCallback: (bounds) => LinearGradient(
-                                        colors: [
-                                          Colors.white,
-                                          CosmicTheme.primaryAccent,
-                                          const Color(0xFFFFD700),
-                                        ],
-                                      ).createShader(bounds),
-                                      child: const Icon(
-                                        Icons.auto_awesome,
-                                        size: 60,
-                                        color: Colors.white,
-                                      ),
+                                    child: Icon(
+                                      Icons.auto_awesome,
+                                      size: 60,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
@@ -430,9 +420,9 @@ class ElegantStarFieldPainter extends CustomPainter {
       final y = star.dy * size.height;
 
       // Slow, elegant twinkling
-      final twinklePhase = (animation * 0.3 + i * 0.2) % (2 * pi);
-      final opacity = 0.2 + 0.6 * (sin(twinklePhase) * 0.5 + 0.5);
-      final scale = 0.7 + 0.3 * (sin(twinklePhase + pi / 4) * 0.5 + 0.5);
+      final twinklePhase = (animation * 0.3 + i * 0.2) % (2 * math.pi);
+      final opacity = 0.2 + 0.6 * (math.sin(twinklePhase) * 0.5 + 0.5);
+      final scale = 0.7 + 0.3 * (math.sin(twinklePhase + math.pi / 4) * 0.5 + 0.5);
 
       final paint = Paint()
         ..color = color.withOpacity(opacity)
@@ -462,8 +452,4 @@ class ElegantStarFieldPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-double sin(double value) {
-  return (value * 180 / pi).remainder(360) * pi / 180;
 }

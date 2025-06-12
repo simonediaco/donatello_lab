@@ -105,6 +105,29 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
     }
   }
 
+  bool _canProceedFromCurrentStep() {
+    switch (_currentStep) {
+      case 0:
+        return true; // No mandatory fields in step 1
+      case 1:
+        return true; // Relation is always selected
+      case 2:
+        return _selectedInterests.isNotEmpty;
+      case 3:
+        return _selectedOccasion.isNotEmpty || _customOccasion.trim().isNotEmpty;
+      case 4:
+        return _validateBudget(); // Budget must be properly set
+      default:
+        return false;
+    }
+  }
+
+  bool _validateBudget() {
+    // Check if user has actually set a budget (not the default values)
+    return _minBudget >= 0 && _maxBudget > 0 && _minBudget < _maxBudget && 
+           !(_minBudget == 0 && _maxBudget == 100); // Not default values
+  }
+
   void _previousStep() {
     if (_currentStep > 0) {
       _pageController.previousPage(
@@ -131,24 +154,75 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
     }
   }
 
+  bool _validateAllWizardData() {
+    // Validate interests
+    if (_selectedInterests.isEmpty) {
+      _showError('Seleziona almeno un interesse');
+      return false;
+    }
+
+    // Validate occasion
+    if (_selectedOccasion.isEmpty && _customOccasion.trim().isEmpty) {
+      _showError('Seleziona un\'occasione per il regalo');
+      return false;
+    }
+
+    // Validate budget
+    if (!_validateBudget()) {
+      _showError('Imposta un budget valido (diverso da quello predefinito)');
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            style: GoogleFonts.inter(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _generateGifts() async {
+    // Validate all required data before making API call
+    if (!_validateAllWizardData()) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       final apiService = ref.read(apiServiceProvider);
+      
+      // Prepare the final occasion value
+      final finalOccasion = _customOccasion.trim().isNotEmpty 
+          ? _customOccasion.trim() 
+          : _selectedOccasion;
+
       final response = await apiService.generateGiftIdeas({
-        'name': _recipientName,
+        'name': _recipientName.isNotEmpty ? _recipientName : 'Destinatario',
         'age': _recipientAge.isNotEmpty ? int.parse(_recipientAge) : 25,
         'gender': _recipientGender,
-        'relation': _recipientRelation == 'altro' && _customRelation.isNotEmpty 
-            ? _customRelation 
+        'relation': _recipientRelation == 'altro' && _customRelation.trim().isNotEmpty 
+            ? _customRelation.trim() 
             : _recipientRelation,
         'interests': _selectedInterests,
-        'occasion': _customOccasion.isNotEmpty ? _customOccasion : _selectedOccasion,
-        'min_price': _minBudget.toString(),
-        'max_price': _maxBudget.toString(),
+        'occasion': finalOccasion,
+        'min_price': _minBudget.round(),
+        'max_price': _maxBudget.round(),
       });
 
       if (mounted) {
@@ -349,23 +423,23 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
                       boxShadow: CosmicTheme.lightShadow,
                     ),
                     child: ElevatedButton(
-                      onPressed: _nextStep,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                        onPressed: _canProceedFromCurrentStep() ? _nextStep : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          _currentStep < 4 ? 'Continua' : 'Genera idee regalo',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        _currentStep < 4 ? 'Continua' : 'Genera idee regalo',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ),
@@ -1330,6 +1404,34 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
               color: CosmicTheme.textSecondary,
             ),
           ),
+          const SizedBox(height: 8),
+          // Budget requirement notice
+          if (!_validateBudget()) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Seleziona una fascia di prezzo per continuare',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.orange.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
 
           _buildBudgetCard('Essenziale', 'Regali semplici ma significativi', '0€ - 20€', Icons.favorite_border, 0, 20),
