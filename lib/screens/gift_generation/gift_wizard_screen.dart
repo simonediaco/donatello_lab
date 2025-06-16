@@ -212,9 +212,9 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
           ? _customOccasion.trim() 
           : _selectedOccasion;
 
-      final response = await apiService.generateGiftIdeas({
+      final requestData = {
         'name': _recipientName.isNotEmpty ? _recipientName : 'Destinatario',
-        'age': _recipientAge.isNotEmpty ? int.parse(_recipientAge) : 25,
+        'age': _recipientAge.isNotEmpty ? (int.tryParse(_recipientAge) ?? 25) : 25,
         'gender': _recipientGender,
         'relation': _recipientRelation == 'altro' && _customRelation.trim().isNotEmpty 
             ? _customRelation.trim() 
@@ -223,20 +223,24 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
         'occasion': finalOccasion,
         'min_price': _minBudget.round(),
         'max_price': _maxBudget.round(),
-      });
+      };
+
+      final response = await apiService.generateGiftIdeas(requestData);
 
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-
-        print('API Response: $response');
-        if (response['results'] != null) {
-          print('Navigating to results with ${response['results'].length} gifts');
+        
+        if (response != null && 
+            response.containsKey('results') && 
+            response['results'] != null && 
+            response['results'] is List &&
+            (response['results'] as List).isNotEmpty) {
           context.go('/results', extra: {
             'recipientName': _recipientName.isNotEmpty ? _recipientName : 'Destinatario',
             'recipientAge': _recipientAge.isNotEmpty ? int.tryParse(_recipientAge) : null,
-            'gifts': response['results'] ?? [],
+            'gifts': response['results'],
             'wizardData': {
               'name': _recipientName.isNotEmpty ? _recipientName : 'Destinatario',
               'gender': _recipientGender,
@@ -249,7 +253,7 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
             },
           });
         } else {
-          print('No gifts found in response');
+          _showError('Nessuna idea regalo generata. Prova con parametri diversi.');
         }
       }
     } catch (e) {
@@ -258,15 +262,19 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
           _isLoading = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Errore nella generazione delle idee regalo: $e',
-              style: GoogleFonts.inter(color: Colors.white),
-            ),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
+        String errorMessage = 'Errore nella generazione delle idee regalo';
+        
+        if (e.toString().contains('500')) {
+          errorMessage = 'Errore del server. Riprova tra qualche momento.';
+        } else if (e.toString().contains('400')) {
+          errorMessage = 'Parametri non validi. Controlla i dati inseriti.';
+        } else if (e.toString().contains('404')) {
+          errorMessage = 'Servizio non disponibile. Riprova più tardi.';
+        } else if (e.toString().contains('Connection') || e.toString().contains('network')) {
+          errorMessage = 'Errore di connessione. Controlla la tua connessione internet.';
+        }
+
+        _showError(errorMessage);
       }
     }
   }
@@ -650,9 +658,9 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.0,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.2,
             children: [
               _buildRelationCard('Amico/a', 'amico', Icons.people),
               _buildRelationCard('Familiare', 'famiglia', Icons.family_restroom),
@@ -773,55 +781,60 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
           boxShadow: isSelected ? CosmicTheme.cosmicShadow : CosmicTheme.softShadow,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: isSelected ? CosmicTheme.accentGradient : null,
-                  color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  boxShadow: isSelected ? [
-                    BoxShadow(
-                      color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : null,
-                ),
-                child: Icon(
-                  icon,
-                  size: 28,
-                  color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
+              Flexible(
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: isSelected ? CosmicTheme.accentGradient : null,
+                    color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    boxShadow: isSelected ? [
+                      BoxShadow(
+                        color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ] : null,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: CosmicTheme.textPrimary,
+              const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               if (isSelected) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: CosmicTheme.primaryAccent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '✓',
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -877,9 +890,9 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.0,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.2,
             children: [
               _buildInterestCard('Musica', 'musica', Icons.music_note),
               _buildInterestCard('Sport', 'sport', Icons.sports_tennis),
@@ -1071,55 +1084,60 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
           boxShadow: isSelected ? CosmicTheme.cosmicShadow : CosmicTheme.softShadow,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: isSelected ? CosmicTheme.accentGradient : null,
-                  color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  boxShadow: isSelected ? [
-                    BoxShadow(
-                      color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : null,
-                ),
-                child: Icon(
-                  icon,
-                  size: 28,
-                  color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
+              Flexible(
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: isSelected ? CosmicTheme.accentGradient : null,
+                    color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    boxShadow: isSelected ? [
+                      BoxShadow(
+                        color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ] : null,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: CosmicTheme.textPrimary,
+              const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               if (isSelected) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: CosmicTheme.primaryAccent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '✓',
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -1175,9 +1193,9 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 1.1,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.3,
             children: _occasions.map((occasion) {
               return _buildOccasionCard(
                 occasion['name'],
@@ -1307,55 +1325,60 @@ class _GiftWizardScreenState extends ConsumerState<GiftWizardScreen>
           boxShadow: isSelected ? CosmicTheme.cosmicShadow : CosmicTheme.softShadow,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: isSelected ? CosmicTheme.accentGradient : null,
-                  color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  boxShadow: isSelected ? [
-                    BoxShadow(
-                      color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : null,
-                ),
-                child: Icon(
-                  icon,
-                  size: 28,
-                  color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
+              Flexible(
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: isSelected ? CosmicTheme.accentGradient : null,
+                    color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    boxShadow: isSelected ? [
+                      BoxShadow(
+                        color: CosmicTheme.primaryAccent.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ] : null,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: CosmicTheme.textPrimary,
+              const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               if (isSelected) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: CosmicTheme.primaryAccent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '✓',
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),

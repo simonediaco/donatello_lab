@@ -273,12 +273,10 @@ class LogoGenerator {
 
     final file = File('assets/images/logos/$filename');
     await file.writeAsBytes(pngBytes);
-    print('Generated: $filename');
   }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LogoGenerator.generateLogos();
-  print('All logos generated successfully!');
 }

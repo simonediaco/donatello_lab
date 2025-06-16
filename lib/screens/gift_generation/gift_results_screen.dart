@@ -6,8 +6,8 @@ import '../../models/gift.dart';
 import '../../models/recipient.dart';
 import '../../services/api_service.dart';
 import '../../services/search_history_service.dart';
+import '../../services/affiliate_service.dart';
 import '../../theme/cosmic_theme.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class GiftResultsScreen extends ConsumerStatefulWidget {
   final String recipientName;
@@ -51,8 +51,8 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
     _saveCurrentSearch();
 
     // Debug print per controllare il parametro
-    print('GiftResultsScreen - existingRecipient: ${widget.existingRecipient}');
-    print('GiftResultsScreen - _recipientSaved: $_recipientSaved');
+    //print('GiftResultsScreen - existingRecipient: ${widget.existingRecipient}');
+    //print('GiftResultsScreen - _recipientSaved: $_recipientSaved');
   }
 
   Future<void> _saveCurrentSearch() async {
@@ -193,12 +193,13 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
   }
 
   Future<void> _launchUrl(String? url) async {
-    if (url == null || url == 'None') return;
+    if (!AffiliateService.isValidUrl(url)) return;
 
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await AffiliateService.openAffiliateLink(
+      context: context,
+      url: url!,
+      title: 'Prodotto Affiliato',
+    );
   }
 
   @override
@@ -962,7 +963,8 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                       // Determina quale immagine usare
                       String imagePath;
                       if (gift.category != null && gift.category!.isNotEmpty) {
-                        imagePath = 'assets/images/categories/${gift.category!.toLowerCase().replaceAll(' ', '_')}.jpg';
+                        imagePath = 'assets/images/categories/${gift.category!.toLowerCase().replaceAll(' ', '_')}.png';
+                        //print(imagePath); // Debug: stampa il percorso dell'immagine
                       } else {
                         imagePath = 'assets/images/categories/placeholder.png';
                       }
@@ -1104,45 +1106,74 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
 
                 // Price and actions row
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Prezzo senza sfondo - più pulito
-                    Text(
-                      '€${gift.price?.toStringAsFixed(0) ?? '0'}',
-                      style: GoogleFonts.inter(
-                        color: CosmicTheme.primaryAccent,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // Bottone salva con cuore rosso pulito
-                    IconButton(
-                      onPressed: _isLoading ? null : () => _saveGift(gift),
-                      icon: Icon(
-                        _isLoading 
-                          ? Icons.hourglass_empty 
-                          : Icons.favorite,
-                        color: Colors.red.shade600,
-                        size: 28,
-                      ),
-                      tooltip: 'Salva regalo',
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    // Bottone acquisto con icona gialla pulita
-                    if (gift.amazonLink != null && gift.amazonLink != 'None')
-                      IconButton(
-                        onPressed: () => _showPurchaseDisclaimer(gift),
-                        icon: const Icon(
-                          Icons.open_in_new,
-                          color: Color(0xFFF59E0B),
-                          size: 28,
+                    // Prezzo con spazio limitato
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        '€${gift.price?.toStringAsFixed(0) ?? '0'}',
+                        style: GoogleFonts.inter(
+                          color: CosmicTheme.primaryAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
-                        tooltip: 'Vai al prodotto',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
+                    ),
+
+                    // Pulsanti allineati a destra
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Bottone salva con cuore rosso pulito
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: IconButton(
+                            onPressed: _isLoading ? null : () => _saveGift(gift),
+                            icon: Icon(
+                              _isLoading 
+                                ? Icons.hourglass_empty 
+                                : Icons.favorite_border,
+                              color: Colors.red.shade600,
+                              size: 20,
+                            ),
+                            tooltip: 'Salva regalo',
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        // Bottone acquisto con icona gialla pulita
+                        if (gift.amazonLink != null && gift.amazonLink != 'None')
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF59E0B).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: IconButton(
+                              onPressed: () => _launchUrl(gift.amazonLink),
+                              icon: const Icon(
+                                Icons.open_in_new,
+                                color: Color(0xFFF59E0B),
+                                size: 20,
+                              ),
+                              tooltip: 'Vai al prodotto',
+                              padding: EdgeInsets.zero,
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ],

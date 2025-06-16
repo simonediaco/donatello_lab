@@ -92,7 +92,6 @@ class _SavedGiftsScreenState extends ConsumerState<SavedGiftsScreen>
       
       _animationController.forward();
     } catch (e) {
-      print("Error loading saved gifts: $e");
       setState(() => _isLoading = false);
       
       if (mounted) {

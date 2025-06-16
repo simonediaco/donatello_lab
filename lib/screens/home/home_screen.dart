@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
+import '../../services/affiliate_service.dart';
 import '../../models/recipient.dart';
 import '../../models/popular_gift.dart';
 import '../../theme/cosmic_theme.dart';
@@ -94,7 +95,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         _isLoadingRecipients = false;
       });
     } catch (e) {
-      print("Error loading recipients: $e");
       setState(() => _isLoadingRecipients = false);
     }
   }
@@ -111,7 +111,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         _isLoadingPopularGifts = false;
       });
     } catch (e) {
-      print("Error loading popular gifts: $e");
       setState(() => _isLoadingPopularGifts = false);
     }
   }
@@ -944,29 +943,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget _buildPopularGiftItem(PopularGift gift, bool isLast) {
     return GestureDetector(
       onTap: () async {
-        if (gift.amazonLink != null && gift.amazonLink!.isNotEmpty) {
+        if (AffiliateService.isValidUrl(gift.amazonLink)) {
           try {
-            final uri = Uri.parse(gift.amazonLink!);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            } else {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Impossibile aprire il link')),
-                );
-              }
-            }
+            await AffiliateService.openAffiliateLink(
+              context: context,
+              url: gift.amazonLink!,
+              title: gift.name,
+            );
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Errore nell\'apertura del link')),
+                SnackBar(
+                  content: Text(
+                    'Errore nell\'apertura del prodotto',
+                    style: GoogleFonts.inter(color: Colors.white),
+                  ),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               );
             }
           }
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${gift.name} - €${gift.price.toStringAsFixed(2)}')),
+              SnackBar(
+                content: Text(
+                  '${gift.name} - €${gift.price.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+                backgroundColor: CosmicTheme.primaryAccent,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
             );
           }
         }

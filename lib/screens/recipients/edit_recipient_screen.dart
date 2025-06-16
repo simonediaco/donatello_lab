@@ -589,7 +589,7 @@ class _EditRecipientScreenState extends ConsumerState<EditRecipientScreen>
                       children: [
                         Expanded(
                           child: CustomTextField(
-                            hint: 'es: Musica, Sport, Tecnologia...',
+                            hint: 'es: Musica, Sport, Tech...',
                             controller: _interestController,
                             label: 'Aggiungi interesse',
                           ),

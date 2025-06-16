@@ -100,7 +100,6 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
 
       _animationController.forward();
     } catch (e) {
-      print("Error loading data: $e");
       setState(() => _isLoading = false);
     }
   }

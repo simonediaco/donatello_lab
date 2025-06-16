@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 
@@ -11,7 +10,9 @@ class ApiService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   ApiService() : _dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 30),
     contentType: 'application/json',
   )) {
     _dio.interceptors.add(InterceptorsWrapper(
@@ -27,9 +28,8 @@ class ApiService {
         if (error.response?.statusCode == 401 && 
             !error.requestOptions.path.contains('/api/auth/token/refresh/')) {
           try {
-            print('Token expired, attempting refresh...');
             final refreshResult = await refreshToken();
-            
+
             // Retry the original request with new token
             final newToken = await _storage.read(key: 'jwt_token');
             if (newToken != null) {
@@ -46,7 +46,6 @@ class ApiService {
               return handler.resolve(retryResponse);
             }
           } catch (refreshError) {
-            print('Token refresh failed: $refreshError');
             // Clear tokens if refresh fails
             await _storage.delete(key: 'jwt_token');
             await _storage.delete(key: 'jwt_refresh_token');
@@ -80,7 +79,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> refreshToken() async {
     final refreshToken = await _storage.read(key: 'jwt_refresh_token');
-    
+
     if (refreshToken == null) {
       throw Exception('No refresh token available');
     }
@@ -99,8 +98,7 @@ class ApiService {
       }
 
       return response.data;
-    } catch (e, stackTrace) {
-      await Sentry.captureException(e,stackTrace: stackTrace);
+    } catch (e) {
       // If refresh fails, clear all tokens
       await _storage.delete(key: 'jwt_token');
       await _storage.delete(key: 'jwt_refresh_token');
@@ -135,7 +133,6 @@ class ApiService {
 
       return [];
     } catch (e) {
-      print('Error getting recipients: $e');
       return [];
     }
   }
@@ -144,9 +141,7 @@ class ApiService {
     try {
       final response = await _dio.post('/api/recipients/', data: recipientData);
       return response.data;
-    } catch (e, stackTrace) {
-      print('Error creating recipient: $e');
-      await Sentry.captureException(e,stackTrace: stackTrace);
+    } catch (e) {
       throw Exception('Errore nella creazione del destinatario');
     }
   }
@@ -166,9 +161,31 @@ class ApiService {
   }
 
   // Gift generation endpoints
-  Future<Map<String, dynamic>> generateGiftIdeas(Map<String, dynamic> data) async {
-    final response = await _dio.post('/api/generate-gift-ideas/', data: data); //TODO: remove fake
-    return response.data;
+  Future<Map<String, dynamic>?> generateGiftIdeas(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/api/generate-gift-ideas/', data: data);
+
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 500) {
+        throw Exception('Server error. Please try again later.');
+      } else if (e.response?.statusCode == 400) {
+        throw Exception('Invalid request data.');
+      } else if (e.type == DioExceptionType.connectionTimeout || 
+                 e.type == DioExceptionType.receiveTimeout) {
+        throw Exception('Connection timeout. Check your internet connection.');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('Connection error. Check your internet connection.');
+      }
+
+      throw Exception('Network error occurred.');
+    } catch (e) {
+      throw Exception('Unexpected error occurred.');
+    }
   }
 
   Future<Map<String, dynamic>> generateGiftIdeasForRecipient(int recipientId, Map<String, dynamic> data) async {
@@ -188,7 +205,6 @@ class ApiService {
 
       return [];
     } catch (e) {
-      print('Error getting saved gifts: $e');
       return [];
     }
   }
@@ -229,7 +245,6 @@ class ApiService {
 
       return [];
     } catch (e) {
-      print('Error getting popular gifts: $e');
       return [];
     }
   }

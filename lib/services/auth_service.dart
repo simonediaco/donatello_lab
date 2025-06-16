@@ -28,9 +28,6 @@ class AuthService {
       final profileData = await _apiService.getProfile();
       return User.fromJson(profileData);
     } catch (e) {
-      // Log dell'errore per debug
-      print('AuthService login error: $e');
-
       // Rimuovi eventuali token corrotti
       await _storage.delete(key: 'jwt_token');
 

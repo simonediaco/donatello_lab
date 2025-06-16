@@ -59,7 +59,7 @@ class _AddRecipientScreenState extends ConsumerState<AddRecipientScreen>
   final List<Map<String, String>> _interestOptions = [
     {'value': 'Musica', 'icon': '🎵'},
     {'value': 'Sport', 'icon': '⚽'},
-    {'value': 'Tecnologia', 'icon': '💻'},
+    {'value': 'Tech', 'icon': '💻'},
     {'value': 'Arte', 'icon': '🎨'},
     {'value': 'Viaggi', 'icon': '✈️'},
     {'value': 'Cucina', 'icon': '👨‍🍳'},

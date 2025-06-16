@@ -65,17 +65,14 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
   }
 
   Future<void> _loadRecipients() async {
-    print("Loading recipients...");
     setState(() => _isLoadingRecipients = true);
     try {
       final apiService = ref.read(apiServiceProvider);
       final recipientsData = await apiService.getRecipients();
-      print("Loaded ${recipientsData.length} recipients");
       setState(() {
         _recipients = recipientsData.map((data) => Recipient.fromJson(data)).toList();
       });
     } catch (e) {
-      print("Error loading recipients: $e");
     } finally {
       setState(() => _isLoadingRecipients = false);
     }
@@ -316,7 +313,7 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.75,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -358,16 +355,16 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     gradient: CosmicTheme.buttonGradient,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
                         color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -377,18 +374,18 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                         ? recipient.name[0].toUpperCase() 
                         : '?',
                       style: GoogleFonts.inter(
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Text(
                   recipient.name,
                   style: GoogleFonts.inter(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: CosmicTheme.textPrimary,
                   ),
@@ -397,11 +394,11 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (recipient.relation.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     recipient.relation,
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: CosmicTheme.textSecondary,
                     ),
                     textAlign: TextAlign.center,
@@ -409,18 +406,18 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-                const SizedBox(height: 16),
+                const Spacer(),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
                     color: CosmicTheme.primaryAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Genera idee',
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: CosmicTheme.primaryAccent,
                     ),
@@ -466,8 +463,8 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     color: CosmicTheme.primaryAccent.withOpacity(0.1),
                     shape: BoxShape.circle,
@@ -479,31 +476,31 @@ class _GiftRecipientSelectionScreenState extends ConsumerState<GiftRecipientSele
                   child: Icon(
                     Icons.add,
                     color: CosmicTheme.primaryAccent,
-                    size: 30,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Text(
                   'Nuovo\nDestinatario',
                   style: GoogleFonts.inter(
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: CosmicTheme.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                const Spacer(),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
                     color: CosmicTheme.primaryAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     'Aggiungi',
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: CosmicTheme.primaryAccent,
                     ),

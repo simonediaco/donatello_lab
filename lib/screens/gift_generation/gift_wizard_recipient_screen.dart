@@ -193,9 +193,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
           _isLoading = false;
         });
 
-        print('API Response: $response');
         if (response['results'] != null) {
-          print('Navigating to results with ${response['results'].length} gifts');
           context.go('/results', extra: {
             'recipientName': widget.recipient.name,
             'recipientAge': widget.recipient.age,
@@ -203,7 +201,6 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
             'existingRecipient': widget.recipient,
           });
         } else {
-          print('No gifts found in response');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -432,67 +429,74 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
       children: [
         // Recipient info card
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: CosmicTheme.cardDecoration,
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: CosmicTheme.accentGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    widget.recipient.name.isNotEmpty 
-                      ? widget.recipient.name[0].toUpperCase() 
-                      : '?',
-                    style: GoogleFonts.inter(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: CosmicTheme.accentGradient,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      widget.recipient.name.isNotEmpty 
+                        ? widget.recipient.name[0].toUpperCase() 
+                        : '?',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.recipient.name,
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: CosmicTheme.textPrimary,
-                      ),
-                    ),
-                    if (widget.recipient.relation.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       Text(
-                        widget.recipient.relation,
+                        widget.recipient.name,
                         style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: CosmicTheme.textSecondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: CosmicTheme.textPrimary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                    if (widget.recipient.age != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        '${widget.recipient.age} anni',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: CosmicTheme.textSecondary,
+                      if (widget.recipient.relation.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.recipient.relation,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: CosmicTheme.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                      ],
+                      if (widget.recipient.age != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          '${widget.recipient.age} anni',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: CosmicTheme.textSecondary,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -535,9 +539,9 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.1,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.2,
           children: _occasions.map((occasion) {
             return _buildOccasionCard(
               occasion['name'],
@@ -551,7 +555,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
 
         // Custom occasion
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: CosmicTheme.surfaceColor,
@@ -567,48 +571,50 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       color: CosmicTheme.primaryAccent.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
                       Icons.edit_calendar,
                       color: CosmicTheme.primaryAccent,
-                      size: 20,
+                      size: 18,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Occasione personalizzata',
-                    style: GoogleFonts.inter(
-                      color: CosmicTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      'Occasione personalizzata',
+                      style: GoogleFonts.inter(
+                        color: CosmicTheme.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _customOccasionController,
                 style: GoogleFonts.inter(
                   color: CosmicTheme.textPrimary,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Es: festa di pensionamento, battesimo...',
                   hintStyle: GoogleFonts.inter(
                     color: CosmicTheme.textSecondary,
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
                   fillColor: CosmicTheme.backgroundColor,
-                  contentPadding: const EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(12),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -623,7 +629,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
           ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -675,9 +681,9 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
 
         // Budget personalizzato
         Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             color: CosmicTheme.surfaceColor,
             border: Border.all(
               color: CosmicTheme.primaryAccent.withOpacity(0.3),
@@ -691,29 +697,31 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       color: CosmicTheme.primaryAccent.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
                       Icons.tune,
                       color: CosmicTheme.primaryAccent,
-                      size: 20,
+                      size: 18,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Budget personalizzato',
-                    style: GoogleFonts.inter(
-                      color: CosmicTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      'Budget personalizzato',
+                      style: GoogleFonts.inter(
+                        color: CosmicTheme.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               RangeSlider(
                 values: RangeValues(_minBudget, _maxBudget),
                 min: 0,
@@ -732,7 +740,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                   });
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -743,7 +751,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                         'Min',
                         style: GoogleFonts.inter(
                           color: CosmicTheme.textSecondary,
-                          fontSize: 12,
+                          fontSize: 10,
                         ),
                       ),
                       Text(
@@ -751,7 +759,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                         style: GoogleFonts.inter(
                           color: CosmicTheme.primaryAccent,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 16,
                         ),
                       ),
                     ],
@@ -763,7 +771,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                         'Max',
                         style: GoogleFonts.inter(
                           color: CosmicTheme.textSecondary,
-                          fontSize: 12,
+                          fontSize: 10,
                         ),
                       ),
                       Text(
@@ -771,7 +779,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
                         style: GoogleFonts.inter(
                           color: CosmicTheme.primaryAccent,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 16,
                         ),
                       ),
                     ],
@@ -782,7 +790,7 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
           ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -798,66 +806,60 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
       child: Container(
         decoration: BoxDecoration(
           color: isSelected ? CosmicTheme.primaryAccent.withOpacity(0.15) : CosmicTheme.surfaceColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? CosmicTheme.primaryAccent : CosmicTheme.secondaryAccent,
-            width: isSelected ? 3 : 1,
+            width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected ? CosmicTheme.cosmicShadow : CosmicTheme.softShadow,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   gradient: isSelected ? CosmicTheme.accentGradient : null,
                   color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
                   shape: BoxShape.circle,
-                  boxShadow: isSelected ? [
-                    BoxShadow(
-                      color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : null,
                 ),
                 child: Icon(
                   icon,
-                  size: 28,
+                  size: 20,
                   color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: CosmicTheme.textPrimary,
+              const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: CosmicTheme.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
               if (isSelected) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  width: 16,
+                  height: 16,
                   decoration: BoxDecoration(
                     color: CosmicTheme.primaryAccent,
-                    borderRadius: BorderRadius.circular(12),
+                    shape: BoxShape.circle,
                   ),
-                  child: Text(
-                    '✓',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  child: const Icon(
+                    Icons.check,
+                    size: 10,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -878,95 +880,93 @@ class _GiftWizardRecipientScreenState extends ConsumerState<GiftWizardRecipientS
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? CosmicTheme.primaryAccent.withOpacity(0.15) : CosmicTheme.surfaceColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? CosmicTheme.primaryAccent : CosmicTheme.secondaryAccent,
-            width: isSelected ? 3 : 1,
+            width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected ? CosmicTheme.cosmicShadow : CosmicTheme.softShadow,
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                gradient: isSelected ? CosmicTheme.accentGradient : null,
-                color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
-                shape: BoxShape.circle,
-                boxShadow: isSelected ? [
-                  BoxShadow(
-                    color: CosmicTheme.primaryAccent.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ] : null,
-              ),
-              child: Icon(
-                icon,
-                size: 28,
-                color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: CosmicTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: CosmicTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  range,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: CosmicTheme.primaryAccent,
-                  ),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: isSelected ? CosmicTheme.accentGradient : null,
+                  color: isSelected ? null : CosmicTheme.primaryAccent.withOpacity(0.1),
+                  shape: BoxShape.circle,
                 ),
-                if (isSelected) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: CosmicTheme.primaryAccent,
-                      borderRadius: BorderRadius.circular(12),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: isSelected ? Colors.white : CosmicTheme.primaryAccent,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: CosmicTheme.textPrimary,
+                      ),
                     ),
-                    child: Text(
-                      '✓',
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        color: CosmicTheme.textSecondary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    range,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: CosmicTheme.primaryAccent,
+                    ),
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: CosmicTheme.primaryAccent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        size: 12,
                         color: Colors.white,
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
