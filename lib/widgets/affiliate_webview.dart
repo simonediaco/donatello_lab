@@ -5,8 +5,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/cosmic_theme.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 
 class AffiliateWebViewScreen extends StatefulWidget {
   final String url;
@@ -32,10 +30,10 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
   void initState() {
     super.initState();
     if (kIsWeb) {
-      // On web, we'll use an iframe approach or fallback
+      // On web, skip WebView initialization and go directly to browser
       _isLoading = false;
     } else {
-      // Initialize WebView in a microtask to ensure proper zone handling
+      // Initialize WebView for mobile platforms
       Future.microtask(() => _initializeWebView());
     }
   }
@@ -54,8 +52,7 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
           });
         }
         return;
-      }
-          
+      }      
       _controller = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setBackgroundColor(Colors.white)
@@ -109,7 +106,6 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
   }
 
   void _onWebResourceError(WebResourceError error) {
-    
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -250,7 +246,7 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
       return _buildErrorView();
     }
 
-    // On web platform, use iframe approach
+    // On web platform, show web-specific view
     if (kIsWeb) {
       return _buildWebView();
     }
@@ -294,43 +290,37 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
   }
 
   Widget _buildWebView() {
-    // For web platform, create an iframe
-    if (kIsWeb) {
-      // Create iframe element
-      final iframe = html.IFrameElement()
-        ..src = widget.url
-        ..style.border = 'none'
-        ..style.width = '100%'
-        ..style.height = '100%';
-
-      // ignore: undefined_prefixed_name
-      html.document.getElementById('webview-container')?.remove();
-      iframe.id = 'webview-container';
-
-      // Add iframe to DOM
-      // ignore: undefined_prefixed_name
-      html.document.body?.append(iframe);
-
-      return Container(
-        color: Colors.white,
-        child: Center(
+    // For web platform, show a message to open in browser
+    return Container(
+      color: Colors.white,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Icon(
+                Icons.open_in_browser,
+                size: 64,
+                color: CosmicTheme.primaryAccent,
+              ),
+              const SizedBox(height: 24),
               Text(
-                'Caricamento del prodotto...',
+                'Visualizza prodotto',
                 style: GoogleFonts.inter(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: CosmicTheme.textPrimary,
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Text(
-                'Se la pagina non si carica, clicca "Apri nel browser" sopra.',
+                'Su web, i prodotti affiliati vengono aperti direttamente nel browser per una migliore esperienza di acquisto.',
                 style: GoogleFonts.inter(
-                  fontSize: 14,
+                  fontSize: 16,
                   color: CosmicTheme.textSecondary,
+                  height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -358,10 +348,8 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
             ],
           ),
         ),
-      );
-    }
-
-    return _buildLoadingView();
+      ),
+    );
   }
 
   Widget _buildErrorView() {

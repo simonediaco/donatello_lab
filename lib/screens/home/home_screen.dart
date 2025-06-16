@@ -215,8 +215,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       children: [
                         // Logo
                         Container(
-                          width: 36,
-                          height: 36,
+                          width: 32,
+                          height: 32,
                           child: Image.asset(
                             'assets/images/logos/logo-donatello-no-bg.png',
                             fit: BoxFit.contain,
@@ -230,7 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               icon: Icon(
                                 Icons.notifications_outlined,
                                 color: CosmicTheme.textPrimaryOnDark,
-                                size: 26,
+                                size: 24,
                               ),
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -238,44 +238,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 );
                               },
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 8),
                             _buildSettingsButton(),
                           ],
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 16),
 
                     // Welcome message
                     Text(
                       _getGreeting(),
                       style: GoogleFonts.inter(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: CosmicTheme.textSecondaryOnDark,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 2),
                     Text(
                       user?.firstName != null 
                         ? '${user.firstName}'
                         : 'Utente',
                       style: GoogleFonts.inter(
-                        fontSize: 32,
+                        fontSize: 26,
                         fontWeight: FontWeight.w700,
                         color: CosmicTheme.textPrimaryOnDark,
                         letterSpacing: -0.5,
+                        height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     Text(
                       'Scopri il regalo perfetto con l\'aiuto dell\'intelligenza artificiale.',
                       style: GoogleFonts.inter(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w400,
                         color: CosmicTheme.textSecondaryOnDark,
-                        height: 1.4,
+                        height: 1.2,
                       ),
                     ),
                   ],

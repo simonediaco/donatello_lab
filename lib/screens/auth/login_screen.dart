@@ -301,7 +301,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     // Login button with gradient
                                     SizedBox(
                                       width: double.infinity,
-                                      height: 44,
+                                      height: 52,
                                       child: Container(
                                         decoration: BoxDecoration(
                                           gradient: CosmicTheme.buttonGradient,
@@ -374,7 +374,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     // Create account button with violet styling
                                     SizedBox(
                                       width: double.infinity,
-                                      height: 44,
+                                      height: 52,
                                       child: OutlinedButton(
                                         onPressed: () => context.push('/register'),
                                         style: OutlinedButton.styleFrom(
