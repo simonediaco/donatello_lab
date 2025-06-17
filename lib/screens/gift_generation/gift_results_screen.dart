@@ -7,6 +7,7 @@ import '../../models/recipient.dart';
 import '../../services/api_service.dart';
 import '../../services/search_history_service.dart';
 import '../../services/affiliate_service.dart';
+import '../../services/navigation_service.dart';
 import '../../theme/cosmic_theme.dart';
 
 class GiftResultsScreen extends ConsumerStatefulWidget {
@@ -212,8 +213,11 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.home, color: CosmicTheme.textPrimary, size: 26),
-          onPressed: () => context.go('/home'),
+          icon: Icon(Icons.rocket_launch, color: CosmicTheme.primaryAccent, size: 24),
+          onPressed: () {
+            // Usa il context locale invece del NavigationService
+            context.go('/home');
+          },
         ),
         title: Text(
           'Idee Regalo',
@@ -1089,8 +1093,7 @@ class _GiftResultsScreenState extends ConsumerState<GiftResultsScreen> {
                         Icons.analytics,
                         color: CosmicTheme.primaryAccent,
                         size: 16,
-                      ),
-                      const SizedBox(width: 6),
+                      ),                      const SizedBox(width: 6),
                       Text(
                         'Compatibilità: ${gift.match}%',
                         style: GoogleFonts.inter(

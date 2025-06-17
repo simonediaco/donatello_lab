@@ -33,6 +33,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
   @override
   void initState() {
     super.initState();
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -100,8 +101,8 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
 
       _animationController.forward();
     } catch (e) {
-      setState(() => _isLoading = false);
-    }
+      print("Error loading data: $e");
+      setState(() => _isLoading = false);    }
   }
 
   void _filterRecipients(String query) {

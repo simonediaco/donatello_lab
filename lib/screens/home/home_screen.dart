@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../theme/cosmic_theme.dart';
 import '../../services/auth_service.dart';
+import '../../services/analytics_service.dart';
 import '../../services/api_service.dart';
 import '../../services/affiliate_service.dart';
 import '../../models/recipient.dart';
 import '../../models/popular_gift.dart';
-import '../../theme/cosmic_theme.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_bottom_navigation.dart';
 
@@ -19,8 +20,9 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with TickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
+  @override
+  String get screenName => 'Home';
   List<Recipient> _recipients = [];
   bool _isLoadingRecipients = true;
   List<PopularGift> _popularGifts = [];
@@ -36,6 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   void initState() {
     super.initState();
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -567,7 +570,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => context.push('/generate-gifts'),
+                onTap: () {
+                        // Track button click
+                        context.go('/generate-gifts');
+                      },
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: const EdgeInsets.all(24),

@@ -1,4 +1,5 @@
-package com.simonediaco.donatellolab.donatello_lab
+
+package com.simonediaco.donatellolab
 
 import io.flutter.embedding.android.FlutterActivity
 

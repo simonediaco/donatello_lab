@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "991315820441",
+    "project_id": "donatello-lab",
+    "storage_bucket": "donatello-lab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991315820441:android:26066a9fa9a05853191d08",
+        "android_client_info": {
+          "package_name": "com.simonediaco.donatellolab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDah1Sr1VZkA_FFedGvVJiNfe3F2y4cDU8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -9,6 +9,7 @@ import '../../widgets/custom_bottom_navigation.dart';
 import '../../services/api_service.dart';
 import '../../models/recipient.dart';
 import '../../services/search_history_service.dart';
+import '../../services/analytics_service.dart';
 
 class GiftIntroScreen extends ConsumerStatefulWidget {
   const GiftIntroScreen({Key? key}) : super(key: key);
@@ -19,6 +20,8 @@ class GiftIntroScreen extends ConsumerStatefulWidget {
 
 class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
     with TickerProviderStateMixin {
+  @override
+  String get screenName => 'Gift_Intro';
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -284,7 +287,11 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                     child: Material(
                                       color: Colors.transparent,
                                       child: InkWell(
-                                        onTap: () => context.go('/gift-wizard'),
+                                        onTap: () {
+                                          // Track wizard start
+
+                                          context.go('/gift-wizard');
+                                        },
                                         borderRadius: BorderRadius.circular(14),
                                         child: Padding(
                                           padding: const EdgeInsets.all(16),

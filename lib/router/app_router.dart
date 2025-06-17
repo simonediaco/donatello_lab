@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../services/auth_service.dart';
+import '../services/analytics_service.dart';
+import '../services/navigation_service.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
@@ -147,6 +149,7 @@ Page<T> _fadeTransitionPage<T extends Object?>(
 }
 
 final appRouter = GoRouter(
+  navigatorKey: NavigationService.navigatorKey,
   initialLocation: '/',
   routes: [
     GoRoute(

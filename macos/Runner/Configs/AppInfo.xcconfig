@@ -8,7 +8,7 @@
 PRODUCT_NAME = donatello_lab
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.simonediaco.donatellolab.donatelloLab
+PRODUCT_BUNDLE_IDENTIFIER = com.simonediaco.donatellolab
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.simonediaco.donatellolab. All rights reserved.

@@ -47,7 +47,7 @@ class CustomBottomNavigation extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(
-                icon: Icons.public,
+                icon: Icons.rocket_launch,
                 label: 'Home',
                 isActive: currentIndex == 0,
                 onTap: () => _onNavTap(context, 0),

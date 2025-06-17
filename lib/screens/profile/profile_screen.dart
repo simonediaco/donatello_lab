@@ -36,6 +36,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   void initState() {
     super.initState();
+
     _loadProfile();
 
     _animationController = AnimationController(
@@ -235,7 +236,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ],
               ),
 
-              
+
             ],
           ),
         ),
@@ -291,7 +292,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ],
                       ],
                     ),
-                    
+
                     if (!_isEditing) ...[
                       const SizedBox(height: 12),
                       // Share profile button below title
@@ -383,7 +384,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  
+
 
   Widget _buildProfileContent() {
     if (_isEditing) {
