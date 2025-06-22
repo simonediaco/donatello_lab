@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +9,7 @@ import '../../theme/cosmic_theme.dart';
 import '../../models/auth_exception.dart';
 import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/floating_buttons.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -181,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             children: [
               // Floating cosmic shapes with red accents
               _buildFloatingShapes(),
-              
+
               SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -298,44 +298,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                                     const SizedBox(height: 32),
 
-                                    // Login button with gradient
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 52,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: CosmicTheme.buttonGradient,
-                                          borderRadius: BorderRadius.circular(12),
-                                          boxShadow: CosmicTheme.lightShadow,
-                                        ),
-                                        child: ElevatedButton(
-                                          onPressed: _isLoading ? null : _login,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
-                                            shadowColor: Colors.transparent,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          child: _isLoading
-                                              ? const SizedBox(
-                                                  height: 18,
-                                                  width: 18,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                                  ),
-                                                )
-                                              : Text(
-                                                  'Sign In',
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                        ),
-                                      ),
+                                    // Login button with CustomButton
+                                    CustomButton(
+                                      text: 'Sign In',
+                                      onPressed: _login,
+                                      isLoading: _isLoading,
+                                      loadingText: 'Signing in...',
+                                      icon: Icons.login,
                                     ),
 
                                     const SizedBox(height: 24),
@@ -371,31 +340,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                                     const SizedBox(height: 24),
 
-                                    // Create account button with violet styling
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 52,
-                                      child: OutlinedButton(
-                                        onPressed: () => context.push('/register'),
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          side: BorderSide(
-                                            color: CosmicTheme.primaryAccent,
-                                            width: 2,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Create Account',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: CosmicTheme.primaryAccent,
-                                          ),
-                                        ),
-                                      ),
+                                    // Create account button with CustomButton
+                                    CustomButton(
+                                      text: 'Create Account',
+                                      onPressed: () => context.push('/register'),
+                                      isOutlined: true,
+                                      icon: Icons.person_add,
                                     ),
                                   ],
                                 ),
@@ -442,7 +392,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             },
           ),
         ),
-        
+
         // Bottom left cosmic shape
         Positioned(
           bottom: 100,

@@ -1,180 +1,187 @@
+
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../theme/cosmic_theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
-  final bool isOutlined;
+  final VoidCallback? onPressed;
   final bool isLoading;
+  final bool isOutlined;
+  final String? loadingText;
   final IconData? icon;
-  final Color? backgroundColor;
-  final Color? foregroundColor;
-  final EdgeInsetsGeometry? padding;
-  final BorderRadius? borderRadius;
+  final bool fullWidth;
 
   const CustomButton({
     Key? key,
     required this.text,
-    required this.onPressed,
-    this.isOutlined = false,
+    this.onPressed,
     this.isLoading = false,
+    this.isOutlined = false,
+    this.loadingText,
     this.icon,
-    this.backgroundColor,
-    this.foregroundColor,
-    this.padding,
-    this.borderRadius,
+    this.fullWidth = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final defaultPadding = padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 16);
-    final defaultBorderRadius = borderRadius ?? BorderRadius.circular(16);
-
     if (isOutlined) {
-      return _buildOutlinedButton(context, defaultPadding, defaultBorderRadius);
+      return _buildOutlinedButton();
     } else {
-      return _buildElevatedButton(context, defaultPadding, defaultBorderRadius);
+      return _buildFilledButton();
     }
   }
 
-  Widget _buildElevatedButton(BuildContext context, EdgeInsetsGeometry padding, BorderRadius borderRadius) {
-    return Container(
-      width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: isLoading 
-          ? LinearGradient(
-              colors: [Colors.grey.shade400, Colors.grey.shade500],
-            )
-          : (backgroundColor != null 
-              ? null 
-              : AppTheme.primaryGradient),
-        color: backgroundColor,
-        borderRadius: borderRadius,
-        boxShadow: isLoading ? null : [
-          BoxShadow(
-            color: (backgroundColor ?? AppTheme.primaryColor).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: foregroundColor ?? Colors.white,
-          shadowColor: Colors.transparent,
-          elevation: 0,
-          padding: padding,
-          shape: RoundedRectangleBorder(borderRadius: borderRadius),
-        ),
-        child: isLoading
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      foregroundColor ?? Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Loading...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: foregroundColor ?? Colors.white,
-                  ),
-                ),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 8),
+  Widget _buildFilledButton() {
+    return SizedBox(
+      width: fullWidth ? double.infinity : null,
+      height: 48,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: isLoading 
+            ? LinearGradient(
+                colors: [
+                  Colors.grey.shade400,
+                  Colors.grey.shade500,
                 ],
-                Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: foregroundColor ?? Colors.white,
-                  ),
-                ),
-              ],
+              )
+            : CosmicTheme.primaryGradient,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isLoading ? [] : [
+            BoxShadow(
+              color: CosmicTheme.primaryAccent.withOpacity(0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: isLoading
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      loadingText ?? 'Loading...',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(
+                        icon,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      text,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }
 
-  Widget _buildOutlinedButton(BuildContext context, EdgeInsetsGeometry padding, BorderRadius borderRadius) {
+  Widget _buildOutlinedButton() {
     return SizedBox(
-      width: double.infinity,
-      height: 56,
+      width: fullWidth ? double.infinity : null,
+      height: 48,
       child: OutlinedButton(
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: foregroundColor ?? AppTheme.primaryColor,
+          backgroundColor: Colors.white,
           side: BorderSide(
             color: isLoading 
               ? Colors.grey.shade400 
-              : (backgroundColor ?? AppTheme.primaryColor),
+              : CosmicTheme.primaryAccent,
             width: 1.5,
           ),
-          padding: padding,
-          shape: RoundedRectangleBorder(borderRadius: borderRadius),
-          backgroundColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: isLoading
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.grey.shade400,
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.grey.shade400,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Loading...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade400,
+                  const SizedBox(width: 12),
+                  Text(
+                    loadingText ?? 'Loading...',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade400,
+                    ),
                   ),
-                ),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 8),
                 ],
-                Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: foregroundColor ?? AppTheme.primaryColor,
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+                children: [
+                  if (icon != null) ...[
+                    Icon(
+                      icon,
+                      size: 18,
+                      color: CosmicTheme.primaryAccent,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    text,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: CosmicTheme.primaryAccent,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
       ),
     );
   }
