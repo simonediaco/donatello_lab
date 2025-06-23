@@ -12,11 +12,14 @@ import 'services/analytics_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  Analytics.appOpened();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    Analytics.appOpened();
+  } catch (e) {
+    print('Firebase init error: $e');
+  }
 
   // Initialize WebView platform based on platform
   if (WebViewPlatform.instance is! AndroidWebViewPlatform &&
