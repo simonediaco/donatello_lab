@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/custom_button.dart';
-import '../../widgets/custom_text_field.dart';
+import '../../widgets/buttons.dart';
+import '../../widgets/floating_label_text_field.dart';
 import '../../theme/cosmic_theme.dart';
 import '../../models/auth_exception.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -176,21 +176,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                         // Back button and header
                         Row(
                           children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
+                            IconButton(
+                              icon: Icon(
+                                Icons.arrow_back,
+                                color: CosmicTheme.textPrimaryOnDark,
+                                size: 24,
                               ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.arrow_back,
-                                  color: CosmicTheme.textPrimaryOnDark,
-                                  size: 20,
-                                ),
-                                onPressed: () => context.pop(),
-                              ),
+                              onPressed: () => context.pop(),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 8),
                             Text(
                               'Reset Password',
                               style: GoogleFonts.inter(
@@ -286,8 +280,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                   child: Column(
                                     children: [
                                       // Email field
-                                      CustomTextField(
-                                        hint: 'Email address',
+                                      FloatingLabelTextField(
+                                        label: 'Email address',
                                         controller: _emailController,
                                         keyboardType: TextInputType.emailAddress,
                                         prefixIcon: Icon(
@@ -300,43 +294,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                       const SizedBox(height: 32),
 
                                       // Send reset button
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 44,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            gradient: CosmicTheme.buttonGradient,
-                                            borderRadius: BorderRadius.circular(12),
-                                            boxShadow: CosmicTheme.lightShadow,
-                                          ),
-                                          child: ElevatedButton(
-                                            onPressed: _isLoading ? null : _sendResetEmail,
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.transparent,
-                                              shadowColor: Colors.transparent,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                            ),
-                                            child: _isLoading
-                                                ? const SizedBox(
-                                                    height: 18,
-                                                    width: 18,
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                                    ),
-                                                  )
-                                                : Text(
-                                                    'Send Reset Link',
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                          ),
-                                        ),
+                                      PrimaryButton(
+                                        text: 'Send Reset Link',
+                                        onPressed: _sendResetEmail,
+                                        isLoading: _isLoading,
                                       ),
                                     ],
                                   ),
@@ -396,34 +357,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
                                     const SizedBox(height: 32),
 
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 44,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: CosmicTheme.buttonGradient,
-                                          borderRadius: BorderRadius.circular(12),
-                                          boxShadow: CosmicTheme.lightShadow,
-                                        ),
-                                        child: ElevatedButton(
-                                          onPressed: () => context.pop(),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
-                                            shadowColor: Colors.transparent,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Back to Login',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                                    PrimaryButton(
+                                      text: 'Back to Login',
+                                      onPressed: () => context.pop(),
                                     ),
 
                                     const SizedBox(height: 16),

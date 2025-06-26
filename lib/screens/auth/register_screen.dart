@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/custom_button.dart';
-import '../../widgets/custom_text_field.dart';
+import '../../widgets/buttons.dart';
+import '../../widgets/floating_label_text_field.dart';
 import '../../theme/cosmic_theme.dart';
 import '../../models/auth_exception.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -75,38 +76,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   }
 
   Future<void> _register() async {
-    if (_firstNameController.text.trim().isEmpty) {
-      _showError('Please enter your first name');
-      return;
-    }
-
-    if (_lastNameController.text.trim().isEmpty) {
-      _showError('Please enter your last name');
-      return;
-    }
-
-    if (_emailController.text.trim().isEmpty) {
-      _showError('Please enter your email address');
-      return;
-    }
-
-    if (!_isValidEmail(_emailController.text.trim())) {
-      _showError('Please enter a valid email address');
-      return;
-    }
-
-    if (_passwordController.text.isEmpty) {
-      _showError('Please enter a password');
-      return;
-    }
-
-    if (_passwordController.text.length < 6) {
-      _showError('Password must be at least 6 characters long');
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      _showError('Passwords do not match');
+    if (!_registerFormKey.currentState!.validate()) {
       return;
     }
 
@@ -297,21 +267,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                         // Back button and header
                         Row(
                           children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
+                            IconButton(
+                              icon: Icon(
+                                Icons.arrow_back,
+                                color: CosmicTheme.textPrimaryOnDark,
+                                size: 24,
                               ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.arrow_back,
-                                  color: CosmicTheme.textPrimaryOnDark,
-                                  size: 20,
-                                ),
-                                onPressed: () => context.pop(),
-                              ),
+                              onPressed: () => context.pop(),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 8),
                             Text(
                               'Create Account',
                               style: GoogleFonts.inter(
@@ -373,94 +337,92 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 key: _registerFormKey,
                                 child: Column(
                                   children: [
-                                    // Name fields
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: CustomTextField(
-                                            hint: 'First name',
-                                            controller: _firstNameController,
-                                            keyboardType: TextInputType.name,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: CustomTextField(
-                                            hint: 'Last name',
-                                            controller: _lastNameController,
-                                            keyboardType: TextInputType.name,
-                                          ),
-                                        ),
-                                      ],
+                                    // First name field
+                                    FloatingLabelTextField(
+                                      label: 'First name',
+                                      controller: _firstNameController,
+                                      keyboardType: TextInputType.name,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Please enter your first name';
+                                        }
+                                        return null;
+                                      },
                                     ),
 
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 16),
+
+                                    // Last name field
+                                    FloatingLabelTextField(
+                                      label: 'Last name',
+                                      controller: _lastNameController,
+                                      keyboardType: TextInputType.name,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Please enter your last name';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+
+                                    const SizedBox(height: 16),
 
                                     // Email field
-                                    CustomTextField(
-                                      hint: 'Email address',
+                                    FloatingLabelTextField(
+                                      label: 'Email address',
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Please enter your email address';
+                                        }
+                                        if (!_isValidEmail(value.trim())) {
+                                          return 'Please enter a valid email address';
+                                        }
+                                        return null;
+                                      },
                                     ),
 
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 16),
 
                                     // Birth date field
-                                    GestureDetector(
+                                    FloatingLabelTextField(
+                                      label: 'Birth date (dd/mm/yyyy)',
+                                      controller: _birthdateController,
+                                      readOnly: true,
                                       onTap: _selectDate,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: Colors.grey.shade300,
-                                            width: 1.0,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(0.04),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 1),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.calendar_today_outlined,
-                                                color: CosmicTheme.textSecondary,
-                                                size: 20,
-                                              ),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Text(
-                                                  _birthdateController.text.isEmpty 
-                                                    ? 'Birth date (dd/mm/yyyy)'
-                                                    : _birthdateController.text,
-                                                  style: GoogleFonts.inter(
-                                                    color: _birthdateController.text.isEmpty 
-                                                      ? CosmicTheme.textSecondary 
-                                                      : CosmicTheme.textPrimary,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                      prefixIcon: Icon(
+                                        Icons.calendar_today_outlined,
+                                        color: CosmicTheme.textSecondary,
+                                        size: 20,
                                       ),
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Please enter your birth date';
+                                        }
+                                        if (!_isValidDate(value.trim())) {
+                                          return 'Please enter a valid date (dd/mm/yyyy)';
+                                        }
+                                        return null;
+                                      },
                                     ),
 
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 16),
 
                                     // Password field
-                                    CustomTextField(
-                                      hint: 'Password (min. 6 characters)',
+                                    FloatingLabelTextField(
+                                      label: 'Password (min. 6 characters)',
                                       controller: _passwordController,
                                       isPassword: !_isPasswordVisible,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter a password';
+                                        }
+                                        if (value.length < 6) {
+                                          return 'Password must be at least 6 characters long';
+                                        }
+                                        return null;
+                                      },
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                           _isPasswordVisible 
@@ -476,13 +438,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                       ),
                                     ),
 
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 16),
 
                                     // Confirm password field
-                                    CustomTextField(
-                                      hint: 'Confirm password',
+                                    FloatingLabelTextField(
+                                      label: 'Confirm password',
                                       controller: _confirmPasswordController,
                                       isPassword: !_isConfirmPasswordVisible,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please confirm your password';
+                                        }
+                                        if (value != _passwordController.text) {
+                                          return 'Passwords do not match';
+                                        }
+                                        return null;
+                                      },
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                           _isConfirmPasswordVisible 
@@ -540,23 +511,65 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                         ),
                                                       ),
                                                       const SizedBox(height: 4),
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            const SnackBar(
-                                                              content: Text('Terms of use will be available soon'),
+                                                      Wrap(
+                                                        children: [
+                                                          Text(
+                                                            'Read ',
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              color: CosmicTheme.textSecondary,
                                                             ),
-                                                          );
-                                                        },
-                                                        child: Text(
-                                                          'Read terms of use and privacy policy',
-                                                          style: GoogleFonts.inter(
-                                                            fontSize: 12,
-                                                            fontWeight: FontWeight.w500,
-                                                            color: CosmicTheme.primaryAccent,
-                                                            decoration: TextDecoration.underline,
                                                           ),
-                                                        ),
+                                                          GestureDetector(
+                                                            onTap: () async {
+                                                              // Open terms of use externally
+                                                              const url = '#'; // Placeholder URL
+                                                              if (await canLaunchUrl(Uri.parse(url))) {
+                                                                await launchUrl(
+                                                                  Uri.parse(url),
+                                                                  mode: LaunchMode.externalApplication,
+                                                                );
+                                                              }
+                                                            },
+                                                            child: Text(
+                                                              'terms of use',
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 12,
+                                                                fontWeight: FontWeight.w500,
+                                                                color: CosmicTheme.primaryAccent,
+                                                                decoration: TextDecoration.underline,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            ' and ',
+                                                            style: GoogleFonts.inter(
+                                                              fontSize: 12,
+                                                              color: CosmicTheme.textSecondary,
+                                                            ),
+                                                          ),
+                                                          GestureDetector(
+                                                            onTap: () async {
+                                                              // Open privacy policy externally
+                                                              const url = '#'; // Placeholder URL
+                                                              if (await canLaunchUrl(Uri.parse(url))) {
+                                                                await launchUrl(
+                                                                  Uri.parse(url),
+                                                                  mode: LaunchMode.externalApplication,
+                                                                );
+                                                              }
+                                                            },
+                                                            child: Text(
+                                                              'privacy policy',
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 12,
+                                                                fontWeight: FontWeight.w500,
+                                                                color: CosmicTheme.primaryAccent,
+                                                                decoration: TextDecoration.underline,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                       const SizedBox(height: 8),
                                                       Text(
@@ -580,43 +593,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                     const SizedBox(height: 32),
 
                                     // Register button
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 44,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: CosmicTheme.buttonGradient,
-                                          borderRadius: BorderRadius.circular(12),
-                                          boxShadow: CosmicTheme.lightShadow,
-                                        ),
-                                        child: ElevatedButton(
-                                          onPressed: _isLoading ? null : _register,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
-                                            shadowColor: Colors.transparent,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          child: _isLoading
-                                              ? const SizedBox(
-                                                  height: 18,
-                                                  width: 18,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                                  ),
-                                                )
-                                              : Text(
-                                                  'Create Account',
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                        ),
-                                      ),
+                                    PrimaryButton(
+                                      text: 'Create Account',
+                                      onPressed: _register,
+                                      isLoading: _isLoading,
                                     ),
 
                                     const SizedBox(height: 24),

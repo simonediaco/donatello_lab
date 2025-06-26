@@ -213,16 +213,9 @@ class _GiftIntroScreenState extends ConsumerState<GiftIntroScreen>
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(14),
                                       border: Border.all(
-                                        color: Colors.grey.shade200,
-                                        width: 1,
+                                        color: CosmicTheme.primaryAccent,
+                                        width: 2,
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
                                     ),
                                     child: Material(
                                       color: Colors.transparent,

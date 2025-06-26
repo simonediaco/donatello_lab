@@ -1,11 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/custom_button.dart';
-import '../../widgets/custom_text_field.dart';
+import '../../widgets/buttons.dart';
+import '../../widgets/floating_label_text_field.dart';
 import '../../theme/cosmic_theme.dart';
 import '../../models/auth_exception.dart';
 import 'package:flutter/gestures.dart';
@@ -25,7 +24,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   final _loginFormKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
-  bool _obscurePassword = true;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -67,18 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _login() async {
-    if (_emailController.text.trim().isEmpty) {
-      _showError('Please enter your email address');
-      return;
-    }
-
-    if (_passwordController.text.isEmpty) {
-      _showError('Please enter your password');
-      return;
-    }
-
-    if (!_isValidEmail(_emailController.text.trim())) {
-      _showError('Please enter a valid email address');
+    if (!_loginFormKey.currentState!.validate()) {
       return;
     }
 
@@ -181,7 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             children: [
               // Floating cosmic shapes with red accents
               _buildFloatingShapes(),
-              
+
               SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -250,19 +237,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     // Email field
-                                    CustomTextField(
-                                      hint: 'Email address',
+                                    FloatingLabelTextField(
+                                      label: 'Email address',
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'Please enter your email address';
+                                        }
+                                        if (!_isValidEmail(value.trim())) {
+                                          return 'Please enter a valid email address';
+                                        }
+                                        return null;
+                                      },
                                     ),
 
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 16),
 
                                     // Password field
-                                    CustomTextField(
-                                      hint: 'Password',
+                                    FloatingLabelTextField(
+                                      label: 'Password',
                                       controller: _passwordController,
                                       isPassword: !_isPasswordVisible,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter your password';
+                                        }
+                                        return null;
+                                      },
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                           _isPasswordVisible 
@@ -278,67 +280,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       ),
                                     ),
 
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 8),
 
                                     // Simple forgot password link
                                     Align(
                                       alignment: Alignment.centerRight,
-                                      child: TextButton(
+                                      child: CustomTextButton(
+                                        text: 'Forgot password?',
                                         onPressed: () => context.push('/forgot-password'),
-                                        child: Text(
-                                          'Forgot password?',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: CosmicTheme.primaryAccent,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(height: 32),
-
-                                    // Login button with gradient
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 52,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: CosmicTheme.buttonGradient,
-                                          borderRadius: BorderRadius.circular(12),
-                                          boxShadow: CosmicTheme.lightShadow,
-                                        ),
-                                        child: ElevatedButton(
-                                          onPressed: _isLoading ? null : _login,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.transparent,
-                                            shadowColor: Colors.transparent,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          child: _isLoading
-                                              ? const SizedBox(
-                                                  height: 18,
-                                                  width: 18,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                                  ),
-                                                )
-                                              : Text(
-                                                  'Sign In',
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                        ),
                                       ),
                                     ),
 
                                     const SizedBox(height: 24),
+
+                                    // Login button with gradient
+                                    PrimaryButton(
+                                      text: 'Sign In',
+                                      onPressed: _login,
+                                      isLoading: _isLoading,
+                                    ),
+
+                                    const SizedBox(height: 20),
 
                                     // Simple divider
                                     Row(
@@ -369,33 +331,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       ],
                                     ),
 
-                                    const SizedBox(height: 24),
+                                    const SizedBox(height: 20),
 
                                     // Create account button with violet styling
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 52,
-                                      child: OutlinedButton(
-                                        onPressed: () => context.push('/register'),
-                                        style: OutlinedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          side: BorderSide(
-                                            color: CosmicTheme.primaryAccent,
-                                            width: 2,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Create Account',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: CosmicTheme.primaryAccent,
-                                          ),
-                                        ),
-                                      ),
+                                    SecondaryButton(
+                                      text: 'Create Account',
+                                      onPressed: () => context.push('/register'),
                                     ),
                                   ],
                                 ),
@@ -442,7 +383,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             },
           ),
         ),
-        
+
         // Bottom left cosmic shape
         Positioned(
           bottom: 100,
