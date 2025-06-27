@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/floating_label_text_field.dart';
@@ -82,7 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ref.read(currentUserProvider.notifier).state = user;
         context.go('/home');
       } else {
-        _showError('Login failed. Please try again.');
+        _showError(AppLocalizations.of(context)!.loginFailed);
       }
     } catch (e) {
       if (mounted) {
@@ -135,20 +135,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     if (error is AuthException) {
       message = error.message;
     } else {
-      message = 'Connection error. Please try again.';
+      final l10n = AppLocalizations.of(context)!;
+      message = l10n.connectionError;
 
       if (error.toString().contains('DioException')) {
         if (error.toString().contains('status code of 400') || 
             error.toString().contains('status code of 401') ||
             error.toString().contains('401') || 
             error.toString().contains('Unauthorized')) {
-          message = 'Incorrect email or password';
+          message = l10n.incorrectEmailOrPassword;
         } else if (error.toString().contains('status code of 404') || error.toString().contains('404')) {
-          message = 'Service unavailable';
+          message = l10n.serviceUnavailable;
         } else if (error.toString().contains('status code of 500') || error.toString().contains('500')) {
-          message = 'Server error. Please try again later';
+          message = l10n.serverError;
         } else if (error.toString().contains('timeout') || error.toString().contains('connection')) {
-          message = 'Connection problem. Check your network';
+          message = l10n.connectionProblem;
         }
       }
     }
@@ -158,6 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -188,7 +190,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             children: [
                               // Welcome text
                               Text(
-                                'Welcome back',
+                                l10n.welcomeBack,
                                 style: GoogleFonts.inter(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w700,
@@ -200,7 +202,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               const SizedBox(height: 12),
 
                               Text(
-                                'Sign in to continue to Donatello Lab',
+                                l10n.signInToContinue,
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w400,
@@ -238,15 +240,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   children: [
                                     // Email field
                                     FloatingLabelTextField(
-                                      label: 'Email address',
+                                      label: l10n.emailAddress,
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
                                         if (value == null || value.trim().isEmpty) {
-                                          return 'Please enter your email address';
+                                          return l10n.pleaseEnterEmail;
                                         }
                                         if (!_isValidEmail(value.trim())) {
-                                          return 'Please enter a valid email address';
+                                          return l10n.pleaseEnterValidEmail;
                                         }
                                         return null;
                                       },
@@ -256,12 +258,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                                     // Password field
                                     FloatingLabelTextField(
-                                      label: 'Password',
+                                      label: l10n.passwordHint,
                                       controller: _passwordController,
                                       isPassword: !_isPasswordVisible,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return 'Please enter your password';
+                                          return l10n.pleaseEnterPassword;
                                         }
                                         return null;
                                       },
@@ -286,7 +288,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: CustomTextButton(
-                                        text: 'Forgot password?',
+                                        text: l10n.forgotPassword,
                                         onPressed: () => context.push('/forgot-password'),
                                       ),
                                     ),
@@ -295,7 +297,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                                     // Login button with gradient
                                     PrimaryButton(
-                                      text: 'Sign In',
+                                      text: l10n.signIn,
                                       onPressed: _login,
                                       isLoading: _isLoading,
                                     ),
@@ -314,7 +316,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         Padding(
                                           padding: const EdgeInsets.symmetric(horizontal: 16),
                                           child: Text(
-                                            'or',
+                                            l10n.or,
                                             style: GoogleFonts.inter(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500,
@@ -335,7 +337,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                                     // Create account button with violet styling
                                     SecondaryButton(
-                                      text: 'Create Account',
+                                      text: l10n.createAccount,
                                       onPressed: () => context.push('/register'),
                                     ),
                                   ],

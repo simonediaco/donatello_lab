@@ -307,7 +307,7 @@ class CosmicTheme {
       ),
       
       // Card theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceColor,
         elevation: 0,
         shadowColor: Colors.transparent,

@@ -21,7 +21,7 @@ import '../screens/gift_generation/gift_wizard_recipient_screen.dart';
 import '../screens/gift_generation/gift_recipient_selection_screen.dart';
 import '../screens/gift_generation/gift_loading_screen.dart';
 import '../screens/gift_generation/gift_results_screen.dart';
-import '../screens/saved_gifts/saved_gifts_screen.dart';
+
 import '../screens/profile/profile_screen.dart';
 import '../models/recipient.dart';
 import '../models/gift.dart';
@@ -269,12 +269,7 @@ final appRouter = GoRouter(
         );
       },
     ),
-    GoRoute(
-      path: '/saved-gifts',
-      pageBuilder: (context, state) => NoTransitionPage(
-        child: const SavedGiftsScreen(),
-      ),
-    ),
+    
     GoRoute(
       path: '/profile',
       pageBuilder: (context, state) => NoTransitionPage(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_service.dart';
 import '../../theme/cosmic_theme.dart';
@@ -94,7 +95,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        _showError('Errore nel caricamento del profilo: ${e.toString()}');
+        _showError('${AppLocalizations.of(context)!.errorLoadingProfile} ${e.toString()}');
       }
     }
   }
@@ -129,12 +130,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       });
 
       if (mounted) {
-        _showSuccess('Profilo aggiornato con successo!');
+        _showSuccess(AppLocalizations.of(context)!.profileUpdatedSuccessfully);
       }
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {
-        _showError('Errore nell\'aggiornamento: ${e.toString()}');
+        _showError('${AppLocalizations.of(context)!.errorUpdating} ${e.toString()}');
       }
     }
   }
@@ -270,7 +271,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       children: [
                         Expanded(
                           child: Text(
-                            'Il mio Profilo',
+                            AppLocalizations.of(context)!.myProfile,
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
@@ -299,7 +300,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       GestureDetector(
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Funzionalità in arrivo!')),
+                            SnackBar(content: Text(AppLocalizations.of(context)!.featureComingSoon)),
                           );
                         },
                         child: Container(
@@ -313,7 +314,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             ),
                           ),
                           child: Text(
-                            'Condividi profilo',
+                            AppLocalizations.of(context)!.shareProfile,
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14,
@@ -476,7 +477,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(width: 12),
               Flexible(
                 child: Text(
-                  'Informazioni Personali',
+                  AppLocalizations.of(context)!.personalInformation,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -488,26 +489,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           const SizedBox(height: 16),
           CustomTextField(
-            label: 'Nome',
-            hint: 'Inserisci il tuo nome',
+            label: AppLocalizations.of(context)!.name,
+            hint: AppLocalizations.of(context)!.enterYourName,
             controller: _firstNameController,
             enabled: _isEditing,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Il nome è obbligatorio';
+                return AppLocalizations.of(context)!.nameRequired;
               }
               return null;
             },
           ),
           const SizedBox(height: 12),
           CustomTextField(
-            label: 'Cognome',
-            hint: 'Inserisci il tuo cognome',
+            label: AppLocalizations.of(context)!.surname,
+            hint: AppLocalizations.of(context)!.enterYourSurname,
             controller: _lastNameController,
             enabled: _isEditing,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Il cognome è obbligatorio';
+                return AppLocalizations.of(context)!.surnameRequired;
               }
               return null;
             },
@@ -515,7 +516,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 12),
           CustomTextField(
             label: 'Email',
-            hint: 'La tua email',
+            hint: AppLocalizations.of(context)!.yourEmail,
             controller: _emailController,
             enabled: false, // L'email non può essere modificata
             keyboardType: TextInputType.emailAddress,
@@ -554,7 +555,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(width: 12),
               Flexible(
                 child: Text(
-                  'Contatti',
+                  AppLocalizations.of(context)!.contacts,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -566,8 +567,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           const SizedBox(height: 16),
           CustomTextField(
-            label: 'Telefono',
-            hint: 'Inserisci il tuo numero di telefono',
+            label: AppLocalizations.of(context)!.phone,
+            hint: AppLocalizations.of(context)!.enterYourPhone,
             controller: _phoneController,
             enabled: _isEditing,
             keyboardType: TextInputType.phone,
@@ -611,7 +612,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(width: 12),
               Flexible(
                 child: Text(
-                  'Bio',
+                  AppLocalizations.of(context)!.bio,
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -623,8 +624,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           const SizedBox(height: 16),
           CustomTextField(
-            label: 'Biografia',
-            hint: 'Racconta qualcosa di te...',
+            label: AppLocalizations.of(context)!.biography,
+            hint: AppLocalizations.of(context)!.tellAboutYourself,
             controller: _bioController,
             enabled: _isEditing,
             maxLines: 3,
@@ -653,7 +654,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
               ),
               child: Text(
-                'Annulla',
+                AppLocalizations.of(context)!.cancel,
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -692,7 +693,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         ),
                       )
                     : Text(
-                        'Salva',
+                        AppLocalizations.of(context)!.save,
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

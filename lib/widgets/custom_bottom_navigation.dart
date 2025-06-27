@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class CustomBottomNavigation extends StatelessWidget {
@@ -48,25 +49,25 @@ class CustomBottomNavigation extends StatelessWidget {
             children: [
               _buildNavItem(
                 icon: Icons.rocket_launch,
-                label: 'Home',
+                label: AppLocalizations.of(context)!.home,
                 isActive: currentIndex == 0,
                 onTap: () => _onNavTap(context, 0),
               ),
               _buildNavItem(
                 icon: Icons.favorite_outline,
-                label: 'Recipients',
+                label: AppLocalizations.of(context)!.recipients,
                 isActive: currentIndex == 1,
                 onTap: () => _onNavTap(context, 1),
               ),
               _buildNavItem(
                 icon: Icons.auto_awesome,
-                label: 'Generate',
+                label: AppLocalizations.of(context)!.generate,
                 isActive: currentIndex == 2,
                 onTap: () => _onNavTap(context, 2),
               ),
               _buildNavItem(
                 icon: Icons.person_outline,
-                label: 'Profile',
+                label: AppLocalizations.of(context)!.profile,
                 isActive: currentIndex == 3,
                 onTap: () => _onNavTap(context, 3),
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 import '../../theme/cosmic_theme.dart';
 import '../../services/auth_service.dart';
 import '../../services/analytics_service.dart';
@@ -237,7 +238,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                               ),
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Notifications coming soon')),
+                                  SnackBar(content: Text(AppLocalizations.of(context)!.notificationsComingSoon)),
                                 );
                               },
                             ),
@@ -263,7 +264,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                     Text(
                       user?.firstName != null 
                         ? '${user.firstName}'
-                        : 'Utente',
+                        : AppLocalizations.of(context)!.hello,
                       style: GoogleFonts.inter(
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
@@ -274,7 +275,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Scopri il regalo perfetto con l\'aiuto dell\'intelligenza artificiale.',
+                      AppLocalizations.of(context)!.aiAnalyzesInterests,
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -414,9 +415,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Buongiorno';
-    if (hour < 17) return 'Buon pomeriggio';
-    return 'Buonasera';
+    if (hour < 12) return AppLocalizations.of(context)!.goodMorning;
+    if (hour < 17) return AppLocalizations.of(context)!.goodAfternoon;
+    return AppLocalizations.of(context)!.goodEvening;
   }
 
   void _showProfileMenu() {
@@ -444,7 +445,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
             _buildMenuOption(
               icon: Icons.favorite_outline,
-              title: 'Supporta Donatello',
+              title: AppLocalizations.of(context)!.supportDonatello,
               onTap: () async {
                 Navigator.pop(context);
                 try {
@@ -454,14 +455,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   } else {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Impossibile aprire la pagina di supporto')),
+                        SnackBar(content: Text(AppLocalizations.of(context)!.cannotOpenSupportPage)),
                       );
                     }
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Errore nell\'apertura della pagina di supporto')),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.errorOpeningSupportPage)),
                     );
                   }
                 }
@@ -470,7 +471,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
             _buildMenuOption(
               icon: Icons.language,
-              title: 'Scopri Donatello',
+              title: AppLocalizations.of(context)!.discoverDonatello,
               onTap: () async {
                 Navigator.pop(context);
                 try {
@@ -480,14 +481,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   } else {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Impossibile aprire il sito web')),
+                        SnackBar(content: Text(AppLocalizations.of(context)!.cannotOpenWebsite)),
                       );
                     }
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Errore nell\'apertura del sito web')),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.errorOpeningWebsite)),
                     );
                   }
                 }
@@ -498,7 +499,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
             _buildMenuOption(
               icon: Icons.logout,
-              title: 'Sign Out',
+              title: AppLocalizations.of(context)!.signOut,
               onTap: () {
                 Navigator.pop(context);
                 _logout();
@@ -557,7 +558,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ),
               const SizedBox(width: 12),
               Text(
-                'Azioni Rapide',
+                AppLocalizations.of(context)!.quickActions,
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -607,7 +608,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Genera Idee Regalo',
+                              AppLocalizations.of(context)!.generateGiftIdeas,
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -616,7 +617,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Lascia che l\'AI trovi il regalo perfetto',
+                              AppLocalizations.of(context)!.letAiFindPerfectGift,
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
@@ -664,7 +665,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ),
               const SizedBox(width: 12),
               Text(
-                'Destinatari Recenti',
+                AppLocalizations.of(context)!.recentRecipients,
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -687,7 +688,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: Text(
-                        'Vedi Tutti',
+                        AppLocalizations.of(context)!.viewAll,
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -765,7 +766,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             ),
             const SizedBox(height: 8),
             Text(
-              'Nessun destinatario ancora',
+              AppLocalizations.of(context)!.noRecipientsYet,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 color: CosmicTheme.textSecondary,
@@ -775,7 +776,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             TextButton(
               onPressed: () => context.push('/recipients/add'),
               child: Text(
-                'Aggiungi il primo destinatario',
+                AppLocalizations.of(context)!.addRecipient,
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   color: CosmicTheme.primaryAccent,
@@ -884,7 +885,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ),
               const SizedBox(width: 12),
               Text(
-                'Regali Popolari',
+                AppLocalizations.of(context)!.popularGiftsThisMonth,
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -940,7 +941,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ),
               const SizedBox(height: 8),
               Text(
-                'Nessun regalo popolare disponibile',
+                AppLocalizations.of(context)!.noPopularGiftsAvailable,
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: CosmicTheme.textSecondary,
@@ -977,7 +978,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    'Errore nell\'apertura del prodotto',
+                    AppLocalizations.of(context)!.errorOpeningProduct,
                     style: GoogleFonts.inter(color: Colors.white),
                   ),
                   backgroundColor: Colors.red,

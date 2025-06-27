@@ -296,15 +296,6 @@ class AppTheme {
       ),
       
       // Card theme
-      cardTheme: CardTheme(
-        color: surfaceColor,
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        margin: EdgeInsets.zero,
-      ),
       
       // Bottom navigation bar theme
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(

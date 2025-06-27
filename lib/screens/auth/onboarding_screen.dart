@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 import '../../theme/cosmic_theme.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -19,48 +20,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   late Animation<double> _fadeAnimation;
   int _currentPage = 0;
 
-  final List<OnboardingPage> _pages = [
-    OnboardingPage(
-      icon: Icons.auto_awesome,
-      title: 'Benvenuto in Donatello Lab',
-      description: 'Scopri il potere dell\'arte del regalo. Lascia che la genialità di Donatello ti guidi nella creazione di doni perfetti.',
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-      ),
-    ),
-    OnboardingPage(
-      icon: Icons.people_outline,
-      title: 'Crea il profilo del destinatario',
-      description: 'Aggiungi i tuoi cari e costruisci profili dettagliati per ricevere suggerimenti sempre più personalizzati.',
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
-      ),
-    ),
-    OnboardingPage(
-      icon: Icons.psychology,
-      title: 'Intelligenza Artificiale',
-      description: 'La nostra AI analizza interessi, relazioni e budget per suggerirti regali che toccheranno davvero il cuore.',
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFEC4899), Color(0xFFF59E0B)],
-      ),
-    ),
-    OnboardingPage(
-      icon: Icons.favorite_outline,
-      title: 'Inizia a creare magia',
-      description: 'Sei pronto per trasformare ogni occasione in un momento indimenticabile. Iniziamo questo viaggio insieme!',
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFF59E0B), Color(0xFF10B981)],
-      ),
-    ),
-  ];
+  late List<OnboardingPage> _pages;
 
   @override
   void initState() {
@@ -121,6 +81,49 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
+    _pages = [
+      OnboardingPage(
+        icon: Icons.auto_awesome,
+        title: AppLocalizations.of(context)!.welcomeToDonatelloLabOnboarding,
+        description: AppLocalizations.of(context)!.discoverGiftPower,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+        ),
+      ),
+      OnboardingPage(
+        icon: Icons.people_outline,
+        title: AppLocalizations.of(context)!.createRecipientProfile,
+        description: AppLocalizations.of(context)!.addLovedOnesProfiles,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+        ),
+      ),
+      OnboardingPage(
+        icon: Icons.psychology,
+        title: AppLocalizations.of(context)!.artificialIntelligence,
+        description: AppLocalizations.of(context)!.aiAnalyzesInterests,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFEC4899), Color(0xFFF59E0B)],
+        ),
+      ),
+      OnboardingPage(
+        icon: Icons.favorite_outline,
+        title: AppLocalizations.of(context)!.startCreatingMagic,
+        description: AppLocalizations.of(context)!.readyToTransform,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF59E0B), Color(0xFF10B981)],
+        ),
+      ),
+    ];
+    
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -162,7 +165,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                           TextButton(
                             onPressed: _finishOnboarding,
                             child: Text(
-                              'Salta',
+                              AppLocalizations.of(context)!.skip,
                               style: GoogleFonts.inter(
                                 color: CosmicTheme.textSecondaryOnDark,
                                 fontSize: 16,
@@ -242,7 +245,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      _currentPage == _pages.length - 1 ? 'Inizia!' : 'Continua',
+                                      _currentPage == _pages.length - 1 ? AppLocalizations.of(context)!.startExclamation : AppLocalizations.of(context)!.continue_,
                                       style: GoogleFonts.inter(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,

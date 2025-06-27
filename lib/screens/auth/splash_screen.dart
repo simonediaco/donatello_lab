@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 
 import '../../services/auth_service.dart';
 import '../../theme/cosmic_theme.dart';
@@ -242,7 +243,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'Preparing your experience...',
+                                    AppLocalizations.of(context)!.preparingExperience,
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,

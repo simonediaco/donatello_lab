@@ -1,3 +1,4 @@
+import 'package:Donatello/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -62,12 +63,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
   Future<void> _sendResetEmail() async {
     if (_emailController.text.trim().isEmpty) {
-      _showError('Please enter your email address');
+      _showError(AppLocalizations.of(context)!.pleaseEnterEmail);
       return;
     }
 
     if (!_isValidEmail(_emailController.text.trim())) {
-      _showError('Please enter a valid email address');
+      _showError(AppLocalizations.of(context)!.pleaseEnterValidEmail);
       return;
     }
 
@@ -131,15 +132,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     if (error is AuthException) {
       message = error.message;
     } else {
-      message = 'Error sending reset email. Please try again.';
+      message = AppLocalizations.of(context)!.errorSendingResetEmail;
 
       if (error.toString().contains('DioException')) {
         if (error.toString().contains('status code of 404')) {
-          message = 'Email address not found';
+          message = AppLocalizations.of(context)!.emailNotFound;
         } else if (error.toString().contains('status code of 500')) {
-          message = 'Server error. Please try again later';
+          message = AppLocalizations.of(context)!.serverError;
         } else if (error.toString().contains('timeout') || error.toString().contains('connection')) {
-          message = 'Connection problem. Check your network';
+          message = AppLocalizations.of(context)!.connectionProblem;
         }
       }
     }
@@ -186,7 +187,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Reset Password',
+                              AppLocalizations.of(context)!.resetPassword,
                               style: GoogleFonts.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -230,7 +231,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
                         // Title and description
                         Text(
-                          _emailSent ? 'Check your email' : 'Forgot Password?',
+                          _emailSent ? AppLocalizations.of(context)!.checkYourEmail : AppLocalizations.of(context)!.forgotPasswordTitle,
                           style: GoogleFonts.inter(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
@@ -243,8 +244,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
                         Text(
                           _emailSent 
-                            ? 'We\'ve sent a password reset link to ${_emailController.text.trim()}'
-                            : 'Don\'t worry! Enter your email address and we\'ll send you a link to reset your password.',
+                            ? '${AppLocalizations.of(context)!.emailSentTo} ${_emailController.text.trim()}'
+                            : AppLocalizations.of(context)!.forgotPasswordSubtitle,
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
@@ -281,7 +282,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     children: [
                                       // Email field
                                       FloatingLabelTextField(
-                                        label: 'Email address',
+                                        label: AppLocalizations.of(context)!.emailAddress,
                                         controller: _emailController,
                                         keyboardType: TextInputType.emailAddress,
                                         prefixIcon: Icon(
@@ -295,7 +296,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
                                       // Send reset button
                                       PrimaryButton(
-                                        text: 'Send Reset Link',
+                                        text: AppLocalizations.of(context)!.sendResetLink,
                                         onPressed: _sendResetEmail,
                                         isLoading: _isLoading,
                                       ),
@@ -335,7 +336,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     const SizedBox(height: 24),
 
                                     Text(
-                                      'Email sent successfully!',
+                                      AppLocalizations.of(context)!.emailSentSuccessfully,
                                       style: GoogleFonts.inter(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
@@ -346,7 +347,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     const SizedBox(height: 12),
 
                                     Text(
-                                      'Check your inbox and follow the instructions to reset your password.',
+                                      AppLocalizations.of(context)!.checkInboxInstructions,
                                       style: GoogleFonts.inter(
                                         fontSize: 14,
                                         color: CosmicTheme.textSecondary,
@@ -358,7 +359,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     const SizedBox(height: 32),
 
                                     PrimaryButton(
-                                      text: 'Back to Login',
+                                      text: AppLocalizations.of(context)!.backToLogin,
                                       onPressed: () => context.pop(),
                                     ),
 
@@ -372,7 +373,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                         });
                                       },
                                       child: Text(
-                                        'Send to different email',
+                                        AppLocalizations.of(context)!.sendToDifferentEmail,
                                         style: GoogleFonts.inter(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 import '../../services/api_service.dart';
 import '../../models/recipient.dart';
 import '../../models/gift.dart';
@@ -163,7 +164,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Rimuovi Regalo',
+          AppLocalizations.of(context)!.removeGift,
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -171,7 +172,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
           ),
         ),
         content: Text(
-          'Sei sicuro di voler rimuovere "${gift.name}" dai tuoi regali salvati?',
+          AppLocalizations.of(context)!.confirmRemoveGift,
           style: GoogleFonts.inter(
             fontSize: 14,
             color: CosmicTheme.textSecondary,
@@ -181,7 +182,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
-              'Annulla',
+              AppLocalizations.of(context)!.cancel,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -192,7 +193,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
-              'Rimuovi',
+              AppLocalizations.of(context)!.remove,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -212,7 +213,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Regalo rimosso con successo',
+              AppLocalizations.of(context)!.giftRemovedSuccessfully,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -230,7 +231,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Errore nella rimozione: ${e.toString()}',
+              AppLocalizations.of(context)!.errorRemoving,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -293,7 +294,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Destinatari',
+                    AppLocalizations.of(context)!.recipients,
                     style: GoogleFonts.inter(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
@@ -303,7 +304,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_recipients.length} ${_recipients.length == 1 ? 'persona' : 'persone'} nella tua cerchia',
+                    '${_recipients.length} ${_recipients.length == 1 ? AppLocalizations.of(context)!.personInYourCircle : AppLocalizations.of(context)!.peopleInYourCircle}',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -361,7 +362,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
           color: CosmicTheme.textPrimary,
         ),
         decoration: InputDecoration(
-          hintText: 'Cerca destinatari...',
+          hintText: AppLocalizations.of(context)!.searchRecipients,
           hintStyle: GoogleFonts.inter(
             color: CosmicTheme.textTertiary,
             fontSize: 16,
@@ -401,7 +402,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          'Caricamento destinatari...',
+          AppLocalizations.of(context)!.loadingRecipients,
           style: GoogleFonts.inter(
             fontSize: 16,
             color: CosmicTheme.textSecondary,
@@ -439,7 +440,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
               const SizedBox(height: 32),
 
               Text(
-                'Nessun destinatario',
+                AppLocalizations.of(context)!.noRecipients,
                 style: GoogleFonts.inter(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -451,7 +452,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
               const SizedBox(height: 12),
 
               Text(
-                'Aggiungi le persone per cui vuoi trovare il regalo perfetto. Più dettagli fornisci, migliori saranno i nostri suggerimenti!',
+                AppLocalizations.of(context)!.noRecipientsDescription,
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   color: CosmicTheme.textSecondary,
@@ -485,7 +486,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Consiglio',
+                      AppLocalizations.of(context)!.tip,
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -494,7 +495,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Includi interessi, colori preferiti e cosa non gradiscono per suggerimenti più personalizzati.',
+                      AppLocalizations.of(context)!.recipientTip,
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         color: CosmicTheme.textSecondary,
@@ -547,7 +548,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'Nessun risultato',
+              AppLocalizations.of(context)!.noResults,
               style: GoogleFonts.inter(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -556,7 +557,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Prova a modificare i termini di ricerca',
+              AppLocalizations.of(context)!.modifySearchTerms,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 color: CosmicTheme.textSecondary,
@@ -769,7 +770,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                           if (recipient.interests.length > 3) ...[
                             const SizedBox(height: 4),
                             Text(
-                              '+${recipient.interests.length - 3} altro',
+                              '+${recipient.interests.length - 3} ${AppLocalizations.of(context)!.more}',
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 color: CosmicTheme.textTertiary,
@@ -822,7 +823,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                         Row(
                           children: [
                             Text(
-                              'Regali Salvati (${gifts.length})',
+                              '${AppLocalizations.of(context)!.savedGifts} (${gifts.length})',
                               style: GoogleFonts.inter(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -843,7 +844,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
                                 color: CosmicTheme.primaryAccent,
                               ),
                               label: Text(
-                                'Vedi dettagli',
+                                AppLocalizations.of(context)!.seeDetails,
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,

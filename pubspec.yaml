@@ -1,7 +1,7 @@
 name: Donatello
 description: Il laboratorio digitale per idee regalo uniche
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -32,7 +32,7 @@ dependencies:
   # Utilities
   equatable: ^2.0.5
   json_annotation: ^4.9.0
-  intl: ^0.19.0
+  intl: ^0.20.2
   url_launcher: ^6.2.2
   webview_flutter: ^4.4.4
 

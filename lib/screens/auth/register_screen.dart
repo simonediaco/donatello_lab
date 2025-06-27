@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:Donatello/l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/floating_label_text_field.dart';
@@ -81,17 +82,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     }
 
     if (_birthdateController.text.trim().isEmpty) {
-      _showError('Please enter your birth date');
+      _showError(AppLocalizations.of(context)!.enterBirthDateError);
       return;
     }
 
     if (!_isValidDate(_birthdateController.text.trim())) {
-      _showError('Please enter a valid date (dd/mm/yyyy)');
+      _showError(AppLocalizations.of(context)!.validDateError);
       return;
     }
 
     if (!_agreedToTerms) {
-      _showError('You must agree to the terms and conditions');
+      _showError(AppLocalizations.of(context)!.mustAgreeToTermsAndConditions);
       return;
     }
 
@@ -112,7 +113,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         ref.read(currentUserProvider.notifier).state = user;
         context.go('/onboarding');
       } else {
-        _showError('Registration failed. Please try again.');
+        _showError(AppLocalizations.of(context)!.registrationFailed);
       }
     } catch (e) {
       if (mounted) {
@@ -194,17 +195,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     if (error is AuthException) {
       message = error.message;
     } else {
-      message = 'Error during registration. Please try again.';
+      message = AppLocalizations.of(context)!.errorDuringRegistration;
 
       if (error.toString().contains('DioException')) {
         if (error.toString().contains('status code of 400')) {
-          message = 'Invalid data. Please check the entered fields';
+          message = AppLocalizations.of(context)!.invalidData;
         } else if (error.toString().contains('status code of 409')) {
-          message = 'Email already registered. Try with another email';
+          message = AppLocalizations.of(context)!.emailAlreadyRegistered;
         } else if (error.toString().contains('status code of 500')) {
-          message = 'Server error. Please try again later';
+          message = AppLocalizations.of(context)!.serverError;
         } else if (error.toString().contains('timeout') || error.toString().contains('connection')) {
-          message = 'Connection problem. Check your network';
+          message = AppLocalizations.of(context)!.connectionProblem;
         }
       }
     }
@@ -277,7 +278,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Create Account',
+                              AppLocalizations.of(context)!.createAccount,
                               style: GoogleFonts.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -291,7 +292,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
                         // Welcome text
                         Text(
-                          'Join Donatello Lab',
+                          AppLocalizations.of(context)!.joinDonatelloLab,
                           style: GoogleFonts.inter(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
@@ -303,7 +304,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                         const SizedBox(height: 8),
                         
                         Text(
-                          'Create your account to start finding perfect gifts',
+                          AppLocalizations.of(context)!.createAccountSubtitle,
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
@@ -339,12 +340,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                   children: [
                                     // First name field
                                     FloatingLabelTextField(
-                                      label: 'First name',
+                                      label: AppLocalizations.of(context)!.firstName,
                                       controller: _firstNameController,
                                       keyboardType: TextInputType.name,
                                       validator: (value) {
                                         if (value == null || value.trim().isEmpty) {
-                                          return 'Please enter your first name';
+                                          return AppLocalizations.of(context)!.pleaseEnterFirstName;
                                         }
                                         return null;
                                       },
@@ -354,12 +355,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
                                     // Last name field
                                     FloatingLabelTextField(
-                                      label: 'Last name',
+                                      label: AppLocalizations.of(context)!.lastName,
                                       controller: _lastNameController,
                                       keyboardType: TextInputType.name,
                                       validator: (value) {
                                         if (value == null || value.trim().isEmpty) {
-                                          return 'Please enter your last name';
+                                          return AppLocalizations.of(context)!.pleaseEnterLastName;
                                         }
                                         return null;
                                       },
@@ -369,15 +370,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
                                     // Email field
                                     FloatingLabelTextField(
-                                      label: 'Email address',
+                                      label: AppLocalizations.of(context)!.emailAddress,
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
                                       validator: (value) {
                                         if (value == null || value.trim().isEmpty) {
-                                          return 'Please enter your email address';
+                                          return AppLocalizations.of(context)!.pleaseEnterEmail;
                                         }
                                         if (!_isValidEmail(value.trim())) {
-                                          return 'Please enter a valid email address';
+                                          return AppLocalizations.of(context)!.pleaseEnterValidEmail;
                                         }
                                         return null;
                                       },
@@ -387,7 +388,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
                                     // Birth date field
                                     FloatingLabelTextField(
-                                      label: 'Birth date (dd/mm/yyyy)',
+                                      label: AppLocalizations.of(context)!.birthDate,
                                       controller: _birthdateController,
                                       readOnly: true,
                                       onTap: _selectDate,
@@ -398,10 +399,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                       ),
                                       validator: (value) {
                                         if (value == null || value.trim().isEmpty) {
-                                          return 'Please enter your birth date';
+                                          return AppLocalizations.of(context)!.pleaseEnterBirthDate;
                                         }
                                         if (!_isValidDate(value.trim())) {
-                                          return 'Please enter a valid date (dd/mm/yyyy)';
+                                          return AppLocalizations.of(context)!.pleaseEnterValidDate;
                                         }
                                         return null;
                                       },
@@ -411,15 +412,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
                                     // Password field
                                     FloatingLabelTextField(
-                                      label: 'Password (min. 6 characters)',
+                                      label: AppLocalizations.of(context)!.passwordMinChars,
                                       controller: _passwordController,
                                       isPassword: !_isPasswordVisible,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return 'Please enter a password';
+                                          return AppLocalizations.of(context)!.pleaseEnterPassword;
                                         }
                                         if (value.length < 6) {
-                                          return 'Password must be at least 6 characters long';
+                                          return AppLocalizations.of(context)!.passwordMinLength;
                                         }
                                         return null;
                                       },
@@ -442,15 +443,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
                                     // Confirm password field
                                     FloatingLabelTextField(
-                                      label: 'Confirm password',
+                                      label: AppLocalizations.of(context)!.confirmPassword,
                                       controller: _confirmPasswordController,
                                       isPassword: !_isConfirmPasswordVisible,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return 'Please confirm your password';
+                                          return AppLocalizations.of(context)!.pleaseConfirmPassword;
                                         }
                                         if (value != _passwordController.text) {
-                                          return 'Passwords do not match';
+                                          return AppLocalizations.of(context)!.passwordsDoNotMatch;
                                         }
                                         return null;
                                       },
@@ -503,7 +504,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
                                                       Text(
-                                                        'I agree to the terms and conditions',
+                                                        AppLocalizations.of(context)!.iAgreeToTerms,
                                                         style: GoogleFonts.inter(
                                                           fontSize: 14,
                                                           fontWeight: FontWeight.w500,
@@ -514,7 +515,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                       Wrap(
                                                         children: [
                                                           Text(
-                                                            'Read ',
+                                                            AppLocalizations.of(context)!.readTermsOf,
                                                             style: GoogleFonts.inter(
                                                               fontSize: 12,
                                                               color: CosmicTheme.textSecondary,
@@ -532,7 +533,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                               }
                                                             },
                                                             child: Text(
-                                                              'terms of use',
+                                                              AppLocalizations.of(context)!.termsOfUse,
                                                               style: GoogleFonts.inter(
                                                                 fontSize: 12,
                                                                 fontWeight: FontWeight.w500,
@@ -542,7 +543,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                             ),
                                                           ),
                                                           Text(
-                                                            ' and ',
+                                                            AppLocalizations.of(context)!.and,
                                                             style: GoogleFonts.inter(
                                                               fontSize: 12,
                                                               color: CosmicTheme.textSecondary,
@@ -560,7 +561,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                               }
                                                             },
                                                             child: Text(
-                                                              'privacy policy',
+                                                              AppLocalizations.of(context)!.privacyPolicy,
                                                               style: GoogleFonts.inter(
                                                                 fontSize: 12,
                                                                 fontWeight: FontWeight.w500,
@@ -573,7 +574,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                       ),
                                                       const SizedBox(height: 8),
                                                       Text(
-                                                        'I confirm that I am at least 13 years old and agree that my data will be processed according to the privacy policy to receive personalized gift ideas.',
+                                                        AppLocalizations.of(context)!.ageConfirmation,
                                                         style: GoogleFonts.inter(
                                                           fontSize: 12,
                                                           color: CosmicTheme.textSecondary,
@@ -594,7 +595,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
 
                                     // Register button
                                     PrimaryButton(
-                                      text: 'Create Account',
+                                      text: AppLocalizations.of(context)!.createAccount,
                                       onPressed: _register,
                                       isLoading: _isLoading,
                                     ),
@@ -606,7 +607,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          'Already have an account? ',
+                                          AppLocalizations.of(context)!.alreadyHaveAccount,
                                           style: GoogleFonts.inter(
                                             fontSize: 14,
                                             color: CosmicTheme.textSecondary,
@@ -615,7 +616,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                         GestureDetector(
                                           onTap: () => context.pop(),
                                           child: Text(
-                                            'Sign In',
+                                            AppLocalizations.of(context)!.signIn,
                                             style: GoogleFonts.inter(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,

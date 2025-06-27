@@ -1,6 +1,6 @@
 {
-    "name": "donatello_lab",
-    "short_name": "donatello_lab",
+    "name": "Donatello",
+    "short_name": "Donatello",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
