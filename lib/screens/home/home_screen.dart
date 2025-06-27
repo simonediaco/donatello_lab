@@ -443,13 +443,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             const SizedBox(height: 24),
 
             _buildMenuOption(
-              icon: Icons.help_outline,
-              title: 'Help & Support',
-              onTap: () {
+              icon: Icons.favorite_outline,
+              title: 'Supporta Donatello',
+              onTap: () async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Help section coming soon')),
-                );
+                try {
+                  final uri = Uri.parse('https://ko-fi.com/simonediacodev');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Impossibile aprire la pagina di supporto')),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Errore nell\'apertura della pagina di supporto')),
+                    );
+                  }
+                }
               },
             ),
 

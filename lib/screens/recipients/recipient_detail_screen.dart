@@ -7,6 +7,7 @@ import '../../models/recipient.dart';
 import '../../models/gift.dart';
 import '../../services/api_service.dart';
 import '../../theme/cosmic_theme.dart';
+import '../../widgets/buttons.dart';
 
 class RecipientDetailScreen extends ConsumerStatefulWidget {
   final int recipientId;
@@ -627,32 +628,10 @@ class _RecipientDetailScreenState extends ConsumerState<RecipientDetailScreen>
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 20),
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: CosmicTheme.buttonGradient,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: CosmicTheme.lightShadow,
-                            ),
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.auto_awesome, color: Colors.white),
-                              label: Text(
-                                'Genera Regali',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              onPressed: () => context.push('/gift-generation'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
+                          PrimaryButton(
+                            text: 'Genera Regali',
+                            onPressed: () => context.go('/gift-wizard-recipient', extra: _recipient),
+                            icon: Icons.auto_awesome,
                           ),
                         ],
                       ),
@@ -668,33 +647,10 @@ class _RecipientDetailScreenState extends ConsumerState<RecipientDetailScreen>
                           );
                         }),
                         const SizedBox(height: 20),
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            gradient: CosmicTheme.buttonGradient,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: CosmicTheme.lightShadow,
-                          ),
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.auto_awesome, color: Colors.white),
-                            label: Text(
-                              'Genera Altri Regali',
-                              style: GoogleFonts.inter(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                            onPressed: () => context.push('/gift-generation'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
+                        PrimaryButton(
+                          text: 'Genera Altri Regali',
+                          onPressed: () => context.go('/gift-wizard-recipient', extra: _recipient),
+                          icon: Icons.auto_awesome,
                         ),
                       ],
                     ),

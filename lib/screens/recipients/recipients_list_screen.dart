@@ -71,6 +71,7 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
@@ -92,17 +93,22 @@ class _RecipientsListScreenState extends ConsumerState<RecipientsListScreen>
         }
       }
 
-      setState(() {
-        _recipients = recipients;
-        _filteredRecipients = recipients;
-        _giftsByRecipient = giftsByRecipient;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _recipients = recipients;
+          _filteredRecipients = recipients;
+          _giftsByRecipient = giftsByRecipient;
+          _isLoading = false;
+        });
+      }
 
       _animationController.forward();
     } catch (e) {
       print("Error loading data: $e");
-      setState(() => _isLoading = false);    }
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   void _filterRecipients(String query) {
