@@ -251,7 +251,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
             children: [
               // Floating cosmic shapes
               _buildFloatingShapes(),
-              
+
               SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -264,7 +264,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                     child: Column(
                       children: [
                         const SizedBox(height: 20),
-                        
+
                         // Back button and header
                         Row(
                           children: [
@@ -300,9 +300,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                             letterSpacing: -0.5,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 8),
-                        
+
                         Text(
                           AppLocalizations.of(context)!.createAccountSubtitle,
                           style: GoogleFonts.inter(
@@ -523,13 +523,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                           ),
                                                           GestureDetector(
                                                             onTap: () async {
-                                                              // Open terms of use externally
-                                                              const url = '#'; // Placeholder URL
-                                                              if (await canLaunchUrl(Uri.parse(url))) {
-                                                                await launchUrl(
-                                                                  Uri.parse(url),
-                                                                  mode: LaunchMode.externalApplication,
-                                                                );
+                                                              const url = 'https://donatellolab.com/terms-of-service';
+                                                              final uri = Uri.parse(url);
+                                                              if (await canLaunchUrl(uri)) {
+                                                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                              } else {
+                                                                // Fallback per Android
+                                                                try {
+                                                                  await launchUrl(uri);
+                                                                } catch (e) {
+                                                                  print('Errore apertura link: $e');
+                                                                }
                                                               }
                                                             },
                                                             child: Text(
@@ -551,13 +555,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                                           ),
                                                           GestureDetector(
                                                             onTap: () async {
-                                                              // Open privacy policy externally
-                                                              const url = '#'; // Placeholder URL
-                                                              if (await canLaunchUrl(Uri.parse(url))) {
-                                                                await launchUrl(
-                                                                  Uri.parse(url),
-                                                                  mode: LaunchMode.externalApplication,
-                                                                );
+                                                              const url = 'https://donatellolab.com/privacy-policy';
+                                                              final uri = Uri.parse(url);
+                                                              if (await canLaunchUrl(uri)) {
+                                                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                              } else {
+                                                                // Fallback per Android
+                                                                try {
+                                                                  await launchUrl(uri);
+                                                                } catch (e) {
+                                                                  print('Errore apertura link: $e');
+                                                                }
                                                               }
                                                             },
                                                             child: Text(
@@ -672,7 +680,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
             },
           ),
         ),
-        
+
         // Bottom right violet shape
         Positioned(
           bottom: 120,

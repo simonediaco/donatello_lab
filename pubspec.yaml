@@ -1,7 +1,7 @@
 name: Donatello
 description: Il laboratorio digitale per idee regalo uniche
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.2+2
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -46,6 +46,8 @@ dependencies:
   firebase_core: ^2.24.2
 
   cupertino_icons: ^1.0.2
+
+  share_plus: ^11.0.0
 
 dev_dependencies:
   flutter_test:

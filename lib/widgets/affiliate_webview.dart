@@ -1,10 +1,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../theme/cosmic_theme.dart';
+import 'gift_disclaimers.dart';
 
 class AffiliateWebViewScreen extends StatefulWidget {
   final String url;
@@ -67,13 +70,16 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
             },
             onWebResourceError: (error) => _onWebResourceError(error),
             onNavigationRequest: (request) {
+              // Allow all navigation for affiliate links
               return NavigationDecision.navigate;
             },
             onHttpError: (error) {
               print('HTTP Error: ${error.response?.statusCode}');
             },
           ),
-        );
+        )
+        // Add Android-specific settings
+        ..enableZoom(true);
       
       // Load URL after controller setup
       _controller!.loadRequest(uri);
@@ -111,7 +117,33 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
         _isLoading = false;
         _hasError = true;
       });
+      
+      // On Android, if we get a critical error, automatically fallback to browser
+      if (Platform.isAndroid && _shouldAutoFallback(error)) {
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            _openInBrowser();
+          }
+        });
+      }
     }
+  }
+
+  bool _shouldAutoFallback(WebResourceError error) {
+    // Common error codes that indicate the site blocks WebView
+    final criticalErrors = [
+      -2, // ERR_INTERNET_DISCONNECTED
+      -6, // ERR_CONNECTION_REFUSED  
+      -8, // ERR_TIMEOUT
+      -10, // ERR_ACCESS_DENIED
+      -14, // ERR_UNKNOWN_URL_SCHEME
+      -15, // ERR_INVALID_URL
+    ];
+    
+    return criticalErrors.contains(error.errorCode) ||
+           error.description.toLowerCase().contains('access') ||
+           error.description.toLowerCase().contains('blocked') ||
+           error.description.toLowerCase().contains('refused');
   }
 
   Future<void> _loadPageTitle() async {
@@ -144,9 +176,61 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
         }
       }
       
-      final uri = Uri.parse(urlToOpen);
+      // Mostra il disclaimer prima di aprire il browser esterno
+      await showDialog(
+        context: context,
+        builder: (context) => ExternalLinkDisclaimerModal(
+          url: urlToOpen,
+          onConfirm: () => _launchExternalUrl(urlToOpen),
+        ),
+      );
+    } catch (e) {
+      _showErrorMessage('Errore nell\'apertura del link');
+    }
+  }
+
+  Future<void> _shareProduct() async {
+    try {
+      String urlToShare = widget.url;
+      String titleToShare = _getDisplayTitle();
+      
+      if (_controller != null) {
+        try {
+          final currentUrl = await _controller!.currentUrl();
+          if (currentUrl != null && currentUrl.isNotEmpty) {
+            urlToShare = currentUrl;
+          }
+        } catch (e) {
+          // Use original URL if current URL is not available
+        }
+      }
+      
+      // Condividi con un messaggio ottimizzato per app di messaggistica
+      String shareText = 'Ciao! Ho trovato questo prodotto che potrebbe interessarti: $titleToShare\n\n$urlToShare';
+      
+      await Share.share(
+        shareText,
+        subject: 'Ti consiglio questo prodotto: $titleToShare',
+      );
+    } catch (e) {
+      _showErrorMessage('Errore nella condivisione del link');
+    }
+  }
+
+  Future<void> _launchExternalUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        // Su Android, usa LaunchMode.externalNonBrowserApplication per forzare l'apertura nel browser
+        if (Platform.isAndroid) {
+          await launchUrl(
+            uri, 
+            mode: LaunchMode.externalNonBrowserApplication,
+            webOnlyWindowName: '_blank',
+          );
+        } else {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
       } else {
         _showErrorMessage('Impossibile aprire il link nel browser');
       }
@@ -230,11 +314,19 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
       actions: [
         IconButton(
           icon: Icon(
-            Icons.open_in_browser,
+            Icons.share,
+            color: CosmicTheme.primaryAccent,
+          ),
+          onPressed: _shareProduct,
+          tooltip: 'Condividi prodotto',
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.launch,
             color: CosmicTheme.primaryAccent,
           ),
           onPressed: _openInBrowser,
-          tooltip: 'Apri nel browser',
+          tooltip: 'Apri nel browser esterno',
         ),
         const SizedBox(width: 8),
       ],
@@ -396,7 +488,7 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
                       backgroundColor: CosmicTheme.primaryAccent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
+                        horizontal: 20,
                         vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
@@ -410,7 +502,18 @@ class _AffiliateWebViewScreenState extends State<AffiliateWebViewScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: _shareProduct,
+                    child: Text(
+                      'Condividi',
+                      style: GoogleFonts.inter(
+                        color: CosmicTheme.primaryAccent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   TextButton(
                     onPressed: _openInBrowser,
                     child: Text(

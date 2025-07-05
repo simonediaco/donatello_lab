@@ -448,22 +448,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               title: AppLocalizations.of(context)!.supportDonatello,
               onTap: () async {
                 Navigator.pop(context);
-                try {
-                  final uri = Uri.parse('https://ko-fi.com/simonediacodev');
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.cannotOpenSupportPage)),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(AppLocalizations.of(context)!.errorOpeningSupportPage)),
-                    );
+                final uri = Uri.parse('https://ko-fi.com/simonediacodev');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else {
+                  // Fallback per Android
+                  try {
+                    await launchUrl(uri);
+                  } catch (e) {
+                    print('Errore apertura link: $e');
                   }
                 }
               },
@@ -474,22 +467,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               title: AppLocalizations.of(context)!.discoverDonatello,
               onTap: () async {
                 Navigator.pop(context);
-                try {
-                  final uri = Uri.parse('https://donatellolab.com');
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.cannotOpenWebsite)),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(AppLocalizations.of(context)!.errorOpeningWebsite)),
-                    );
+                final uri = Uri.parse('https://donatellolab.com');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else {
+                  // Fallback per Android
+                  try {
+                    await launchUrl(uri);
+                  } catch (e) {
+                    print('Errore apertura link: $e');
                   }
                 }
               },

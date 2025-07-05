@@ -135,6 +135,152 @@ class SaveGiftDisclaimerModal extends StatelessWidget {
   }
 }
 
+// Modal per confermare l'apertura di link esterni
+class ExternalLinkDisclaimerModal extends StatelessWidget {
+  final String url;
+  final VoidCallback onConfirm;
+
+  const ExternalLinkDisclaimerModal({
+    Key? key,
+    required this.url,
+    required this.onConfirm,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.85,
+        margin: const EdgeInsets.symmetric(vertical: 80),
+        padding: const EdgeInsets.all(20),
+        constraints: const BoxConstraints(
+          maxWidth: 360,
+          maxHeight: 380,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header con icona colorata
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                gradient: CosmicTheme.primaryGradient,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.shopping_cart,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Titolo
+            Text(
+              'Visualizza prodotto',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: CosmicTheme.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 8),
+
+            // Messaggio principale
+            Text(
+              'Stai per uscire dall\'app per vedere il prodotto nel negozio online.',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: CosmicTheme.textSecondary,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Reminder box
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: CosmicTheme.primaryAccent.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: CosmicTheme.primaryAccent.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.favorite,
+                    color: CosmicTheme.primaryAccent,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Ricordati di tornare su Donatello per scoprire altri regali!',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: CosmicTheme.primaryAccent,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Action buttons
+            Column(
+              children: [
+                PrimaryButton(
+                  text: 'Vai al prodotto',
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onConfirm();
+                  },
+                  icon: Icons.open_in_new,
+                  height: 42,
+                ),
+
+                const SizedBox(height: 10),
+
+                GreyButton(
+                  text: 'Rimani nell\'app',
+                  onPressed: () => Navigator.of(context).pop(),
+                  height: 42,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // Modal per il disclaimer di acquisto
 class PurchaseDisclaimerModal extends StatelessWidget {
   final Gift gift;
